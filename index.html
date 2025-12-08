@@ -194,8 +194,8 @@
   // 2) Enable Google provider in Auth
   // 3) Create the table + RLS policies (SQL provided in chat)
   // 4) Paste your project URL + anon key here
-  const SUPABASE_URL = "PASTE_SUPABASE_URL_HERE";
-  const SUPABASE_ANON_KEY = "PASTE_SUPABASE_ANON_KEY_HERE";
+  const SUPABASE_URL = https://redxigdkdjyxaofmutlv.supabase.co;
+  const SUPABASE_ANON_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlZHhpZ2RrZGp5eGFvZm11dGx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyMjI5MTQsImV4cCI6MjA4MDc5ODkxNH0.24RNF4dKYNcKkAESiYNbA4_3Fvt-zTCFe5jCjR4vdn0;
   const supabase = (SUPABASE_URL.startsWith("http") && SUPABASE_ANON_KEY.length > 20)
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
@@ -926,3 +926,4 @@
 </script>
 </body>
 </html>
+

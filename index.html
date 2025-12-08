@@ -1,0 +1,789 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MST Workout Tracker</title>
+  <style>
+    :root{
+      --bg:#0b0f14; --panel:#101824; --panel2:#0f1520; --text:#e8eef7; --muted:#93a4ba;
+      --line:#203047; --accent:#6ea8ff; --good:#35d07f; --warn:#ffc857; --bad:#ff5c7a;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --r: 14px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:var(--sans); background:radial-gradient(1200px 600px at 20% 0%, #12233a 0%, transparent 60%),
+      radial-gradient(900px 500px at 100% 30%, #1b1a2c 0%, transparent 55%), var(--bg);
+      color:var(--text);
+    }
+    .app{display:grid; grid-template-columns: 390px 1fr; gap:14px; height:100vh; padding:14px;}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)); border:1px solid var(--line);
+      border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden;}
+    header{padding:14px 16px; display:flex; gap:10px; align-items:center; justify-content:space-between;
+      border-bottom:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.01));}
+    header .title{font-weight:800; letter-spacing:.2px; font-size:15px;}
+    header .subtitle{color:var(--muted); font-size:12px; margin-top:2px;}
+    .stack{display:flex; flex-direction:column; gap:10px; padding:12px;}
+    .row{display:flex; gap:10px; align-items:center;}
+    .row > *{flex:1}
+    .btn{appearance:none; border:1px solid var(--line); background:rgba(255,255,255,.03);
+      color:var(--text); padding:9px 10px; border-radius:12px; cursor:pointer; font-weight:650;}
+    .btn:hover{border-color:#2d4364}
+    .btn.primary{border-color:rgba(110,168,255,.35); background:rgba(110,168,255,.12)}
+    .btn.danger{border-color:rgba(255,92,122,.35); background:rgba(255,92,122,.10)}
+    .btn.small{padding:7px 9px; font-size:12px; border-radius:10px}
+    .pill{font-family:var(--mono); font-size:11px; color:#cfe0ff; background:rgba(110,168,255,.12);
+      border:1px solid rgba(110,168,255,.25); padding:4px 8px; border-radius:999px; display:inline-flex; align-items:center; gap:6px;}
+    input[type="text"], input[type="number"], textarea, select{
+      width:100%; background:rgba(0,0,0,.25); border:1px solid var(--line); color:var(--text);
+      border-radius:12px; padding:9px 10px; outline:none;
+    }
+    textarea{min-height:70px; resize:vertical}
+    .muted{color:var(--muted)}
+    .mono{font-family:var(--mono)}
+    .divider{height:1px; background:var(--line); margin:10px 0}
+    .sessions{display:flex; flex-direction:column; gap:8px; max-height: calc(100vh - 330px); overflow:auto; padding-right:6px;}
+    .session-item{border:1px solid var(--line); border-radius:14px; padding:10px 10px; cursor:pointer; background:rgba(0,0,0,.18);}
+    .session-item:hover{border-color:#2d4364}
+    .session-item.active{border-color:rgba(110,168,255,.55); background:rgba(110,168,255,.08)}
+    .session-item .name{font-weight:800; font-size:13px}
+    .session-item .meta{display:flex; gap:8px; margin-top:6px; flex-wrap:wrap}
+    .badge{font-size:11px; color:var(--muted); border:1px solid var(--line); padding:3px 7px; border-radius:999px; background:rgba(255,255,255,.02);}
+    .main{display:grid; grid-template-rows:auto 1fr; gap:14px;}
+    .content{padding:12px; overflow:auto; height: calc(100vh - 140px);}
+    .workout{border:1px solid var(--line); border-radius:16px; background:rgba(0,0,0,.18); margin-bottom:10px; overflow:hidden;}
+    .workout-head{padding:12px 12px; display:flex; align-items:center; justify-content:space-between; gap:12px; cursor:pointer;}
+    .workout-head:hover{background:rgba(255,255,255,.02)}
+    .workout-title{font-weight:900}
+    .workout-sub{color:var(--muted); font-size:12px; margin-top:3px}
+    .workout-body{padding:12px; border-top:1px solid var(--line); display:none}
+    .workout.open .workout-body{display:block}
+    .grid{display:grid; grid-template-columns: 70px 140px 1fr 1fr 70px; gap:8px; align-items:center;}
+    .grid .h{color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.12em}
+    .set-row{padding:8px; border:1px solid rgba(255,255,255,.05); border-radius:14px; background:rgba(255,255,255,.02); margin-top:8px;}
+    .done{border-color:rgba(53,208,127,.35); background:rgba(53,208,127,.06);}
+    .footer-actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;}
+    .timer-box{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+    .timer{display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:16px; background:rgba(0,0,0,.18);}
+    .timer .time{font-family:var(--mono); font-size:18px; letter-spacing:.06em; min-width:92px; text-align:center;}
+    .small-note{font-size:12px; color:var(--muted); line-height:1.35}
+    .two-col{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
+    @media (max-width: 980px){
+      .app{grid-template-columns:1fr; height:auto}
+      .content{height:auto; max-height:none}
+      .sessions{max-height:none}
+      .two-col{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <div class="card">
+      <header>
+        <div>
+          <div class="title">MST Workout Tracker</div>
+          <div class="subtitle" id="subtitle">Local logs • static plan</div>
+        </div>
+        <div class="pill" id="sessionCount">0 sessions</div>
+      </header>
+
+      <div class="stack">
+        <div class="two-col">
+          <div>
+            <label class="muted" for="programSelect">Program</label>
+            <select id="programSelect"></select>
+          </div>
+          <div>
+            <label class="muted" for="sessionSelect">Session</label>
+            <select id="sessionSelect"></select>
+          </div>
+        </div>
+
+        <div class="row">
+          <input id="search" type="text" placeholder="Search sessions/workouts…" />
+        </div>
+
+        <div class="row">
+          <button class="btn primary" id="reloadBtn">Reload plan</button>
+          <button class="btn danger" id="clearBtn">Clear logs</button>
+        </div>
+
+        <div class="timer-box">
+          <div class="timer">
+            <div class="time" id="timerDisplay">00:00</div>
+            <button class="btn small" id="timerStart">Start</button>
+            <button class="btn small" id="timerPause">Pause</button>
+            <button class="btn small" id="timerReset">Reset</button>
+          </div>
+          <select id="preset">
+            <option value="60">Rest 60s</option>
+            <option value="90">Rest 90s</option>
+            <option value="120" selected>Rest 120s</option>
+            <option value="180">Rest 180s</option>
+          </select>
+          <input id="customSeconds" type="number" min="5" step="5" placeholder="Custom seconds" />
+          <button class="btn small" id="setCustom">Set</button>
+        </div>
+
+        <div class="small-note" id="planHint">
+          Put your combined program JSON files in <span class="mono">/data</span>, then edit <span class="mono">PROGRAM_SOURCES</span> in this file.
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sessions" id="sessions"></div>
+
+        <div class="footer-actions">
+          <button class="btn" id="exportLogs">Export logs (JSON)</button>
+          <button class="btn" id="importLogs">Import logs</button>
+          <button class="btn" id="exportCSV">Export logs (CSV)</button>
+        </div>
+
+        <input id="importFile" type="file" accept=".json,application/json" style="display:none" />
+      </div>
+    </div>
+
+    <!-- Main -->
+    <div class="main">
+      <div class="card">
+        <header>
+          <div>
+            <div class="title" id="activeTitle">Loading…</div>
+            <div class="subtitle" id="activeMeta">—</div>
+          </div>
+          <div class="pill" id="activePill">—</div>
+        </header>
+        <div class="content" id="content"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  /**
+   * CONFIG: list your program JSON files here.
+   * Put them in the repo at /data/<file>.json.
+   *
+   * File format expected:
+   * {
+   *   "program": "Hypertrophy",
+   *   "sessions": [ {"session":"WEEK 1 - SESSION 1 - ...", "workouts":[...]}, ... ]
+   * }
+   */
+   const PROGRAM_SOURCES = [
+  { name: "Hypertrophy",        url: "data/hypertrophy.json" },
+  { name: "Starting Strongman", url: "data/starting_strongman.json" },
+  { name: "Static Monster",     url: "data/static_monster.json" },
+];
+
+  // Logs are stored separately from plan data (so updating plan doesn't wipe logs)
+  const LS_KEY = "mst_tracker_logs_v2";
+
+  // ---------- State ----------
+  const state = {
+    programs: [],
+    programById: new Map(),
+    sessionsById: new Map(),
+    workoutsById: new Map(),
+
+    activeProgramId: null,
+    activeSessionId: null,
+
+    logs: loadLogs(),
+
+    timer: { total: 120, left: 120, running: false, t: null }
+  };
+
+  // ---------- DOM ----------
+  const elProgramSelect = document.getElementById("programSelect");
+  const elSessionSelect = document.getElementById("sessionSelect");
+  const elSearch = document.getElementById("search");
+
+  const elSessions = document.getElementById("sessions");
+  const elContent = document.getElementById("content");
+  const elActiveTitle = document.getElementById("activeTitle");
+  const elActiveMeta = document.getElementById("activeMeta");
+  const elActivePill = document.getElementById("activePill");
+  const elSessionCount = document.getElementById("sessionCount");
+
+  const elTimerDisplay = document.getElementById("timerDisplay");
+  const elImportFile = document.getElementById("importFile");
+
+  // ---------- Helpers ----------
+  function uid(str){
+    let h = 2166136261;
+    for (let i=0; i<str.length; i++){
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return "id_" + (h >>> 0).toString(16);
+  }
+
+  function escapeHtml(s){
+    return String(s)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function toIntMaybe(v){
+    if (v == null) return null;
+    const s = String(v).trim();
+    const n = parseInt(s, 10);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function fmtTime(sec){
+    sec = Math.max(0, Math.floor(sec));
+    const m = String(Math.floor(sec/60)).padStart(2,"0");
+    const s = String(sec%60).padStart(2,"0");
+    return `${m}:${s}`;
+  }
+
+  function loadLogs(){
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); }
+    catch { return {}; }
+  }
+
+  function saveLogs(){
+    localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
+  }
+
+  // Stable log key so plan updates don't kill your history
+  // Includes program + session + workout index (to avoid same-name collisions)
+  function logKey(programName, sessionTitle, workoutTitle, workoutIndex){
+    return `${programName}|||${sessionTitle}|||${workoutIndex}|||${workoutTitle}`;
+  }
+
+  // ---------- Plan loading / normalization ----------
+  async function fetchJson(url){
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    return await res.json();
+  }
+
+  function normalizeProgram(raw, fallbackName){
+    const programName = raw.program || fallbackName || "Program";
+    const pid = uid(`program::${programName}`);
+
+    const sessions = (raw.sessions || []).map((s, si) => {
+      const sessionTitle = s.session || `Session ${si+1}`;
+      const sid = uid(`${programName}::session::${sessionTitle}::${si}`);
+
+      const workouts = (s.workouts || []).map((w, wi) => {
+        const title = w.title || `Workout ${wi+1}`;
+        const wid = uid(`${programName}::${sessionTitle}::${wi}::${title}`);
+
+        const setsStr = w.sets ?? "";
+        const repsStr = w.reps ?? "";
+        const setCount = toIntMaybe(setsStr) ?? 3;
+        const targetReps = String(repsStr || "").trim();
+        const notes = Array.isArray(w.notes) ? w.notes : [];
+
+        return {
+          id: wid,
+          title,
+          index: wi,
+          setsStr: String(setsStr || ""),
+          repsStr: String(repsStr || ""),
+          setCount,
+          targetReps,
+          notes,
+          _programName: programName,
+          _sessionTitle: sessionTitle,
+        };
+      });
+
+      return { id: sid, title: sessionTitle, index: si, programId: pid, programName, workouts };
+    });
+
+    return { id: pid, name: programName, sessions };
+  }
+
+  async function loadAllPrograms(){
+    state.programs = [];
+    state.programById.clear();
+    state.sessionsById.clear();
+    state.workoutsById.clear();
+
+    for (const src of PROGRAM_SOURCES){
+      try{
+        const raw = await fetchJson(src.url);
+        const prog = normalizeProgram(raw, src.name);
+        state.programs.push(prog);
+      }catch(err){
+        console.error("Failed to load program", src, err);
+      }
+    }
+
+    // Indexing
+    for (const p of state.programs){
+      state.programById.set(p.id, p);
+      for (const s of p.sessions){
+        state.sessionsById.set(s.id, s);
+        for (const w of s.workouts){
+          state.workoutsById.set(w.id, w);
+        }
+      }
+    }
+
+    // Default selection
+    state.activeProgramId = state.programs[0]?.id || null;
+    state.activeSessionId = state.programs[0]?.sessions[0]?.id || null;
+
+    renderAll();
+  }
+
+  // ---------- UI rendering ----------
+  function renderProgramSelect(){
+    elProgramSelect.innerHTML = state.programs.map(p =>
+      `<option value="${p.id}" ${p.id===state.activeProgramId ? "selected" : ""}>${escapeHtml(p.name)}</option>`
+    ).join("");
+  }
+
+  function renderSessionSelect(){
+    const p = state.programById.get(state.activeProgramId);
+    const sessions = p?.sessions || [];
+
+    elSessionSelect.innerHTML = sessions.map(s =>
+      `<option value="${s.id}" ${s.id===state.activeSessionId ? "selected" : ""}>${escapeHtml(s.title)}</option>`
+    ).join("");
+  }
+
+  function countWorkoutLogged(programName, sessionTitle, workout, workoutIndex){
+    const k = logKey(programName, sessionTitle, workout.title, workoutIndex);
+    const wlog = state.logs[k];
+    if (!wlog || !Array.isArray(wlog.sets)) return false;
+    return wlog.sets.some(r => (r.weight || r.reps || r.done));
+  }
+
+  function countLoggedInSession(session){
+    let done = 0;
+    session.workouts.forEach((w, idx) => {
+      if (countWorkoutLogged(session.programName, session.title, w, idx)) done++;
+    });
+    return done;
+  }
+
+  function renderSessionsList(){
+    const p = state.programById.get(state.activeProgramId);
+    const q = elSearch.value.trim().toLowerCase();
+
+    const sessions = (p?.sessions || []).filter(s => {
+      if (!q) return true;
+      if (s.title.toLowerCase().includes(q)) return true;
+      return s.workouts.some(w => w.title.toLowerCase().includes(q));
+    });
+
+    elSessionCount.textContent = `${(p?.sessions || []).length} sessions`;
+
+    elSessions.innerHTML = sessions.map(s => {
+      const total = s.workouts.length;
+      const done = countLoggedInSession(s);
+      const active = s.id === state.activeSessionId ? "active" : "";
+      return `
+        <div class="session-item ${active}" data-sid="${s.id}">
+          <div class="name">${escapeHtml(s.title)}</div>
+          <div class="meta">
+            <span class="badge">${total} workouts</span>
+            <span class="badge">${done}/${total} logged</span>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    elSessions.querySelectorAll(".session-item").forEach(item => {
+      item.addEventListener("click", () => {
+        state.activeSessionId = item.dataset.sid;
+        elSessionSelect.value = state.activeSessionId;
+        renderAll();
+      });
+    });
+  }
+
+  function ensureWorkoutLog(session, workout, workoutIndex){
+    const k = logKey(session.programName, session.title, workout.title, workoutIndex);
+    let wlog = state.logs[k];
+
+    if (!wlog){
+      wlog = {
+        program: session.programName,
+        session: session.title,
+        workout: workout.title,
+        workoutIndex,
+        requiredSets: workout.setCount,
+        requiredReps: workout.targetReps,
+        sets: Array.from({length: workout.setCount}, (_,i) => ({
+          set: i+1,
+          targetReps: workout.targetReps,
+          weight: "",
+          reps: "",
+          done: false,
+          note: ""
+        })),
+        workoutNote: ""
+      };
+      state.logs[k] = wlog;
+      saveLogs();
+    } else {
+      if (!Array.isArray(wlog.sets)) wlog.sets = [];
+      while (wlog.sets.length < workout.setCount){
+        wlog.sets.push({
+          set: wlog.sets.length+1,
+          targetReps: workout.targetReps,
+          weight: "",
+          reps: "",
+          done: false,
+          note: ""
+        });
+      }
+      wlog.sets.forEach((r, i) => r.set = i+1);
+    }
+    return wlog;
+  }
+
+  function renderSetRow(session, workout, workoutIndex, row){
+    const doneClass = row.done ? "done" : "";
+    return `
+      <div class="set-row ${doneClass}">
+        <div class="grid">
+          <div class="mono">#${row.set}</div>
+          <input type="text" value="${escapeHtml(row.targetReps || workout.targetReps || "")}" data-act="set_target" data-wi="${workoutIndex}" data-set="${row.set}" />
+          <input type="text" placeholder="kg/lb" value="${escapeHtml(row.weight || "")}" data-act="set_weight" data-wi="${workoutIndex}" data-set="${row.set}" />
+          <input type="text" placeholder="reps" value="${escapeHtml(row.reps || "")}" data-act="set_reps" data-wi="${workoutIndex}" data-set="${row.set}" />
+          <input type="checkbox" ${row.done ? "checked" : ""} data-act="set_done" data-wi="${workoutIndex}" data-set="${row.set}" />
+        </div>
+        <div style="margin-top:8px">
+          <input type="text" placeholder="Set note (optional)" value="${escapeHtml(row.note || "")}" data-act="set_note" data-wi="${workoutIndex}" data-set="${row.set}" />
+        </div>
+      </div>
+    `;
+  }
+
+  function renderActiveSession(){
+    const session = state.sessionsById.get(state.activeSessionId);
+    if (!session){
+      elActiveTitle.textContent = "No session loaded";
+      elActiveMeta.textContent = "Check PROGRAM_SOURCES and /data/*.json";
+      elActivePill.textContent = "—";
+      elContent.innerHTML = `<div class="muted">Nothing selected.</div>`;
+      return;
+    }
+
+    const done = countLoggedInSession(session);
+    elActiveTitle.textContent = `${session.programName} • ${session.title}`;
+    elActiveMeta.textContent = `Workouts: ${session.workouts.length} • Logged: ${done}/${session.workouts.length}`;
+    elActivePill.textContent = `${done}/${session.workouts.length}`;
+
+    elContent.innerHTML = session.workouts.map((w, idx) => {
+      const wlog = ensureWorkoutLog(session, w, idx);
+      const logged = countWorkoutLogged(session.programName, session.title, w, idx);
+
+      const requiredLabel = `Required: Sets ${escapeHtml(w.setsStr || String(w.setCount))} • Reps ${escapeHtml(w.repsStr || w.targetReps || "")}`;
+
+      return `
+        <div class="workout ${idx===0 ? "open" : ""}" data-wi="${idx}">
+          <div class="workout-head">
+            <div>
+              <div class="workout-title">${escapeHtml(w.title)} ${logged ? '<span class="pill" style="margin-left:8px;border-color:rgba(53,208,127,.35);background:rgba(53,208,127,.10);color:#c8ffe2">logged</span>' : ''}</div>
+              <div class="workout-sub">${requiredLabel}</div>
+            </div>
+            <button class="btn small" type="button">Toggle</button>
+          </div>
+          <div class="workout-body">
+            ${w.notes?.length ? `
+              <div class="small-note"><b>Plan notes</b><br>${w.notes.map(n => escapeHtml(n)).join("<br>")}</div>
+              <div class="divider"></div>
+            ` : ""}
+
+            <div class="grid">
+              <div class="h">Set</div>
+              <div class="h">Target reps</div>
+              <div class="h">Weight</div>
+              <div class="h">Reps</div>
+              <div class="h">Done</div>
+            </div>
+
+            <div id="sets_${idx}">
+              ${wlog.sets.map(r => renderSetRow(session, w, idx, r)).join("")}
+            </div>
+
+            <div class="footer-actions">
+              <button class="btn small" data-act="addSet" data-wi="${idx}">+ Add set</button>
+              <button class="btn small danger" data-act="removeSet" data-wi="${idx}">− Remove set</button>
+              <button class="btn small" data-act="startRest" data-sec="120">Start 120s rest</button>
+              <button class="btn small" data-act="startRest" data-sec="90">Start 90s rest</button>
+              <button class="btn small" data-act="startRest" data-sec="60">Start 60s rest</button>
+            </div>
+
+            <div class="divider"></div>
+            <label class="muted">Workout notes (your notes)</label>
+            <textarea data-act="workoutNote" data-wi="${idx}" placeholder="e.g. felt heavy, adjust next time…">${escapeHtml(wlog.workoutNote || "")}</textarea>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    // accordion toggle
+    elContent.querySelectorAll(".workout-head").forEach(h => {
+      h.addEventListener("click", (e) => {
+        const wrap = h.closest(".workout");
+        wrap.classList.toggle("open");
+      });
+    });
+
+    // actions
+    elContent.querySelectorAll("[data-act]").forEach(el => {
+      const act = el.dataset.act;
+      if (act === "addSet" || act === "removeSet" || act === "startRest"){
+        el.addEventListener("click", () => handleAction(el));
+      } else {
+        el.addEventListener("input", () => handleAction(el));
+        el.addEventListener("change", () => handleAction(el));
+      }
+    });
+  }
+
+  function handleAction(el){
+    const session = state.sessionsById.get(state.activeSessionId);
+    if (!session) return;
+
+    const act = el.dataset.act;
+
+    if (act === "startRest"){
+      const sec = parseInt(el.dataset.sec, 10);
+      setTimer(sec);
+      startTimer();
+      return;
+    }
+
+    const workoutIndex = parseInt(el.dataset.wi, 10);
+    const workout = session.workouts[workoutIndex];
+    if (!workout) return;
+
+    const wlog = ensureWorkoutLog(session, workout, workoutIndex);
+
+    if (act === "addSet"){
+      wlog.sets.push({
+        set: wlog.sets.length + 1,
+        targetReps: workout.targetReps,
+        weight: "",
+        reps: "",
+        done: false,
+        note: ""
+      });
+      saveLogs();
+      renderAll();
+      return;
+    }
+
+    if (act === "removeSet"){
+      if (wlog.sets.length > 1){
+        wlog.sets.pop();
+        wlog.sets.forEach((r, i) => r.set = i+1);
+        saveLogs();
+        renderAll();
+      }
+      return;
+    }
+
+    if (act === "workoutNote"){
+      wlog.workoutNote = el.value;
+      saveLogs();
+      renderSessionsList();
+      return;
+    }
+
+    // set field updates
+    const setNum = parseInt(el.dataset.set, 10);
+    const row = wlog.sets.find(r => r.set === setNum);
+    if (!row) return;
+
+    if (act === "set_target") row.targetReps = el.value;
+    if (act === "set_weight") row.weight = el.value;
+    if (act === "set_reps") row.reps = el.value;
+    if (act === "set_note") row.note = el.value;
+    if (act === "set_done") row.done = !!el.checked;
+
+    saveLogs();
+    renderSessionsList();
+    el.closest(".set-row")?.classList.toggle("done", row.done);
+  }
+
+  function renderAll(){
+    renderProgramSelect();
+    renderSessionSelect();
+    renderSessionsList();
+    renderActiveSession();
+  }
+
+  // ---------- Timer ----------
+  function setTimer(sec){
+    state.timer.total = sec;
+    state.timer.left = sec;
+    renderTimer();
+  }
+  function renderTimer(){
+    elTimerDisplay.textContent = fmtTime(state.timer.left);
+  }
+  function tick(){
+    if (!state.timer.running) return;
+    state.timer.left -= 1;
+    if (state.timer.left <= 0){
+      state.timer.left = 0;
+      state.timer.running = false;
+      clearInterval(state.timer.t);
+      state.timer.t = null;
+      renderTimer();
+      try{
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.frequency.value = 880;
+        g.gain.value = 0.05;
+        o.start();
+        setTimeout(()=>{ o.stop(); ctx.close(); }, 250);
+      }catch{}
+      return;
+    }
+    renderTimer();
+  }
+  function startTimer(){
+    if (state.timer.running) return;
+    state.timer.running = true;
+    if (!state.timer.t){
+      state.timer.t = setInterval(tick, 1000);
+    }
+  }
+  function pauseTimer(){
+    state.timer.running = false;
+  }
+  function resetTimer(){
+    state.timer.running = false;
+    state.timer.left = state.timer.total;
+    renderTimer();
+  }
+
+  document.getElementById("timerStart").addEventListener("click", startTimer);
+  document.getElementById("timerPause").addEventListener("click", pauseTimer);
+  document.getElementById("timerReset").addEventListener("click", resetTimer);
+
+  document.getElementById("preset").addEventListener("change", (e) => {
+    setTimer(parseInt(e.target.value, 10));
+  });
+  document.getElementById("setCustom").addEventListener("click", () => {
+    const v = parseInt(document.getElementById("customSeconds").value, 10);
+    if (!Number.isFinite(v) || v < 5) return alert("Enter a custom rest time (>= 5 seconds)." );
+    setTimer(v);
+  });
+
+  // ---------- Events ----------
+  elProgramSelect.addEventListener("change", () => {
+    state.activeProgramId = elProgramSelect.value;
+    const p = state.programById.get(state.activeProgramId);
+    state.activeSessionId = p?.sessions[0]?.id || null;
+    renderAll();
+  });
+
+  elSessionSelect.addEventListener("change", () => {
+    state.activeSessionId = elSessionSelect.value;
+    renderAll();
+  });
+
+  elSearch.addEventListener("input", () => renderSessionsList());
+
+  document.getElementById("reloadBtn").addEventListener("click", () => loadAllPrograms());
+
+  document.getElementById("clearBtn").addEventListener("click", () => {
+    if (!confirm("This clears ONLY your recorded logs (weights/reps/notes) from this browser. Continue?")) return;
+    state.logs = {};
+    saveLogs();
+    renderAll();
+  });
+
+  // Export / Import logs
+  document.getElementById("exportLogs").addEventListener("click", () => {
+    const blob = new Blob([JSON.stringify(state.logs, null, 2)], {type:"application/json"});
+    downloadBlob(blob, "mst_logs.json");
+  });
+
+  document.getElementById("importLogs").addEventListener("click", () => {
+    elImportFile.value = "";
+    elImportFile.click();
+  });
+
+  elImportFile.addEventListener("change", async () => {
+    const file = elImportFile.files?.[0];
+    if (!file) return;
+    try{
+      const txt = await file.text();
+      const obj = JSON.parse(txt);
+      if (typeof obj !== "object" || obj === null) throw new Error("Not an object");
+      // merge (import wins)
+      state.logs = { ...state.logs, ...obj };
+      saveLogs();
+      renderAll();
+      alert("Logs imported.");
+    }catch(e){
+      alert("Import failed: " + e.message);
+    }
+  });
+
+  document.getElementById("exportCSV").addEventListener("click", () => {
+    const rows = [];
+    rows.push(["program","session","workout","workoutIndex","set","targetReps","weight","reps","done","setNote","workoutNote"].join(","));
+
+    for (const k of Object.keys(state.logs)){
+      const wlog = state.logs[k];
+      const prog = (wlog.program || "").replaceAll('"','""');
+      const sess = (wlog.session || "").replaceAll('"','""');
+      const work = (wlog.workout || "").replaceAll('"','""');
+      const wi = (wlog.workoutIndex ?? "");
+      const wnote = (wlog.workoutNote || "").replaceAll('"','""');
+
+      (wlog.sets || []).forEach(s => {
+        const snote = (s.note || "").replaceAll('"','""');
+        rows.push([
+          `"${prog}"`,
+          `"${sess}"`,
+          `"${work}"`,
+          wi,
+          s.set,
+          `"${(s.targetReps||"").replaceAll('"','""')}"`,
+          `"${(s.weight||"").replaceAll('"','""')}"`,
+          `"${(s.reps||"").replaceAll('"','""')}"`,
+          s.done ? "1" : "0",
+          `"${snote}"`,
+          `"${wnote}"`,
+        ].join(","));
+      });
+    }
+
+    const blob = new Blob([rows.join("\n")], {type:"text/csv"});
+    downloadBlob(blob, "mst_logs.csv");
+  });
+
+  function downloadBlob(blob, filename){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // ---------- Init ----------
+  setTimer(120);
+  loadAllPrograms();
+</script>
+</body>
+</html>

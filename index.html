@@ -3,7 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MST Workout Tracker</title>
+    <meta name="theme-color" content="#0b0f14" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>MST Workout Tracker</title>
   <style>
     :root{
       --bg:#0b0f14; --panel:#101824; --panel2:#0f1520; --text:#e8eef7; --muted:#93a4ba;
@@ -78,6 +83,27 @@
       .sessions{max-height:none}
       .two-col{grid-template-columns:1fr}
     }
+  
+    /* ---- Mobile session drawer ---- */
+    #mobileBrowseRow { display:none; }
+    .drawer{ position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; z-index:9999; }
+    .drawer.open{ display:block; }
+    .drawer .sheet{
+      position:absolute; left:0; right:0; bottom:0;
+      max-height:85vh;
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border:1px solid var(--line);
+      border-radius: 18px 18px 0 0;
+      box-shadow:var(--shadow);
+      padding:12px;
+      display:flex; flex-direction:column; gap:10px;
+    }
+    @media (max-width: 980px){
+      #mobileBrowseRow{ display:flex; }
+      /* Hide the big list in the sidebar; use the drawer instead */
+      #sessions{ display:none; }
+    }
+
   </style>
 </head>
 <body>
@@ -142,6 +168,11 @@
           Put your combined program JSON files in <span class="mono">/data</span>, then edit <span class="mono">PROGRAM_SOURCES</span> in this file.
         </div>
 
+
+        <div class="row" id="mobileBrowseRow">
+          <button class="btn primary" id="openSessions" type="button">Browse sessions</button>
+        </div>
+
         <div class="divider"></div>
 
         <div class="sessions" id="sessions"></div>
@@ -171,6 +202,20 @@
     </div>
   </div>
 
+
+  <!-- Mobile sessions drawer -->
+  <div class="drawer" id="drawer" aria-hidden="true">
+    <div class="sheet">
+      <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;">
+        <div style="font-weight:900;">Select a session</div>
+        <button class="btn small" id="closeSessions" type="button" style="max-width:120px;">Close</button>
+      </div>
+      <div class="sessions" id="sessionsDrawer" style="max-height:70vh; overflow:auto;"></div>
+      <div class="small-note">Tip: use search + the Program/Session dropdowns for quick jumps.</div>
+    </div>
+  </div>
+
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   /**
@@ -185,8 +230,8 @@
    */
   const PROGRAM_SOURCES = [
     { name: "Hypertrophy", url: "data/hypertrophy.json" },
-    { name: "Starting Strongman", url: "data/starting_strongman.json" },
-    { name: "Static Monster", url: "data/static_monster.json" },
+    // { name: "Starting Strongman", url: "data/starting_strongman.json" },
+    // { name: "Static Monster", url: "data/static_monster.json" },
   ];
 
   // ---- CLOUD SYNC (Supabase) ----
@@ -194,8 +239,8 @@
   // 2) Enable Google provider in Auth
   // 3) Create the table + RLS policies (SQL provided in chat)
   // 4) Paste your project URL + anon key here
-  const SUPABASE_URL = "https://redxigdkdjyxaofmutlv.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlZHhpZ2RrZGp5eGFvZm11dGx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyMjI5MTQsImV4cCI6MjA4MDc5ODkxNH0.24RNF4dKYNcKkAESiYNbA4_3Fvt-zTCFe5jCjR4vdn0";
+  const SUPABASE_URL = "PASTE_SUPABASE_URL_HERE";
+  const SUPABASE_ANON_KEY = "PASTE_SUPABASE_ANON_KEY_HERE";
   const supabase = (SUPABASE_URL.startsWith("http") && SUPABASE_ANON_KEY.length > 20)
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
@@ -238,6 +283,32 @@
 
   const elTimerDisplay = document.getElementById("timerDisplay");
   const elImportFile = document.getElementById("importFile");
+
+  // Mobile drawer elements
+  const elDrawer = document.getElementById("drawer");
+  const elSessionsDrawer = document.getElementById("sessionsDrawer");
+
+  function openSessionsDrawer(){
+    if (!elDrawer || !elSessionsDrawer) return;
+    // Copy rendered session list from sidebar (hidden on mobile but kept in DOM)
+    elSessionsDrawer.innerHTML = elSessions.innerHTML;
+
+    // Bind clicks inside drawer
+    elSessionsDrawer.querySelectorAll(".session-item").forEach(item => {
+      item.addEventListener("click", () => {
+        state.activeSessionId = item.dataset.sid;
+        elSessionSelect.value = state.activeSessionId;
+        elDrawer.classList.remove("open");
+        elDrawer.setAttribute("aria-hidden", "true");
+        renderAll();
+        document.getElementById("content")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+
+    elDrawer.classList.add("open");
+    elDrawer.setAttribute("aria-hidden", "false");
+  }
+
 
   // ---------- Helpers ----------
   function uid(str){
@@ -837,6 +908,22 @@
 
   elSearch.addEventListener("input", () => renderSessionsList());
 
+  // Mobile drawer controls
+  document.getElementById("openSessions")?.addEventListener("click", () => {
+    openSessionsDrawer();
+  });
+  document.getElementById("closeSessions")?.addEventListener("click", () => {
+    elDrawer?.classList.remove("open");
+    elDrawer?.setAttribute("aria-hidden", "true");
+  });
+  elDrawer?.addEventListener("click", (e) => {
+    if (e.target === elDrawer){
+      elDrawer.classList.remove("open");
+      elDrawer.setAttribute("aria-hidden", "true");
+    }
+  });
+
+
   document.getElementById("reloadBtn").addEventListener("click", () => loadAllPrograms());
 
   document.getElementById("clearBtn").addEventListener("click", () => {
@@ -920,14 +1007,16 @@
   }
 
   // ---------- Init ----------
+  // PWA: register Service Worker (offline cache + faster loads)
+  if ("serviceWorker" in navigator){
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js").catch(console.error);
+    });
+  }
+
   setTimer(120);
   loadAllPrograms();
   initAuth();
 </script>
 </body>
 </html>
-
-
-
-
-

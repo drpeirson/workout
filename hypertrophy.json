@@ -1,0 +1,2927 @@
+{
+  "program": "Hypertrophy",
+  "source_folder": "C:\\Users\\jackp\\Desktop\\mst_export\\HYPER",
+  "sessions": [
+    {
+      "session": "WEEK 1 - SESSION 1 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Push Press - Hypertrophy - Week 1",
+          "sets": "4",
+          "reps": "5",
+          "notes": [
+            "Push Press of choice (barbell or log)",
+            "4 sets of 5 @RPE6 - I just want you to keep this ticking over during this block, so we'll keep the intensity climbing for the next 10 weeks, but starting out nice and light here",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Strict Press - Hypertrophy - Week 1",
+          "sets": "3",
+          "reps": "10",
+          "notes": [
+            "Strict Press",
+            "3 sets of 10 @RPE6 - Just to get an idea of a conservative weight for this first week, as next week and the week after we will push the 10s quite hard, so whatever you think you should go for, you could probably go 5-10kg lighter",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "BTN Seated Press - Hypertrophy - Week 1",
+          "sets": "2",
+          "reps": "15",
+          "notes": [
+            "BTN Seated (Smith Machine Press)",
+            "1 set of 10 @RPE6",
+            "1 set of 15 @RPE6",
+            "Work up to a top set of 10, nice and light, then drop weight for a more pump focused set of 15, weekly we'll be pushing the numbers up here",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Single Arm Cable Lat Raise - Hypertrophy - Week 1",
+          "sets": "2",
+          "reps": "15",
+          "notes": [
+            "Single Arm Cable Lat Raises",
+            "2 sets working to absolute failure, start with your weaker side, then match reps with stronger side. Start in a full ROM and as you begin to fatigue, you can reduce ROM until you are pulsing reps at the bottom:",
+            "First set in the 8-12 rep range with 3-6 more reps pulsing",
+            "Second set in the 12-15 rep range (lighter) with 3-6 more reps pulsing",
+            "90s rest between sets"
+          ]
+        },
+        {
+          "title": "DB Rear Delt/Tricep Rope Extension - Hypertrophy - Week 1",
+          "sets": "3",
+          "reps": "15",
+          "notes": [
+            "1) DB Rear Delt Raises - 3 sets of 15 - Light and pump focused",
+            "2) Rope Tricep Extension - 3 sets of 15 - Light and pump focused",
+            "2mins rest between sets, no rest between exercises"
+          ]
+        },
+        {
+          "title": "Knee Extension/Squat W/ Reach - Hypertrohpy - Week 1",
+          "sets": "2",
+          "reps": "20",
+          "notes": [
+            "1) Knee Extension -",
+            "- 2 set of 20 - Light and pump focused",
+            "2) Squat w/ Reach -",
+            "- 2 sets of 10-12 - Fullest ROM possible that feels safe and pain free",
+            "2mins rest between sets, no rest between exercises"
+          ]
+        }
+      ]
+    },
+    {
+      "session": "WEEK 1 - SESSION 2 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Deadlift - Hypertrophy - Week 1",
+          "sets": "6",
+          "reps": "4",
+          "notes": [
+            "Deadlift",
+            "6 sets of 4 @RPE6 - You can adjust weight up and down throughout the sets where needed if you feel it's getting too heavy/light, but form and speed need to be spot on.",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Snatch Grip Back Extension - Hypertrophy - Week 1",
+          "sets": "3",
+          "reps": "20",
+          "notes": [
+            "Snatch Grip Back Extension",
+            "3 sets of 20 reps - For this first week I want you to literally just work with the bar, we'll load this more as the weeks go on, but 20 reps should still suck anyway",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Behind The Back Hold - Hypertrophy - Week 1",
+          "sets": "3",
+          "reps": "1",
+          "notes": [
+            "Behind The Back Holds",
+            "3 sets of 75s - Super light here, be conservative in your weight selection so there's room to put more weight on for same time next week",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Bent Over Row - Hypertrophy - Week 1",
+          "sets": "3",
+          "reps": "12",
+          "notes": [
+            "Bent Over Row",
+            "3 sets of 12 - Light and easy, just work in a full ROM with good hinge mechanics - 2mins rest"
+          ]
+        },
+        {
+          "title": "Close Grip Pulldown - Hypertrophy - Week 1",
+          "sets": "2",
+          "reps": "20",
+          "notes": [
+            "Supinated Close Grip Pulldown",
+            "2 sets of 15-20 - Load heavier from set 1 to set 2, full supination, big lat and bicep pump",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "EZ Bar Curl - Hypertrohpy - Week 1",
+          "sets": "3",
+          "reps": "20",
+          "notes": [
+            "EZ Bar Curls",
+            "3 sets of 15-20 - Ascend weight each set and end on the lower end of the rep range, with a massive pump here",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Strongman Engine - Hypertrophy - Week 1",
+          "sets": "1",
+          "reps": "2k Row or Ski-Erg - First week on this, find a baseline for this movement, and we will aim to improve that time quite dramatically over the next 5 weeks",
+          "notes": []
+        }
+      ]
+    },
+    {
+      "session": "WEEK 1 - SESSION 3 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Bench Press - Hypertrophy - Week 1",
+          "sets": "5",
+          "reps": "Bench Press",
+          "notes": [
+            "5 sets of 5 @RPE6.5 - Just get everything moving and feeling good here, make sure the positions are pain free and you have good thoracic extension. No need to worry about loading the bar much today",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Back Squat - Hypertrophy - Week 1",
+          "sets": "3",
+          "reps": "12",
+          "notes": [
+            "Barbell Squats",
+            "3 sets of 12 @RPE6.5 - Just get a feel for these higher rep squats, the reps will be falling off every couple of weeks, so just get a pump today and hit good depth",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Incline Bench Press - Hypertrophy - Week 1",
+          "sets": "2",
+          "reps": "12",
+          "notes": [
+            "Incline Bench Press",
+            "1 top set of 5 @RPE6.5/7",
+            "1 drop set of 12 @RPE6.5/7",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Leg Press - Hypertrophy - Week 1",
+          "sets": "1",
+          "reps": "6",
+          "notes": [
+            "Leg Press",
+            "1 top set of 6 @RPE6.5 - Keep this light, but over the weeks, this should become really heavy and hard",
+            "2 drop sets of 15 @RPE6.5 - Light and more pump focused on these, just try to flow through these reps a little more",
+            "2mins rest between sets"
+          ]
+        },
+        {
+          "title": "Straight bar Pushdown/ EZ Bar Skullcrusher - Hypertrophy - Week 1",
+          "sets": "3",
+          "reps": "20",
+          "notes": [
+            "1) Straight Bar Pushdown",
+            "- 3 sets of 20 @light and pump focused",
+            "-",
+            "2) EZ Bar Skullcrusher",
+            "- 3 sets of 12 @heavier, but weight should be limited by the prefatigue",
+            "2mins rest between exercises"
+          ]
+        },
+        {
+          "title": "KB Tib Raise/Machine Calf Raise - Hypertrophy - Week 1",
+          "sets": "1",
+          "reps": "20",
+          "notes": [
+            "1) KB Tib Raises",
+            "- Light kb for today for 20 reps - progress load weekly",
+            "-",
+            "2) Machine Calf Raises",
+            "- light weight today for 20 reps",
+            "90s rest between sets"
+          ]
+        }
+      ]
+    },
+    {
+      "session": "WEEK 1 - SESSION 4 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Activation & Potentiation - Hypertrohpy - Week 1",
+          "sets": "3",
+          "reps": "15",
+          "notes": [
+            "A) King Deadlift-  2 x 15 (3-1-3 tempo)",
+            "B) Bodyweight Control Circuit",
+            "B1) 2-6 90/90 pull ups (slow tempo)",
+            "B2) 3-8 bodyweight dips",
+            "B3) 3-8 hanging knee raise",
+            "10-30s rest, 3 rounds"
+          ]
+        },
+        {
+          "title": "Romanian Deadlift - Hypertrophy - Week 1",
+          "sets": "2",
+          "reps": "20",
+          "notes": [
+            "Romanian Deadlift",
+            "2 sets of 20 @RPE6.5 - Keep this super light and just work in a full ROM with good tempo control, next week we punch things up, so keep plenty in the tank",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "Farmers Walk - Hypertrophy - Week 1",
+          "sets": "4",
+          "reps": "1",
+          "notes": [
+            "Farmers Walks",
+            "4 sets of 10m drop turn 10m in sub 13s - We want to be moving fast and well here, focus on your pick-ups and drop turns, the time cap should dictate weight selection for today",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Sandbag Front Carry - Hypertrophy - Week 1",
+          "sets": "3",
+          "reps": "1",
+          "notes": [
+            "Sandbag Front Carry",
+            "3 sets of 60m - nasal breathing front carry here with a light sandbag on week 1",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Neutral Grip Pull Up - Hypertrophy - Week 1",
+          "sets": "1",
+          "reps": "Neutral Grip Chin-Ups",
+          "notes": [
+            "10min EDT - In a 10min time cap, perform as many reps as possible, resting where needed, and keeping reps in the tank on every cluster, so that you can get more out of the 10min cap"
+          ]
+        },
+        {
+          "title": "Cable Curl - Hypertrophy - Week 1",
+          "sets": "3",
+          "reps": "20",
+          "notes": [
+            "Straight Bar Cable Curls",
+            "1 set of 20 - 1 set of 15 - 1 set of 10 - Ascend load every set and end heavy, should be getting a big pump here",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Incline DB Curl - Hypertrophy - Week 1",
+          "sets": "3",
+          "reps": "15",
+          "notes": [
+            "Incline DB Curls",
+            "3 sets of 15 - Working in a lengthened range here, so we can keep this light for today, just make sure to get a really full ROM",
+            "90s rest"
+          ]
+        },
+        {
+          "title": "Strongman Engine - Hypertrophy - Week 1 - Session 4",
+          "sets": "1",
+          "reps": "30mins of Steady State Cardio on machine of choice - I'm happy for you to do this here, or on a rest day, whatever works best, but we're looking to work in RPE6 area to just get a sweat, should feel restorative every week",
+          "notes": []
+        }
+      ]
+    },
+    {
+      "session": "WEEK 2 - SESSION 1 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Push Press - Hypertrophy - Week 2",
+          "sets": "4",
+          "reps": "5",
+          "notes": [
+            "Push Press of choice (barbell or log)",
+            "4 sets of 5 @RPE7.5 - Pushing the weight a little heavier here today, but again, keeping some in the tank for next week, as next week will be pretty rough, make sure to keep rest times the same, and weight may be dictated by that",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Strict Press - Hypertrophy - Week 2",
+          "sets": "3",
+          "reps": "10",
+          "notes": [
+            "Strict Press",
+            "3 sets of 10 @RPE7.5 - Little heavier here as well, load a little more, but keep some in the tank for a heavier top set next week",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "BTN Seated Press - Hypertrophy - Week 2",
+          "sets": "2",
+          "reps": "15",
+          "notes": [
+            "BTN Seated Smith Machine Press",
+            "1 set of 10 @RPE7.5",
+            "1 set of 15 @RPE7.5",
+            "Work up to a top set of 10, heavier than last week, then drop weight for a more pump focused set of 15",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Cable Lat Raise - Hypertrophy - Week 2",
+          "sets": "2",
+          "reps": "15",
+          "notes": [
+            "Single Arm Cable Lat Raises",
+            "Start in a full ROM and as you begin to fatigue, you can reduce ROM until you are pulsing reps at the bottom:",
+            "First set in the 8-12 rep range with 3-6 more reps pulsing",
+            "Second set in the 12-15 rep range (lighter) with 3-6 more reps pulsing",
+            "90s rest between sets"
+          ]
+        },
+        {
+          "title": "Rear Delt Raise/Tricep Extension - Hypertrophy - Week 2",
+          "sets": "3",
+          "reps": "15",
+          "notes": [
+            "1) DB Rear Delt Raises",
+            "- 3 sets of 15 - Heavier than last week",
+            "-",
+            "2) Rope Tricep Extension",
+            "2mins rest between sets, no rest between exercises"
+          ]
+        },
+        {
+          "title": "Knee Extension/ Squat W/ Reach - Hypertrophy - Week 2",
+          "sets": "2",
+          "reps": "20",
+          "notes": [
+            "1) Knee Extension",
+            "- 2 sets of 20 - Heavier than last week",
+            "-",
+            "2) Squat w/ Reach",
+            "- 2 sets of 10-12 - Increase ROM and control weekly",
+            "2mins rest between sets, no rest between exercises"
+          ]
+        }
+      ]
+    },
+    {
+      "session": "WEEK 2 - SESSION 2 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Deadlift - Hypertrophy - Week 2",
+          "sets": "6",
+          "reps": "4",
+          "notes": [
+            "Deadlift",
+            "6 sets of 4 @RPE7.5 - A little heavier than last week, use last week's weight as a guide and adjust accordingly.",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Snatch Grip Back Extension - Hypertrophy - Week 2",
+          "sets": "3",
+          "reps": "20",
+          "notes": [
+            "Snatch Grip Back Extension",
+            "3 sets of 20 reps - Add a little load today, should still be manageable but tough this week",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Behind The Back Hold - Hypertrophy - Week 2",
+          "sets": "3",
+          "reps": "1",
+          "notes": [
+            "Behind The Back Holds",
+            "3 sets of 75s - Use last week as a guide, and load heavier, this week should be right at failure on last set",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Bent Over Row - Hypertrophy - Week 2",
+          "sets": "3",
+          "reps": "12",
+          "notes": [
+            "Bent Over Row",
+            "3 sets of 12 - Load heavier from last week - 2mins rest"
+          ]
+        },
+        {
+          "title": "Close Grip Pulldown - Hypertrophy - Week 2",
+          "sets": "2",
+          "reps": "20",
+          "notes": [
+            "Supinated Close Grip Pulldown",
+            "2 sets of 15-20 - Load heavier from set 1 to set 2, full supination, big lat and bicep pump",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "EZ Bar Curl - Hypertrophy - Week 2",
+          "sets": "3",
+          "reps": "20",
+          "notes": [
+            "EZ Bar Curls",
+            "3 sets of 15-20 - Ascend weight each set and end on the lower end of the rep range, with a massive pump here",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Strongman Engine - Hypertrophy - Week 2",
+          "sets": "1",
+          "reps": "2k Row or Ski-Erg - Improve time here weekly",
+          "notes": []
+        }
+      ]
+    },
+    {
+      "session": "WEEK 2 - SESSION 3 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Bench Press - Hypertrophy - Week 2",
+          "sets": "5",
+          "reps": "Bench Press",
+          "notes": [
+            "5 sets of 5 @RPE8 - Load heavier every set, and use last week's weight as a guide, and work to a heavier few sets than last weeks",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Back Squat - Hypertrophy - Week 2",
+          "sets": "3",
+          "reps": "12",
+          "notes": [
+            "Barbell Squats",
+            "3 sets of 12 @RPE8.5 - This should be really tough this week, speed should be falling off quite a bit by end of the last set",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Incline Bench Press - Hypertrophy - Week 2",
+          "sets": "2",
+          "reps": "12",
+          "notes": [
+            "Incline Bench Press",
+            "1 top set of 5 @RPE8",
+            "1 drop set of 12 @RPE8",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Leg Press - Hypertrophy - Week 2",
+          "sets": "1",
+          "reps": "6",
+          "notes": [
+            "Leg Press",
+            "1 top set of 6 @RPE7.5 - Loading heavier from last week",
+            "2 drop sets of 15 @RPE7.5 - Lighter and more pump focused on these",
+            "2mins rest between sets"
+          ]
+        },
+        {
+          "title": "Straight Bar Pushdown/EZ Bar Skullcrusher - Hypertrophy - Week 2",
+          "sets": "3",
+          "reps": "20",
+          "notes": [
+            "1) Straight Bar Pushdown",
+            "- 3 sets of 20 @heavier",
+            "-",
+            "2) EZ Bar Skullcrusher",
+            "- 3 sets of 12 @heavier, but weight should be limited by the prefatigue",
+            "2mins rest between exercises"
+          ]
+        },
+        {
+          "title": "KB Tib Raise/Calf Raise - Hypertrophy - Week 2",
+          "sets": "1",
+          "reps": "40",
+          "notes": [
+            "1) KB Tib Raises",
+            "- 20 reps - progress load weekly",
+            "2) Machine Calf Raises",
+            "90s rest between sets"
+          ]
+        }
+      ]
+    },
+    {
+      "session": "WEEK 2 - SESSION 4 - HYPERTROHPY",
+      "workouts": [
+        {
+          "title": "Activation & Potentiation - Hypertrophy - Week 2",
+          "sets": "3",
+          "reps": "15",
+          "notes": [
+            "A) King Deadlift-  2 x 15 (3-1-3 tempo)",
+            "B) Bodyweight Control Circuit",
+            "B1) 2-6 90/90 pull ups (slow tempo)",
+            "B2) 3-8 bodyweight dips",
+            "B3) 3-8 hanging knee raise",
+            "10-30s rest, 3 rounds"
+          ]
+        },
+        {
+          "title": "Romanian Deadlift - Hypertrophy - Week 2",
+          "sets": "2",
+          "reps": "20",
+          "notes": [
+            "Romanian Deadlift",
+            "2 sets of 20 - First set @ RPE9, this first set should be horrific, 2nd set dropping 15-20kg, so should be manageable, but still tough",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "Yoke - Hypertrophy - Week 2",
+          "sets": "4",
+          "reps": "1",
+          "notes": [
+            "Yoke",
+            "4 sets of 10m drop turn 10m in sub 13s - Shifting to yoke this week, keep it clean and fast today",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Sandbag To Shoulder - Hypertrophy - Week 2",
+          "sets": "1",
+          "reps": "2",
+          "notes": [
+            "Sandbag to Shoulder",
+            "10min EMOM with a light sandbag for 2 reps to shoulder ever minute"
+          ]
+        },
+        {
+          "title": "Neutral Grip Pull Up - Hypertrophy - Week 2",
+          "sets": "1",
+          "reps": "Neutral Grip Chin-Ups",
+          "notes": [
+            "10min EDT - In a 10min time cap, perform as many reps as possible, resting where needed, try to get more reps every week here"
+          ]
+        },
+        {
+          "title": "Straight Bar Curl - Hypertrophy - Week 2",
+          "sets": "3",
+          "reps": "20",
+          "notes": [
+            "Straight Bar Cable Curls",
+            "1 set of 20 - 1 set of 15 - 1 set of 10 - Ascend load every set and go heavier every set than last week",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Incline DB Curl - Hypertrophy - Week 2",
+          "sets": "3",
+          "reps": "15",
+          "notes": [
+            "Incline DB Curls",
+            "3 sets of 15 - Load heavier than last week",
+            "90s-2mins rest"
+          ]
+        },
+        {
+          "title": "Strongman Engine - Hypertrophy - Week 2 - Session 4",
+          "sets": "1",
+          "reps": "30mins of Steady State Cardio on machine of choice - I'm happy for you to do this here, or on a rest day, whatever works best, but we're looking to work in RPE6 area to just get a sweat, should feel restorative every week",
+          "notes": []
+        }
+      ]
+    },
+    {
+      "session": "WEEK 3 - SESSION 1 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Push Press - Hypertrophy - Week 3",
+          "sets": "3",
+          "reps": "5",
+          "notes": [
+            "Push Press of choice (barbell or log)",
+            "3 sets of 5 - Ascending sets, think easy>moderate>hard and end on a tough top set, but leaving a little more in the tank for next week",
+            "3mins rest"
+          ]
+        },
+        {
+          "title": "Strict Press - Hypertrophy - Week 3",
+          "sets": "3",
+          "reps": "10",
+          "notes": [
+            "Strict Press",
+            "3 sets of 10 @RPE8.5 - One more push here, should just about be managing all sets all reps, but last few reps of the last set should be really tough",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "BTN Seated Press - Hypertrophy - Week 3",
+          "sets": "2",
+          "reps": "15",
+          "notes": [
+            "BTN Seated Smith Machine Press",
+            "1 set of 10 @RPE8.5",
+            "1 set of 15 @RPE8.5",
+            "Work up to a top set of 10, heavier than last week, then drop weight for a more pump focused set of 15",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Cable Lat Raise - Hypertrophy - Week 3",
+          "sets": "2",
+          "reps": "15",
+          "notes": [
+            "Single Arm Cable Lat Raises",
+            "Same cues here as last few weeks, but loading heavier weekly:",
+            "First set in the 8-12 rep range with 3-6 more reps pulsing",
+            "Second set in the 12-15 rep range (lighter) with 3-6 more reps pulsing",
+            "90s rest between sets"
+          ]
+        },
+        {
+          "title": "Rear Delt Raise/Tricep Extension - Hypertrophy - Week 3",
+          "sets": "3",
+          "reps": "15",
+          "notes": [
+            "1) DB Rear Delt Raises",
+            "- 3 sets of 15 - Heavier than last week",
+            "-",
+            "2) Rope Tricep Extension",
+            "2mins rest between sets, no rest between exercises"
+          ]
+        },
+        {
+          "title": "Knee Extension/Squat W/ Reach - Hypertrophy - Week 3",
+          "sets": "2",
+          "reps": "20",
+          "notes": [
+            "1) Knee Extension",
+            "- 2 sets of 20 - Heavier than last week",
+            "2) Squat w/ Reach",
+            "- 2 sets of 10-12 - Increase ROM and control weekly",
+            "2mins rest between sets, no rest between exercises"
+          ]
+        }
+      ]
+    },
+    {
+      "session": "WEEK 3 - SESSION 2 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Deadlift - Hypertrophy - Week 3",
+          "sets": "6",
+          "reps": "4",
+          "notes": [
+            "Deadlift",
+            "6 sets of 4 @RPE8.5 - Ascend weight every sets and end on a hard and heavy top set.",
+            "3mins rest"
+          ]
+        },
+        {
+          "title": "Snatch Grip Back Extension - Hypertrophy - Week 3",
+          "sets": "3",
+          "reps": "20",
+          "notes": [
+            "Snatch Grip Back Extension",
+            "3 sets of 20 reps - Final week with these reps, load heavier",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Behind The Back Hold - Hypertrophy - Week 3",
+          "sets": "3",
+          "reps": "1",
+          "notes": [
+            "Behind The Back Holds",
+            "3 sets of 60s - All sets @ last week's 75s pb weight",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Bent Over Row - Hypertrophy - Week 3",
+          "sets": "3",
+          "reps": "12",
+          "notes": [
+            "Bent Over Row -",
+            "3 sets of 12 - Load heavier from last week - 2mins rest"
+          ]
+        },
+        {
+          "title": "Close Grip Pulldown - Hypertrophy - Week 3",
+          "sets": "2",
+          "reps": "20",
+          "notes": [
+            "Supinated Close Grip Pulldown",
+            "2 sets of 15-20 - Load heavier from set 1 to set 2, full supination, big lat and bicep pump",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "EZ Bar Curl - Hypertrophy - Week 3",
+          "sets": "3",
+          "reps": "20",
+          "notes": [
+            "EZ Bar Curls",
+            "3 sets of 15-20 - Ascend weight each set and end on the lower end of the rep range, with a massive pump here",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Strongman Engine - Hypertrophy - Week 3",
+          "sets": "1",
+          "reps": "2k Row or Ski-Erg - Improve time here weekly",
+          "notes": []
+        }
+      ]
+    },
+    {
+      "session": "WEEK 3 - SESSION 3 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Bench Press - Hypertrophy - Week 3",
+          "sets": "3",
+          "reps": "5",
+          "notes": [
+            "Bench Press",
+            "3 sets of 5 - Ascending sets this week, use last week's weight as a guide, and work to a top set heavier than last week",
+            "3-4mins rest"
+          ]
+        },
+        {
+          "title": "Back Squat - Hypertrophy - Week 3",
+          "sets": "3",
+          "reps": "9",
+          "notes": [
+            "Barbell Squats",
+            "3 sets of 9 @ Last week's 12 rep weight, this should be pretty doable",
+            "3mins rest"
+          ]
+        },
+        {
+          "title": "Incline Bench Press - Hypertrophy - Week 3",
+          "sets": "1",
+          "reps": "5",
+          "notes": [
+            "Incline Bench Press -",
+            "1 top set of 5 @RPE9",
+            "1 drop set of 12 @RPE9",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Leg Press - Hypertrophy - Week 3",
+          "sets": "1",
+          "reps": "6",
+          "notes": [
+            "Leg Press",
+            "1 top set of 6 @RPE8.5 - Loading heavier from last week",
+            "2 drop sets of 15 @RPE8.5 - Lighter and more pump focused on these",
+            "2mins rest between sets"
+          ]
+        },
+        {
+          "title": "Straight Bar Pushdown/EZ Bar Skullcrusher - Hypertrophy - Week 3",
+          "sets": "3",
+          "reps": "20",
+          "notes": [
+            "1) Straight Bar Pushdown",
+            "- 3 sets of 20 @heavier",
+            "-",
+            "2) EZ Bar Skullcrusher",
+            "- 3 sets of 12 @heavier",
+            "2mins rest between exercises"
+          ]
+        },
+        {
+          "title": "KB Tib Raise/Calf Raise - Hypertrophy - Week 3",
+          "sets": "1",
+          "reps": "20",
+          "notes": [
+            "1) KB Tib Raises",
+            "- 20 reps - progress load weekly",
+            "2) Machine Calf Raises 3",
+            "90s rest between sets"
+          ]
+        }
+      ]
+    },
+    {
+      "session": "WEEK 3 - SESSION 4 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Activation & Potentiation - Hypertrophy - Week 3",
+          "sets": "3",
+          "reps": "15",
+          "notes": [
+            "A) King Deadlift-  2 x 15 (3-1-3 tempo)",
+            "B) Bodyweight Control Circuit",
+            "B1) 2-6 90/90 pull ups (slow tempo)",
+            "B2) 3-8 bodyweight dips",
+            "B3) 3-8 hanging knee raise",
+            "10-30s rest, 3 rounds"
+          ]
+        },
+        {
+          "title": "Romanian Deadlift - Hypertrophy - Week 3",
+          "sets": "2",
+          "reps": "15",
+          "notes": [
+            "Romanian Deadlift",
+            "2 sets of 15 @ last week's top weight",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "Farmers Walk - Hypertrophy - Week 3",
+          "sets": "4",
+          "reps": "1",
+          "notes": [
+            "Farmers",
+            "4 sets of 10m drop turn 10m in sub 13s - Use last farmers session weight as a guide, and load a heavier weight in the same time cap as week 1",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "Atlas Stone - Hypertrophy - Week 3",
+          "sets": "3",
+          "reps": "4",
+          "notes": [
+            "Stones To Platform",
+            "3 sets of a 4 stone run to descending height, try to one motion the first couple stones, time each set and try to improve time",
+            "3-4mins rest"
+          ]
+        },
+        {
+          "title": "Neutral Grip Pull Up - Hypertrophy - Week 3",
+          "sets": "1",
+          "reps": "Neutral Grip Chin-Ups",
+          "notes": [
+            "10min EDT - In a 10min time cap, perform as many reps as possible, resting where needed, try to get more reps every week here"
+          ]
+        },
+        {
+          "title": "Cable Curl - Hypertrophy - Week 3",
+          "sets": "1",
+          "reps": "20",
+          "notes": [
+            "Straight Bar Cable Curls",
+            "1 set of 20 - 1 set of 15 - 1 set of 10 - Ascend load every set and go heavier every set than last week",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Incline DB Curl - Hypertrophy - Week 3",
+          "sets": "3",
+          "reps": "15",
+          "notes": [
+            "Incline DB Curls",
+            "3 sets of 15 - Load heavier than last week, final week with these reps",
+            "90s-2mins rest"
+          ]
+        },
+        {
+          "title": "Strongman Engine - Hypertrohpy - Week 3 - Session 4",
+          "sets": "1",
+          "reps": "30mins of Steady State Cardio on machine of choice - I'm happy for you to do this here, or on a rest day, whatever works best, but we're looking to work in RPE6 area to just get a sweat, should feel restorative every week",
+          "notes": []
+        }
+      ]
+    },
+    {
+      "session": "WEEK 4 - SESSION 1 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Push Press - Hypertrophy - Week 4",
+          "sets": "2",
+          "reps": "5",
+          "notes": [
+            "Push Press of choice (barbell or log)",
+            "2 sets of 5 - Ascend load further, with sets down, this should be just about doable",
+            "3mins rest"
+          ]
+        },
+        {
+          "title": "Strict Press - Hypertrophy - Week 4",
+          "sets": "1",
+          "reps": "10",
+          "notes": [
+            "Strict Press",
+            "Work to a 10RM today, heavier than last week",
+            "Then 2 sets of 6 @ the same weight",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "BTN Seated Press - Hypertrophy - Week 4",
+          "sets": "1",
+          "reps": "15",
+          "notes": [
+            "BTN Seated Smith Machine Press",
+            "1 set of 10 - Final week on 10s, really send it",
+            "1 set of 15 - Final Week on 15s, send it here too",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Cable Lat Raise - Hypertrophy - Week 4",
+          "sets": "2",
+          "reps": "15",
+          "notes": [
+            "Single Arm Cable Lat Raises",
+            "Final week on this range, then reps come down a little:",
+            "First set in the 8-12 rep range with 3-6 more reps pulsing",
+            "Second set in the 12-15 rep range (lighter) with 3-6 more reps pulsing",
+            "90s rest between sets"
+          ]
+        },
+        {
+          "title": "Rear Delt Raise/Tricep Extension - Hypertrophy - Week 4",
+          "sets": "3",
+          "reps": "15",
+          "notes": [
+            "1) DB Rear Delt Raises",
+            "- 3 sets of 12-15 - Heavier than last week",
+            "2) Rope Tricep Extension",
+            "2mins rest between sets, no rest between exercises"
+          ]
+        },
+        {
+          "title": "Knee Extension/Squat W/ Reach - Hypertrophy - Week 4",
+          "sets": "2",
+          "reps": "20",
+          "notes": [
+            "1) Knee Extension",
+            "- 2 sets of 15-20 - Heavier than last week",
+            "2) Squat w/ Reach",
+            "- 2 sets of 10-12 - Increase ROM and control weekly",
+            "2mins rest between sets, no rest between exercises"
+          ]
+        }
+      ]
+    },
+    {
+      "session": "WEEK 4 - SESSION 2 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Deadlift - Hypertrophy - Week 4",
+          "sets": "4",
+          "reps": "Deadlift",
+          "notes": [
+            "4 sets of 4 - Volume has dropped down, so let's see if we can load to a heavier set, one more time, then we'll work to a 4RM next week",
+            "3mins rest"
+          ]
+        },
+        {
+          "title": "Snatch Grip Back Extension - Hypertrophy - Week 4",
+          "sets": "3",
+          "reps": "15",
+          "notes": [
+            "Snatch Grip Back Extension",
+            "3 sets of 15 reps - Load heavier, as reps have come down",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Behind The Back Hold - Hypertrophy - Week 4",
+          "sets": "1",
+          "reps": "Behind The Back Holds",
+          "notes": [
+            "Work to a 60s pb, then drop 20-25% for 2 more sets of 60s",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Bent Over Row - Hypertrophy - Week 4",
+          "sets": "3",
+          "reps": "10",
+          "notes": [
+            "Bent Over Row",
+            "3 sets of 10 - Load heavier from last week, reps have come down",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Close Grip Pulldown - Hypertrophy - Week 4",
+          "sets": "2",
+          "reps": "15",
+          "notes": [
+            "Supinated Close Grip Pulldown",
+            "2 sets of 12-15 - Load heavier from set 1 to set 2, full supination, big lat and bicep pump",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "EZ Bar Curl - Hypertrophy - Week 4",
+          "sets": "3",
+          "reps": "15",
+          "notes": [
+            "EZ Bar Curls",
+            "3 sets of 12-15 - Ascend weight each set and end on the lower end of the rep range, with a massive pump here",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Strongman Engine - Hypertrophy - Week 4",
+          "sets": "1",
+          "reps": "2k Row or Ski-Erg - Improve time here weekly",
+          "notes": []
+        }
+      ]
+    },
+    {
+      "session": "WEEK 4 - SESSION 3 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Bench press - Hypertrophy - Week 4",
+          "sets": "1",
+          "reps": "5",
+          "notes": [
+            "Bench Press",
+            "Work to a 5RM, then 2 sets of 3 @ same weight",
+            "3-4mins rest"
+          ]
+        },
+        {
+          "title": "Back Squat - Hypertrophy - Week 4",
+          "sets": "3",
+          "reps": "9",
+          "notes": [
+            "Barbell Squats",
+            "3 sets of 9 @ Heavier",
+            "3mins rest"
+          ]
+        },
+        {
+          "title": "Incline Bench Press - Hypertrophy - Week 4",
+          "sets": "1",
+          "reps": "10",
+          "notes": [
+            "Incline Bench Press - Hypertrophy Phase - Wk4",
+            "1 set of 4 @ last week's weight",
+            "1 set of 10 @ last week's weight",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Leg Press - Hypertrophy - Week 4",
+          "sets": "1",
+          "reps": "5",
+          "notes": [
+            "Leg Press",
+            "1 top set of 5 @ Last week's weight, but reps down now",
+            "2 drop sets of 12 @ Last wek's weight, but reps down now",
+            "2mins rest between sets"
+          ]
+        },
+        {
+          "title": "Straight Bar Pushdown/EZ Bar Skullcrusher - Hypertrophy - Week 4",
+          "sets": "3",
+          "reps": "15",
+          "notes": [
+            "1) Straight Bar Pushdown",
+            "- 3 sets of 15 @last week's weight",
+            "2) EZ Bar Skullcrusher",
+            "- 3 sets of 10 @last week's weight",
+            "2mins rest between exercises"
+          ]
+        },
+        {
+          "title": "KB Tib Raise/Calf Raise - Hypertrophy - Week 4",
+          "sets": "1",
+          "reps": "20",
+          "notes": [
+            "1) KB Tib Raises -",
+            "- 15-20 reps - progress load weekly, reps can come down",
+            "2) Machine Calf Raises",
+            "90s rest between sets"
+          ]
+        }
+      ]
+    },
+    {
+      "session": "WEEK 4 - SESSION 4 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Activation & Potentiation - Hypertrophy - Week 4",
+          "sets": "3",
+          "reps": "15",
+          "notes": [
+            "A) King Deadlift-  2 x 15 (3-1-3 tempo)",
+            "B) Bodyweight Control Circuit",
+            "B1) 2-6 90/90 pull ups (slow tempo)",
+            "B2) 3-8 bodyweight dips",
+            "B3) 3-8 hanging knee raise",
+            "10-30s rest, 3 rounds"
+          ]
+        },
+        {
+          "title": "Romanian Deadlift - Hypertrophy - Week 4",
+          "sets": "2",
+          "reps": "15",
+          "notes": [
+            "Romanian Deadlift -",
+            "2 sets of 15 - 5-10kg heavier",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "Yoke - Hypertrophy - Week 4",
+          "sets": "4",
+          "reps": "1",
+          "notes": [
+            "Yoke",
+            "4 sets of 10m drop turn 10m in sub 13s - Use week 2's weight as a guide, and load to a heavier top weight, but only if you can stay within the time cap",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "Sandbag Carry - Hypertrophy - Week 4",
+          "sets": "3",
+          "reps": "1",
+          "notes": [
+            "Sandbag Front Carry",
+            "Let's use a heavier bag than week 1 for our front carry this week, and go for 3 sets of 40m carry, you should be really gassed by the end of this and feeling the glutes firing well, but the weight should be manageable",
+            "3-4mins rest"
+          ]
+        },
+        {
+          "title": "Neutral Grip Pull Up - Hypertrophy - Week 4",
+          "sets": "1",
+          "reps": "Neutral Grip Chin-Ups",
+          "notes": [
+            "8min EDT - In an 8min time cap, perform as many reps as possible, time has come down now, so let's see if we can just manage as many reps as last week that would still be great"
+          ]
+        },
+        {
+          "title": "Cable Curl - Hypertrophy - Week 4",
+          "sets": "1",
+          "reps": "20",
+          "notes": [
+            "Straight Bar Cable Curls",
+            "1 set of 20 - 1 set of 15 - 1 set of 10 - Final week with these reps, then reps come down, load heavier, and end on failure",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Incline DB Curl - Hypertrophy - Week 4",
+          "sets": "3",
+          "reps": "15",
+          "notes": [
+            "Incline DB Curls",
+            "3 sets of 12-15 - Load heavier again, but here reps can come down",
+            "90s-2mins rest"
+          ]
+        },
+        {
+          "title": "Strongman Engine - Hypertrophy - Week 4 - Session 4",
+          "sets": "1",
+          "reps": "30mins of Steady State Cardio on machine of choice - I'm happy for you to do this here, or on a rest day, whatever works best, but we're looking to work in RPE6 area to just get a sweat, should feel restorative every week",
+          "notes": []
+        }
+      ]
+    },
+    {
+      "session": "WEEK 5 - SESSION 1 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Push Press - Hypertrophy - Week 5",
+          "sets": "3",
+          "reps": "4",
+          "notes": [
+            "Push Press of choice (barbell or log) -",
+            "3 sets of 4 - All sets @ last week's top weight here, this should be tough, but with a rep down, should be doable",
+            "3mins rest"
+          ]
+        },
+        {
+          "title": "Strict Press - Hypertrophy - Week 5",
+          "sets": "3",
+          "reps": "8",
+          "notes": [
+            "Strict Press",
+            "2-3 sets of 8 reps with last week's 10RM weight, if you can, do all 3 sets, but if this feels really tough, just go for the 2 sets",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "BTN Seated Press - Hypertrophy - Week 5",
+          "sets": "2",
+          "reps": "12",
+          "notes": [
+            "BTN Seated Smith Machine Press",
+            "1 set of 8 @ last week's weight",
+            "1 set of 12 @ last week's weight",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Cable Lat Raise - Hypertrophy - Week 5",
+          "sets": "2",
+          "reps": "10",
+          "notes": [
+            "Single Arm Cable Lat Raises",
+            "First set in the 8-10 rep range with 2-5 more reps pulsing",
+            "Second set in the 10-13 rep range (lighter) with 2-5 more reps pulsing",
+            "90s rest between sets"
+          ]
+        },
+        {
+          "title": "Rear Delt Raise/Tricep Extension - Hypertrophy - Week 5",
+          "sets": "3",
+          "reps": "12",
+          "notes": [
+            "1) DB Rear Delt Raises",
+            "- 3 sets of 12 - Heavier than last week",
+            "2) Rope Tricep Extension",
+            "2mins rest between sets, no rest between exercises"
+          ]
+        },
+        {
+          "title": "Knee Extension/Squat W/ Reach - Hypertrophy - Week 5",
+          "sets": "2",
+          "reps": "15",
+          "notes": [
+            "1) Knee Extension",
+            "- 2 sets of 15 - Heavier than last week",
+            "2) Squat w/ Reach",
+            "- 2 sets of 10 - Increase ROM and control weekly",
+            "2mins rest between sets, no rest between exercises"
+          ]
+        }
+      ]
+    },
+    {
+      "session": "WEEK 5 - SESSION 2 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Deadlift - Hypertrophy - Week 5",
+          "sets": "1",
+          "reps": "4",
+          "notes": [
+            "Deadlift -",
+            "Let's go for a 4RM (or close to), then 2 sets of 2 with the same weight",
+            "3mins rest"
+          ]
+        },
+        {
+          "title": "Snatch Grip Back Extension - Hypertrophy - Week 5",
+          "sets": "3",
+          "reps": "15",
+          "notes": [
+            "Snatch Grip Back Extension",
+            "3 sets of 15 reps - Load heavier again",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Behind The Back Hold - Hypertrophy - Week 5",
+          "sets": "3",
+          "reps": "1",
+          "notes": [
+            "Behind The Back Holds",
+            "3 sets of 40s @ last week's 60s pb weight",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Bent Over Row - Hypertrophy - Week 5",
+          "sets": "3",
+          "reps": "10",
+          "notes": [
+            "Bent Over Row",
+            "3 sets of 10 - Load heavier again",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Close Grip Pulldown - Hypertrophy - Week 5",
+          "sets": "2",
+          "reps": "14",
+          "notes": [
+            "Supinated Close Grip Pulldown",
+            "2 sets of 12-14 - Load heavier from set 1 to set 2, full supination, big lat and bicep pump",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "EZ Bar Curl - Hypertrophy - Week 5",
+          "sets": "3",
+          "reps": "15",
+          "notes": [
+            "EZ Bar Curls",
+            "3 sets of 12-15 - Ascend weight each set and end on the lower end of the rep range, with a massive pump here",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Strongman Engine - Hypertrophy - Week 5",
+          "sets": "1",
+          "reps": "2k Row or Ski-Erg - Improve time here weekly",
+          "notes": []
+        }
+      ]
+    },
+    {
+      "session": "WEEK 5 - SESSION 3 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Bench Press - Hypertrophy - Week 5",
+          "sets": "3",
+          "reps": "Bench Press",
+          "notes": [
+            "3 sets of 3 @ last week's 5RM weight",
+            "3-4mins rest"
+          ]
+        },
+        {
+          "title": "Back Squat - Hypertrophy - Week 5",
+          "sets": "1",
+          "reps": "9",
+          "notes": [
+            "Barbell Squats",
+            "Work to a 9RM - Then drop 15-20% for another 2 sets of 9",
+            "3mins rest"
+          ]
+        },
+        {
+          "title": "Incline Bench Press - Hypertrophy - Week 5",
+          "sets": "2",
+          "reps": "10",
+          "notes": [
+            "Incline Bench Press",
+            "1 set of 4 @ heavier",
+            "1 set of 10 @ heavier",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Leg Press - Hypertrophy - Week 5",
+          "sets": "1",
+          "reps": "5",
+          "notes": [
+            "Leg Press",
+            "1 top set of 5 @ heavier",
+            "2 drop sets of 12 @ heavier",
+            "2mins rest between sets"
+          ]
+        },
+        {
+          "title": "Straight Bar Pushdown/EZ Bar Skullcrusher - Hypertrophy - Week 5",
+          "sets": "3",
+          "reps": "15",
+          "notes": [
+            "1) Straight Bar Pushdown -",
+            "- 3 sets of 15 @heavier",
+            "2) EZ Bar Skullcrusher",
+            "- 3 sets of 10 @heavier",
+            "2mins rest between exercises"
+          ]
+        },
+        {
+          "title": "KB Tib Raise/Calf Raise - Hypertrophy - Week 5",
+          "sets": "1",
+          "reps": "15",
+          "notes": [
+            "1) KB Tib Raises",
+            "- 15 reps - progress load weekly, reps can come down",
+            "2) Machine Calf Raises",
+            "90s rest between sets"
+          ]
+        }
+      ]
+    },
+    {
+      "session": "WEEK 5 - SESSION 4 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Activation & Potentiation - Hypertrophy - Week 5",
+          "sets": "3",
+          "reps": "15",
+          "notes": [
+            "A) King Deadlift-  2 x 15 (3-1-3 tempo)",
+            "B) Bodyweight Control Circuit",
+            "B1) 2-6 90/90 pull ups (slow tempo)",
+            "B2) 3-8 bodyweight dips",
+            "B3) 3-8 hanging knee raise",
+            "10-30s rest, 3 rounds"
+          ]
+        },
+        {
+          "title": "Romanian Deadlift - Hypertrophy - Week 5",
+          "sets": "2",
+          "reps": "15",
+          "notes": [
+            "Romanian Deadlift",
+            "2 sets of 12-15 @ heavier again, reps can come down further with weight coming up",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "Farmers Walk - Hypertrophy - Week 5",
+          "sets": "3",
+          "reps": "1",
+          "notes": [
+            "Farmers Walks",
+            "3 sets of 10m drop turn 10m - No time cap in today, ascend load every set, and send a really heavy 3rd set",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "Sandbag To Shoulder - Hypertrophy - Week 5",
+          "sets": "1",
+          "reps": "Sandbag to Shoulder",
+          "notes": [
+            "10min EMOM - Ascend load every few sets if you can here, only 1 rep to shoulder every set, so by last couple rounds I'd like you to be on a really tough couple of reps to shoulder"
+          ]
+        },
+        {
+          "title": "Neutral Grip Pull Up - Hypertrophy - Week 5",
+          "sets": "1",
+          "reps": "Neutral Grip Chin-Ups",
+          "notes": [
+            "8min EDT - In an 8min time cap, perform as many reps as possible, let's see if we can get more reps in the 8min time cap"
+          ]
+        },
+        {
+          "title": "Cable Curl - Hypertrophy - Week 5",
+          "sets": "3",
+          "reps": "16",
+          "notes": [
+            "Straight Bar Cable Curls",
+            "1 set of 16 - 1 set of 12 - 1 set of 8 - Reps have come down, load heavier than last week",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Incline DB Curl - Hypertrophy - Week 5",
+          "sets": "3",
+          "reps": "12",
+          "notes": [
+            "Incline DB Curls",
+            "3 sets of 12 - Load heavier again",
+            "90s-2mins rest"
+          ]
+        },
+        {
+          "title": "Strongman Engine - Hypertrophy - Week 5 - Session 4",
+          "sets": "1",
+          "reps": "30mins of Steady State Cardio on machine of choice - I'm happy for you to do this here, or on a rest day, whatever works best, but we're looking to work in RPE6 area to just get a sweat, should feel restorative every week",
+          "notes": []
+        }
+      ]
+    },
+    {
+      "session": "WEEK 6 - SESSION 1 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Push Press - Hypertrophy- Week 6",
+          "sets": "3",
+          "reps": "4",
+          "notes": [
+            "Push Press of choice (barbell or log)",
+            "3 sets of 4 - Ascending sets, thinking easy>moderate>hard, and end on a tough top set, with maybe a little more in the tank for a 4RM attempt next week",
+            "3mins rest"
+          ]
+        },
+        {
+          "title": "Strict Press - Hypertrophy - Week 6",
+          "sets": "2",
+          "reps": "8",
+          "notes": [
+            "Strict Press",
+            "2 sets of 8 reps - Loading heavier than last week by a small amount, shouldn't be horrendous, but should be tough, working for an 8RM next week, so keep a wee bit in the tank",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "BTN Seated Press - Hypertrophy - Week 6",
+          "sets": "2",
+          "reps": "12",
+          "notes": [
+            "BTN Seated Smith Machine Press",
+            "1 set of 8 @ Heavier than last week, should be hard and heavy here",
+            "1 set of 12 @ Heavier than last week, little more pump focused, but should still be tough",
+            "Reps come down next week",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Cable Lat Raise - Hypertrophy - Week 6",
+          "sets": "2",
+          "reps": "12",
+          "notes": [
+            "Single Arm Cable Lat Raises",
+            "First set in the 6-8 rep range with 2-3 more reps pulsing",
+            "Second set in the 8-12 rep range (lighter) with 2-4 more reps pulsing",
+            "90s rest between sets"
+          ]
+        },
+        {
+          "title": "Rear Delt Raise/Tricep Extension - Hypertrophy - Week 6",
+          "sets": "3",
+          "reps": "12",
+          "notes": [
+            "1) DB Rear Delt Raises",
+            "- 3 sets of 10-12 - Heavier than last week",
+            "2) Rope Tricep Extension",
+            "2mins rest between sets, no rest between exercises"
+          ]
+        },
+        {
+          "title": "Knee Extension/Squat W/ Reach - Hypertrophy - Week 6",
+          "sets": "2",
+          "reps": "15",
+          "notes": [
+            "1) Knee Extension",
+            "- 2 sets of 12-15 - Heavier than last week, reps can come down here",
+            "2) Squat w/ Reach",
+            "- 2 sets of 10 - Increase ROM and control weekly",
+            "2mins rest between sets, no rest between exercises"
+          ]
+        }
+      ]
+    },
+    {
+      "session": "WEEK 6 - SESSION 2 - HYPERTOPHY",
+      "workouts": [
+        {
+          "title": "Deadlift - Hypertrophy - Week 6",
+          "sets": "4",
+          "reps": "2",
+          "notes": [
+            "Deadlift",
+            "4 sets of 2 with last week's 4RM weight",
+            "3mins rest"
+          ]
+        },
+        {
+          "title": "Snatch Grip Back Extension - Hypertrophy - Week 6",
+          "sets": "3",
+          "reps": "15",
+          "notes": [
+            "Snatch Grip Back Extension",
+            "3 sets of 12-15 reps - Load heavier again, but with reps falling off here",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Behind The Back Hold - Hypertrophy - Week 6",
+          "sets": "3",
+          "reps": "1",
+          "notes": [
+            "Behind The Back Holds",
+            "Work to a 40s pb, then drop to 20s for 2 more sets with same weight",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Bent Over Row - Hypertrophy - Week 6",
+          "sets": "3",
+          "reps": "8",
+          "notes": [
+            "Bent Over Row",
+            "3 sets of 8 - Load heavier again, reps are down",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Close Grip Pulldown - Hypertrophy - Week 6",
+          "sets": "2",
+          "reps": "12",
+          "notes": [
+            "Supinated Close Grip Pulldown",
+            "2 sets of 10-12 - Load heavier from set 1 to set 2, full supination, big lat and bicep pump",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "EZ Bar Curl - Hypertrophy - Week 6",
+          "sets": "3",
+          "reps": "12",
+          "notes": [
+            "EZ Bar Curls",
+            "3 sets of 10-12 - Ascend weight each set and end on the lower end of the rep range, with a massive pump here",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Strongman Engine - Hypertrophy - Week 6",
+          "sets": "1",
+          "reps": "1k Row or Ski-Erg - Down to a 1k Row now, so match last week's best pace here at least",
+          "notes": []
+        }
+      ]
+    },
+    {
+      "session": "WEEK 6 - SESSION 3 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Bench Press - Hypertrophy - Week 6",
+          "sets": "3",
+          "reps": "Bench Press",
+          "notes": [
+            "3 sets of 3 @ ascending sets, easy>moderate>hard and ending on a tough set, heavier than last week",
+            "3-4mins rest"
+          ]
+        },
+        {
+          "title": "Back Squat - Hypertrophy - Week 6",
+          "sets": "3",
+          "reps": "6",
+          "notes": [
+            "Barbell Squats",
+            "3 sets of 6 @ last week's 9RM weight",
+            "3mins rest"
+          ]
+        },
+        {
+          "title": "Incline Bench Press - Hypertrophy - Week 6",
+          "sets": "2",
+          "reps": "10",
+          "notes": [
+            "Incline Bench Press",
+            "1 set of 4 - Work to a 4RM",
+            "1 set of 10 - Work to a 10RM",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Leg Press - Hypertrophy - Week 6",
+          "sets": "1",
+          "reps": "5",
+          "notes": [
+            "Leg Press",
+            "1 top set of 5 @ heavier, next week reps come down",
+            "2 drop sets of 12 @ heavier, next week reps come down",
+            "2mins rest between sets"
+          ]
+        },
+        {
+          "title": "Straight Bar Pushdown/EZ Bar Skullcrusher - Hypertrophy - Week 6",
+          "sets": "3",
+          "reps": "15",
+          "notes": [
+            "1) Straight Bar Pushdown",
+            "- 3 sets of 12-15 @heavier",
+            "2) EZ Bar Skullcrusher",
+            "- 3 sets of 8-10 @heavier",
+            "2mins rest between exercises"
+          ]
+        },
+        {
+          "title": "KB Tib Raise/Calf Raise - Hypertrophy - Week 6",
+          "sets": "2",
+          "reps": "15",
+          "notes": [
+            "1) KB Tib Raises",
+            "- 12-15 reps - progress load weekly, reps can come down",
+            "2) Machine Calf Raises",
+            "90s rest between sets"
+          ]
+        }
+      ]
+    },
+    {
+      "session": "WEEK 6 - SESSION 4 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Activation & Potentiation - Hypertrophy - Week 6",
+          "sets": "2",
+          "reps": "15",
+          "notes": [
+            "A) King Deadlift-  2 x 15 (3-1-3 tempo)",
+            "B) Bodyweight Control Circuit",
+            "B1) 2-6 90/90 pull ups (slow tempo)",
+            "B2) 3-8 bodyweight dips",
+            "B3) 3-8 hanging knee raise",
+            "10-30s rest, 3 rounds"
+          ]
+        },
+        {
+          "title": "Romanian Deadlift - Hypertrophy - Week 6",
+          "sets": "2",
+          "reps": "15",
+          "notes": [
+            "Romanian Deadlift",
+            "2 sets of 12-15 @ heavier again, then rep range comes down next week",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "Yoke - Hypertrophy - Week 6",
+          "sets": "3",
+          "reps": "1",
+          "notes": [
+            "Yoke",
+            "3 sets of 10m drop turn 10m - Use last yoke's weight as a guide, and ascend weight a little heavier, as here we have no time cap, however there are never drops allowed, so adjust weights accordingly",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "Atlas Stone - Hypertrophy - Week 6",
+          "sets": "1",
+          "reps": "2",
+          "notes": [
+            "Stones to Platform",
+            "10min EMOM - 2 reps every minute one motion stone to a high platform, be conservative in weight selection with in mind the idea that I don't want you to fail any reps here, so if feeling good later on in the EMOM, you can load heavier, but make sure you can effectively get through first 5 or 6 rounds"
+          ]
+        },
+        {
+          "title": "Neutral Grip Pull Up - Hypertrophy - Week 6",
+          "sets": "1",
+          "reps": "Neutral Grip Chin-Ups",
+          "notes": [
+            "8min EDT - In an 8min time cap, perform as many reps as possible, let's see if we can get more reps in the 8min time cap, final week on this cap, then time comes down again one more time"
+          ]
+        },
+        {
+          "title": "Cable Curl - Hypertrophy - Week 6",
+          "sets": "3",
+          "reps": "16",
+          "notes": [
+            "Straight Bar Cable Curls",
+            "1 set of 16 - 1 set of 12 - 1 set of 8 - load heavier than last week",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Incline DB Curl - Hypertrophy - Week 6",
+          "sets": "3",
+          "reps": "10",
+          "notes": [
+            "Incline DB Curls",
+            "3 sets of 10 - Load heavier again",
+            "90s-2mins rest"
+          ]
+        },
+        {
+          "title": "Strongman Engine - Hypertrophy - Week 6 - Session 4",
+          "sets": "1",
+          "reps": "30mins of Steady State Cardio on machine of choice - I'm happy for you to do this here, or on a rest day, whatever works best, but we're looking to work in RPE6 area to just get a sweat, should feel restorative every week",
+          "notes": []
+        }
+      ]
+    },
+    {
+      "session": "WEEK 7 - SESSION 1 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Push Press - Hypertrophy - Week 7",
+          "sets": "1",
+          "reps": "4",
+          "notes": [
+            "Push Press of choice (barbell or log)",
+            "Work to a 4RM today! Really tough top set, then just a couple doubles with same weight (2x2)",
+            "3mins rest"
+          ]
+        },
+        {
+          "title": "Strict Press - Hypertrophy - Week 7",
+          "sets": "2",
+          "reps": "8",
+          "notes": [
+            "Strict Press",
+            "2 sets of 8 reps - Let's push for an 8RM today! then drop 20-25% for another set of 6",
+            "Rest as needed"
+          ]
+        },
+        {
+          "title": "BTN Seated Press - Hypertrophy - Week 7",
+          "sets": "2",
+          "reps": "10",
+          "notes": [
+            "BTN Seated Smith Machine Press",
+            "1 set of 6 @ Heavier than last week",
+            "1 set of 10 @ Heavier than last week",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Cable Lat Raise - Hypertrophy - Week 7",
+          "sets": "2",
+          "reps": "12",
+          "notes": [
+            "Single Arm Cable Lat Raises",
+            "First set in the 6-8 rep range with 2-3 more reps pulsing",
+            "Second set in the 8-12 rep range (lighter) with 2-4 more reps pulsing",
+            "90s rest between sets"
+          ]
+        },
+        {
+          "title": "Rear Delt Raise/Tricep Extension - Hypertrophy - Week 7",
+          "sets": "3",
+          "reps": "12",
+          "notes": [
+            "1) DB Rear Delt Raises",
+            "- 3 sets of 10-12 - Heavier than last week",
+            "2) Rope Tricep Extension",
+            "2mins rest between sets, no rest between exercises"
+          ]
+        },
+        {
+          "title": "Knee Extension/Squat W/ Reach - Hypertrophy - Week 7",
+          "sets": "2",
+          "reps": "15",
+          "notes": [
+            "1) Knee Extension",
+            "- 2 sets of 12-15 - Heavier than last week, reps can come down here",
+            "2) - C2) Squat w/ Reach",
+            "- 2 sets of 10 - Increase ROM and control weekly",
+            "2mins rest between sets, no rest between exercises"
+          ]
+        }
+      ]
+    },
+    {
+      "session": "WEEK 7 - SESSION 2 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Deadlift - Hypertrophy - Week 7",
+          "sets": "2",
+          "reps": "3",
+          "notes": [
+            "Deadlift",
+            "2 sets of 3 with last week's 4RM weight, or slightly heavier",
+            "Rest as needed"
+          ]
+        },
+        {
+          "title": "Snatch Grip Back Extension - Hypertrophy - Week 7",
+          "sets": "3",
+          "reps": "12",
+          "notes": [
+            "Snatch Grip Back Extension",
+            "3 sets of 12 reps - Load heavier again",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Behind The Back Hold - Hypertrophy - Week 7",
+          "sets": "3",
+          "reps": "1",
+          "notes": [
+            "Behind The Back Holds",
+            "3 sets of 25s with last week's 40s pb weight",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Bent Over Row - Hypertrophy - Week 7",
+          "sets": "3",
+          "reps": "8",
+          "notes": [
+            "Bent Over Row",
+            "3 sets of 8 - Load heavier again, this should be heavy by now",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Close Grip Pulldown - Hypertrophy - Week 7",
+          "sets": "2",
+          "reps": "12",
+          "notes": [
+            "Supinated Close Grip Pulldown",
+            "2 sets of 10-12 - Load heavier from set 1 to set 2, full supination, big lat and bicep pump",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "EZ Bar Curl - Hypertrophy - Week 7",
+          "sets": "3",
+          "reps": "12",
+          "notes": [
+            "EZ Bar Curls",
+            "3 sets of 10-12 - Ascend weight each set and end on the lower end of the rep range, with a massive pump here",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Strongman Engine - Hypertrophy - Week 7",
+          "sets": "1",
+          "reps": "1k Row or Ski-Erg - Improve time from last week's 1k",
+          "notes": []
+        }
+      ]
+    },
+    {
+      "session": "WEEK 7 - SESSION 3 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Bench Press - Hypertrophy - Week 7",
+          "sets": "3",
+          "reps": "Bench Press",
+          "notes": [
+            "3 sets of 3 - Work to a 3RM, work hard, but make sure positions hold up, then drop 20-25% for 2 more sets of 3",
+            "3-4mins rest"
+          ]
+        },
+        {
+          "title": "Back Squat - Hypertrophy - Week 7",
+          "sets": "3",
+          "reps": "6",
+          "notes": [
+            "Barbell Squats",
+            "3 sets of 6 @ heavier here, but with a little more in the tank for a 6RM next week",
+            "3mins rest"
+          ]
+        },
+        {
+          "title": "Incline Bench Press - Hypertrophy - Week 7",
+          "sets": "2",
+          "reps": "8",
+          "notes": [
+            "Incline Bench Press",
+            "1 set of 3 @ last week's 4RM weight",
+            "1 set of 8 @ last week's 10RM weight",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Leg Press - Hypertrophy - Week 7",
+          "sets": "1",
+          "reps": "4",
+          "notes": [
+            "Leg Press",
+            "1 top set of 4 @ heavier, reps are down here",
+            "2 drop sets of 10 @ heavier, reps are down here",
+            "2mins rest between sets"
+          ]
+        },
+        {
+          "title": "Straight Bar Pushdown/EZ Bar Skullcrusher - Hypertrophy - Week 7",
+          "sets": "3",
+          "reps": "12",
+          "notes": [
+            "1) Straight Bar Pushdown",
+            "- 3 sets of 12 @heavier",
+            "2) EZ Bar Skullcrusher",
+            "- 3 sets of 8-10 @heavier",
+            "2mins rest between exercises"
+          ]
+        },
+        {
+          "title": "KB Tib Raise/Calf Raise - Hypertrophy - Week 7",
+          "sets": "1",
+          "reps": "12",
+          "notes": [
+            "1) KB Tib Raises",
+            "- 12 reps - progress load weekly, reps down",
+            "2) Machine Calf Raises",
+            "90s rest between sets"
+          ]
+        }
+      ]
+    },
+    {
+      "session": "WEEK 7 - SESSION 4 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Activation & Potentiation - Hypertrophy - Week 7",
+          "sets": "2",
+          "reps": "15",
+          "notes": [
+            "A) King Deadlift-  2 x 15 (3-1-3 tempo)",
+            "B) Bodyweight Control Circuit",
+            "B1) 2-6 90/90 pull ups (slow tempo)",
+            "B2) 3-8 bodyweight dips",
+            "B3) 3-8 hanging knee raise",
+            "10-30s rest, 3 rounds"
+          ]
+        },
+        {
+          "title": "Romanian Deadlift - Hypertrophy - Week 7",
+          "sets": "2",
+          "reps": "12",
+          "notes": [
+            "Romanian Deadlift  -",
+            "2 sets of 10-12 @ heavier again here, reps have come down",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "Farmers Walk - Hypertrophy - Week 7",
+          "sets": "4",
+          "reps": "1",
+          "notes": [
+            "Farmers Walks",
+            "4 sets of 10m in sub 6s - Use last farmer's session weight this week, but here, for less distance and no drops, so should be able to manage this",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "Sandbag Front Carry - Hypertrophy - Week 7",
+          "sets": "3",
+          "reps": "1",
+          "notes": [
+            "Sandbag Front Carry",
+            "3 sets of 20m - Load heavier than last time doing front carry, this should be hard and heavy by now",
+            "Rest as needed"
+          ]
+        },
+        {
+          "title": "Neutral Grip Pull Up - Hypertrophy - Week 7",
+          "sets": "1",
+          "reps": "Neutral Grip Chin-Ups",
+          "notes": [
+            "6min EDT - In a 6min time cap, perform as many reps as possible, rest as needed in the cap, but try to match last week's reps but here with a shorter cap"
+          ]
+        },
+        {
+          "title": "Cable Curl - Hypertrophy - Week 7",
+          "sets": "1",
+          "reps": "16",
+          "notes": [
+            "Straight Bar Cable Curls",
+            "1 set of 16 - 1 set of 12 - 1 set of 8 - load heavier than last week",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Incline DB Curl - Hypertrophy - Week 7",
+          "sets": "3",
+          "reps": "10",
+          "notes": [
+            "Incline DB Curls",
+            "3 sets of 10 - Load heavier again",
+            "90s-2mins rest"
+          ]
+        },
+        {
+          "title": "Strongman Engine - Hypertrophy - Week 7 - Session 4",
+          "sets": "1",
+          "reps": "30mins of Steady State Cardio on machine of choice - I'm happy for you to do this here, or on a rest day, whatever works best, but we're looking to work in RPE6 area to just get a sweat, should feel restorative every week",
+          "notes": []
+        }
+      ]
+    },
+    {
+      "session": "WEEK 8 - SESSION 1 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Push Press - Hypertrophy - Week 8",
+          "sets": "3",
+          "reps": "Push Press of choice (barbell or log)",
+          "notes": [
+            "Drop 15% off of last week's 4RM, and go for 3 tough sets of 3",
+            "3mins rest"
+          ]
+        },
+        {
+          "title": "Strict Press - Hypertrophy - Week 8",
+          "sets": "3",
+          "reps": "5",
+          "notes": [
+            "Strict Press",
+            "3 sets of 5 reps @ last week's 8RM weight",
+            "Rest as needed"
+          ]
+        },
+        {
+          "title": "BTN Seated Press - Hypertrophy - Week 8",
+          "sets": "2",
+          "reps": "10",
+          "notes": [
+            "BTN Seated Smith Machine Press",
+            "1 set of 5-6 @ Heavier than last week, reps can drop off a little here",
+            "1 set of 8-10 @ Heavier than last week, reps can drop off a little here",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Cable Lat Raise - Hypertrophy - Week 8",
+          "sets": "2",
+          "reps": "12",
+          "notes": [
+            "Single Arm Cable Lat Raises",
+            "First set in the 6-8 rep range with 2-3 more reps pulsing",
+            "Second set in the 8-12 rep range (lighter) with 2-4 more reps pulsing",
+            "90s rest between sets"
+          ]
+        },
+        {
+          "title": "Rear Delt Raise/Tricep Extension - Hypertrophy - Week 8",
+          "sets": "3",
+          "reps": "10",
+          "notes": [
+            "1) DB Rear Delt Raises",
+            "- 3 sets of 10 - Heavier than last week",
+            "2) Rope Tricep Extension",
+            "2mins rest between sets, no rest between exercises"
+          ]
+        },
+        {
+          "title": "Knee Extension/Squat W/ Reach - Hypertrophy - Week 8",
+          "sets": "2",
+          "reps": "12",
+          "notes": [
+            "1) Knee Extension",
+            "- 2 sets of 12 - Heavier than last week, reps can come down here",
+            "2) Squat w/ Reach",
+            "- 2 sets of 10 - Increase ROM and control weekly",
+            "2mins rest between sets, no rest between exercises"
+          ]
+        }
+      ]
+    },
+    {
+      "session": "WEEK 8 - SESSION 2 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Deadlift - Hypertrophy - Week 8",
+          "sets": "3",
+          "reps": "Deadlift",
+          "notes": [
+            "3 ascending sets of 3 - Ending on a really tough top set, but with maybe a little more in the tank to send a 3RM in 2 weeks",
+            "Rest as needed"
+          ]
+        },
+        {
+          "title": "Snatch Grip Back Extension - Hypertrophy - Week 8",
+          "sets": "3",
+          "reps": "12",
+          "notes": [
+            "Snatch Grip Back Extension",
+            "3 sets of 10-12 reps - Load heavier again",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Behind The Back Hold - Hypertrophy - Week 8",
+          "sets": "1",
+          "reps": "Behind The Back Holds",
+          "notes": [
+            "Work to a 30s pb, then 2 sets of 15s with same weight",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "Bent Over Row - Hypertrophy - Week 8",
+          "sets": "3",
+          "reps": "8",
+          "notes": [
+            "Bent Over Row",
+            "3 sets of 6-8 - Load heavier again, this should be heavy by now",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Close Grip Pulldown - Hypertrophy - Week 8",
+          "sets": "2",
+          "reps": "10",
+          "notes": [
+            "Supinated Close Grip Pulldown",
+            "2 sets of 8-10 - Load heavier from set 1 to set 2, full supination, big lat and bicep pump",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "EZ Bar Curl - Hypertrophy - Week 8",
+          "sets": "3",
+          "reps": "10",
+          "notes": [
+            "EZ Bar Curls",
+            "3 sets of 8-10 - Ascend weight each set and end on the lower end of the rep range, this should be nice and heavy by now",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Strongman Engine - Hypertrophy - Week 8",
+          "sets": "1",
+          "reps": "1k Row or Ski-Erg - Improve time from last week's 1k",
+          "notes": []
+        }
+      ]
+    },
+    {
+      "session": "WEEK 8 - SESSION 3 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Bench Press - Hypertrophy - Week 8",
+          "sets": "5",
+          "reps": "2",
+          "notes": [
+            "Bench Press",
+            "Drop 20% off of last week's 3RM weight and go for 5 sets of 2, fast and aggressive as possible on all sets, all reps",
+            "3-4mins rest"
+          ]
+        },
+        {
+          "title": "Back Squat - Hypertrophy - Week 8",
+          "sets": "1",
+          "reps": "6",
+          "notes": [
+            "Barbell Squats",
+            "3 sets of 6 - 6RM attempt today, go heavy with this, but maintain good positions throughout, then drop 20% for 2 more sets of 6",
+            "Rest as needed"
+          ]
+        },
+        {
+          "title": "Incline Bench Press - Hypertrophy - Week 8",
+          "sets": "1",
+          "reps": "3",
+          "notes": [
+            "Incline Bench Press",
+            "1 set of 3 @ Send a 3RM, then next week all sets will be at the higher range",
+            "1 set of 8 @ heavier",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Leg Press - Hypertrophy - Week 8",
+          "sets": "1",
+          "reps": "4",
+          "notes": [
+            "Leg Press",
+            "1 top set of 4 @ heavier again",
+            "2 drop sets of 10 @ heavier again",
+            "2mins rest between sets"
+          ]
+        },
+        {
+          "title": "Straight Bar Pushdown/EZ Bar Skullcrusher - Hypertrophy - Week 8",
+          "sets": "3",
+          "reps": "12",
+          "notes": [
+            "1) Straight Bar Pushdown",
+            "- 3 sets of 10-12 @heavier",
+            "2) EZ Bar Skullcrusher",
+            "- 3 sets of 8-10 @heavier",
+            "2mins rest between exercises"
+          ]
+        },
+        {
+          "title": "KB Tib Raise/Calf Raise - Hypertrophy - Week 8",
+          "sets": "1",
+          "reps": "12",
+          "notes": [
+            "1) KB Tib Raises",
+            "- 12 reps - progress load weekly, reps down",
+            "2) Machine Calf Raises",
+            "90s rest between sets"
+          ]
+        }
+      ]
+    },
+    {
+      "session": "WEEK 8 - SESSION 4 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Activation & Potentiation - Hypertrophy - Week 8",
+          "sets": "2",
+          "reps": "15",
+          "notes": [
+            "A) King Deadlift-  2 x 15 (3-1-3 tempo)",
+            "B) Bodyweight Control Circuit",
+            "1) 2-6 90/90 pull ups (slow tempo)",
+            "2) 3-8 bodyweight dips",
+            "3) 3-8 hanging knee raise",
+            "10-30s rest, 3 rounds"
+          ]
+        },
+        {
+          "title": "Romanian Deadlift - Hypertrophy - Week 8",
+          "sets": "1",
+          "reps": "10",
+          "notes": [
+            "Romanian Deadlift",
+            "2 sets of 10 - Work to a 10RM on set 1, then drop 15% for another set of 10",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "Yoke - Hypertrophy - Week 8",
+          "sets": "3",
+          "reps": "1",
+          "notes": [
+            "Yoke",
+            "3 sets of 10m in sub 7s - Same as last week's farmers, we're keeping a time cap here, but the distance has come down, so should manage a little more weight than a couple weeks ago",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "Sandbag To Shoulder - Hypertrophy - Week 8",
+          "sets": "8",
+          "reps": "2",
+          "notes": [
+            "Sandbag to Shoulder",
+            "8 rounds every 90s work - 2 reps to shoulder, ascend weight every 2-3 sets, and end on a heavy double to shoulder, this should be tough and a bit of a grind"
+          ]
+        },
+        {
+          "title": "Neutral Grip Pull Up - Hypertrophy - Week 8",
+          "sets": "1",
+          "reps": "Neutral Grip Chin-Ups",
+          "notes": [
+            "6min EDT - In a 6min time cap, perform as many reps as possible, rest as needed in the cap"
+          ]
+        },
+        {
+          "title": "Cable Curl - Hypertrophy - Week 8",
+          "sets": "1",
+          "reps": "16",
+          "notes": [
+            "Straight Bar Cable Curls",
+            "1 set of 16 - 1 set of 12 - 1 set of 8 - load heavier than last week",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Incline DB Curl - Hypertrophy - Week 8",
+          "sets": "3",
+          "reps": "10",
+          "notes": [
+            "Incline DB Curls",
+            "3 sets of 8-10 - Load heavier again",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Strongman Engine - Hypertrophy - Week 8 - Session 4",
+          "sets": "1",
+          "reps": "30mins of Steady State Cardio on machine of choice - I'm happy for you to do this here, or on a rest day, whatever works best, but we're looking to work in RPE6 area to just get a sweat, should feel restorative every week",
+          "notes": []
+        }
+      ]
+    },
+    {
+      "session": "WEEK 9 - SESSION 1 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Push Press - Hypertrophy - Week 9",
+          "sets": "1",
+          "reps": "3",
+          "notes": [
+            "Push Press of choice (barbell or log)",
+            "With your 4RM weight in mind, let's load a little heavier, and aim for a close to 3RM weight this week, for 1 set, then 2 sets of 2 with same weight",
+            "3mins rest"
+          ]
+        },
+        {
+          "title": "Strict Press - Hypertrophy - Week 9",
+          "sets": "3",
+          "reps": "5",
+          "notes": [
+            "Strict Press",
+            "3 sets of 5 reps @ heavier, this should be tough, but next week is our last week, and we'll be pushing for a 5RM",
+            "Rest as needed"
+          ]
+        },
+        {
+          "title": "BTN Seated Press - Hypertrophy - Week 9",
+          "sets": "1",
+          "reps": "8",
+          "notes": [
+            "BTN Seated Smith Machine Press",
+            "1 set of 5 @ a little more weight if possible, but keep a 5RM weight in mind for next week",
+            "1 set of 8 @ a new 8RM weight this week",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Cable Lat Raise - Hypertrophy - Week 9",
+          "sets": "2",
+          "reps": "10",
+          "notes": [
+            "Single Arm Cable Lat Raises",
+            "First set in the 5-8 rep range with 2-3 more reps pulsing",
+            "Second set in the 8-10 rep range (lighter) with 2-4 more reps pulsing",
+            "90s rest between sets"
+          ]
+        },
+        {
+          "title": "Rear Delt Raise/Tricep Extension - Hypertrophy - Week 9",
+          "sets": "3",
+          "reps": "10",
+          "notes": [
+            "1) DB Rear Delt Raises",
+            "- 3 sets of 8-10 - Heavier than last week",
+            "2) Rope Tricep Extension",
+            "2mins rest between sets, no rest between exercises"
+          ]
+        },
+        {
+          "title": "Knee Extension/Squat W/ Reach - Hypertrophy - Week 9",
+          "sets": "2",
+          "reps": "12",
+          "notes": [
+            "1) Knee Extension",
+            "- 2 sets of 10-12 - Heavier than last week, reps can come down here",
+            "2) Squat w/ Reach",
+            "- 2 sets of 10 - Increase ROM and control weekly",
+            "2mins rest between sets, no rest between exercises"
+          ]
+        }
+      ]
+    },
+    {
+      "session": "WEEK 9 - SESSION 2 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Deadlift - Hypertrophy - Week 9",
+          "sets": "4",
+          "reps": "2",
+          "notes": [
+            "Deadlift",
+            "Drop 25% off of your heavy triple from last week, and go for 4 sets of 2 speedy reps, with very light band tension",
+            "Rest as needed"
+          ]
+        },
+        {
+          "title": "Snatch Grip Back Extension - Hypertrophy - Week 9",
+          "sets": "3",
+          "reps": "10",
+          "notes": [
+            "Snatch Grip Back Extension",
+            "3 sets of 8-10 reps - Load heavier again, reps down again",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Behind The Back Hold - Hypertrophy - Week 9",
+          "sets": "3",
+          "reps": "15",
+          "notes": [
+            "Behind The Back Holds",
+            "3 sets of 15s, with last week's 30s pb weight",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "Bent Over Row - Hypertrophy - Week 9",
+          "sets": "3",
+          "reps": "6",
+          "notes": [
+            "Bent Over Row",
+            "3 sets of 5-6 - Load heavier again, reps down again",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "Close Grip Pulldown - Hypertrophy - Week 9",
+          "sets": "2",
+          "reps": "9",
+          "notes": [
+            "Supinated Close Grip Pulldown",
+            "2 sets of 6-9 - Load heavier from set 1 to set 2, full supination, big lat and bicep pump",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "EZ Bar Curl - Hypertrophy - Week 9",
+          "sets": "3",
+          "reps": "9",
+          "notes": [
+            "EZ Bar Curls",
+            "3 sets of 6-9 - Ascend weight each set and end on the lower end of the rep range, this should be nice and heavy by now",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Strongman Engine - Hypertrophy - Week 9",
+          "sets": "1",
+          "reps": "1k Row or Ski-Erg - Improve time from last week's 1k",
+          "notes": []
+        }
+      ]
+    },
+    {
+      "session": "WEEK 9 - SESSION 3 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Bench Press - Hypertrophy - Week 9",
+          "sets": "3",
+          "reps": "2",
+          "notes": [
+            "Bench Press",
+            "Go for 3 ascending sets of 2 - End heavy, but weight should be close to your 3RM weight, next week we'll be going for a 2RM",
+            "3-4mins rest"
+          ]
+        },
+        {
+          "title": "Back Squat - Hypertrophy - Week 9",
+          "sets": "3",
+          "reps": "4",
+          "notes": [
+            "Barbell Squats",
+            "3 sets of 4 @ last week's 6RM weight, this should still be really tough, as the weight should be heavy by now, but there should be room for a 4RM next week",
+            "Rest as needed"
+          ]
+        },
+        {
+          "title": "Incline Bench Press - Hypertrophy - Week 9",
+          "sets": "1",
+          "reps": "8",
+          "notes": [
+            "Incline Bench Press",
+            "1 set of 8 - Work to an 8RM, then 2 more sets of 8, but dropping 20% off the top weight",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "Leg Press - Hypertrophy - Week 9",
+          "sets": "1",
+          "reps": "4",
+          "notes": [
+            "Leg Press",
+            "1 top set of 4 - Work to a 4RM today",
+            "1 drop set of 10 - Work to a 10RM today",
+            "2-3mins rest between sets"
+          ]
+        },
+        {
+          "title": "Straight Bar Pushdown/EZ Bar Skullcrusher - Hypertrophy - Week 9",
+          "sets": "3",
+          "reps": "10",
+          "notes": [
+            "1) Straight Bar Pushdown",
+            "- 3 sets of 8-10 @heavier",
+            "2) EZ Bar Skullcrusher",
+            "2mins rest between exercises"
+          ]
+        },
+        {
+          "title": "KB Tib Raise/Calf Raise - Hypertrophy - Week 9",
+          "sets": "1",
+          "reps": "12",
+          "notes": [
+            "1) KB Tib Raises  -",
+            "- 12 reps - progress load weekly, reps down",
+            "2) Machine Calf Raises",
+            "90s rest between sets"
+          ]
+        }
+      ]
+    },
+    {
+      "session": "WEEK 9 - SESSION 4 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Activation & Potentiation - Hypertrophy - Week 9",
+          "sets": "2",
+          "reps": "15",
+          "notes": [
+            "A) King Deadlift-  2 x 15 (3-1-3 tempo)",
+            "B) Bodyweight Control Circuit",
+            "B1) 2-6 90/90 pull ups (slow tempo)",
+            "B2) 3-8 bodyweight dips",
+            "B3) 3-8 hanging knee raise",
+            "10-30s rest, 3 rounds"
+          ]
+        },
+        {
+          "title": "Romanian Deadlift - Hypertrophy - Week 9",
+          "sets": "3",
+          "reps": "7",
+          "notes": [
+            "Romanian Deadlift",
+            "3 sets of 7 @ last week's 10RM weight, this should be pretty manageable this week",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "Farmers Walk - Hypertrophy - Week 9",
+          "sets": "3",
+          "reps": "1",
+          "notes": [
+            "Farmers Walks",
+            "3 sets of 10m - Work to a really heavy top weight here for 10m, this week with no time cap, but no drops allowed, so adjust weight with that in mind",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "Atlas Stone - Hypertrophy - Week 9",
+          "sets": "8",
+          "reps": "1",
+          "notes": [
+            "Stones to platform",
+            "8 ascending singles to mid height platform - end on a heavy single around RPE8/8.5",
+            "2mins rest between reps"
+          ]
+        },
+        {
+          "title": "Neutral Grip Pull Up - Hypertrophy - Week 9",
+          "sets": "1",
+          "reps": "Neutral Grip Chin-Ups",
+          "notes": [
+            "6min EDT - In a 6min time cap, perform as many reps as possible, rest as needed in the cap"
+          ]
+        },
+        {
+          "title": "Cable Curl - Hypertrophy - Week 9",
+          "sets": "1",
+          "reps": "14",
+          "notes": [
+            "Straight Bar Cable Curls  -",
+            "1 set of 14 - 1 set of 10 - 1 set of 6-7 - load heavier than last week",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Incline DB Curl - Hypertrophy - Week 9",
+          "sets": "3",
+          "reps": "8",
+          "notes": [
+            "Incline DB Curls",
+            "3 sets of 8 - Load heavier again",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Strongman Engine - Hypertrophy - Week 9 - Session 4",
+          "sets": "1",
+          "reps": "30mins of Steady State Cardio on machine of choice - I'm happy for you to do this here, or on a rest day, whatever works best, but we're looking to work in RPE6 area to just get a sweat, should feel restorative every week",
+          "notes": []
+        }
+      ]
+    },
+    {
+      "session": "WEEK 10 - SESSION 1 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Push Press - Hypertrophy - Week 10",
+          "sets": "1",
+          "reps": "3",
+          "notes": [
+            "Push Press of choice (barbell or log)",
+            "Full send for a 3RM weight this week. Only one set, so let's go hard here",
+            "3mins rest"
+          ]
+        },
+        {
+          "title": "Strict Press - Hypertrophy - Week 10",
+          "sets": "1",
+          "reps": "5",
+          "notes": [
+            "Strict Press",
+            "Send a 5RM on strict press",
+            "Rest as needed"
+          ]
+        },
+        {
+          "title": "BTN Seated Press - Hypertrophy - Week 10",
+          "sets": "1",
+          "reps": "5",
+          "notes": [
+            "BTN Seated Smith Machine Press",
+            "1 set of 5 @ 5RM weight",
+            "Then drop 15% for another set of 5",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Cable Lat Raise - Hypertrophy - Week 10",
+          "sets": "2",
+          "reps": "10",
+          "notes": [
+            "Single Arm Cable Lat Raises",
+            "First set in the 5-8 rep range with 2-3 more reps pulsing",
+            "Second set in the 8-10 rep range (lighter) with 2-4 more reps pulsing",
+            "90s rest between sets"
+          ]
+        },
+        {
+          "title": "Rear Delt Raise/Tricep Extension - Hypertrophy - Week 10",
+          "sets": "3",
+          "reps": "8",
+          "notes": [
+            "1) DB Rear Delt Raises",
+            "- 3 sets of 8 - Heavier than last week",
+            "2) Rope Tricep Extension",
+            "2mins rest between sets, no rest between exercises"
+          ]
+        },
+        {
+          "title": "Knee Extension/Squat W/ Reach - Hypertrophy - Week 10",
+          "sets": "2",
+          "reps": "10",
+          "notes": [
+            "1) Knee Extension",
+            "- 2 sets of 10 - Heavier than last week, reps can come down here",
+            "2) Squat w/ Reach",
+            "- 2 sets of 10 - Increase ROM and control weekly",
+            "2mins rest between sets, no rest between exercises"
+          ]
+        }
+      ]
+    },
+    {
+      "session": "WEEK 10 - SESSION 2 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Deadlift - Hypertrophy - Week 10",
+          "sets": "1",
+          "reps": "3",
+          "notes": [
+            "Deadlift",
+            "Work to a 3RM this week, this should be really hard and heavy, birng the hype today",
+            "Rest as needed"
+          ]
+        },
+        {
+          "title": "Snatch Grip Back Extension - Hypertrophy - Week 10",
+          "sets": "3",
+          "reps": "8",
+          "notes": [
+            "Snatch Grip Back Extension",
+            "3 sets of 8 reps - Load heavier again, this should be really heavy on this last week",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Behind The Back Hold - Hypertrophy - Week 10",
+          "sets": "1",
+          "reps": "Behind The Back Holds",
+          "notes": [
+            "Work to a top pick for 5s today, then drop weight a little and attempt a 15s max after that",
+            "Rest as needed"
+          ]
+        },
+        {
+          "title": "Bent Over Row - Hypertrophy - Week 10",
+          "sets": "3",
+          "reps": "5",
+          "notes": [
+            "Bent Over Row",
+            "3 sets of 5 - Load heavier again, this should be really tough for this last week",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "Close Grip Pulldown - Hypertrophy - Week 10",
+          "sets": "2",
+          "reps": "8",
+          "notes": [
+            "Supinated Close Grip Pulldown",
+            "2 sets of 6-8 - Load heavier from set 1 to set 2, full supination, big lat and bicep pump",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "EZ Bar Curl - Hypertrophy - Week 10",
+          "sets": "3",
+          "reps": "8",
+          "notes": [
+            "EZ Bar Curls",
+            "3 sets of 6-8 - Ascend weight each set and end on the lower end of the rep range, this should be nice and heavy by now",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Strongman Engine - Hypertrophy - Week 10",
+          "sets": "1",
+          "reps": "1k Row or Ski-Erg - Final week, let's push for a 1k pb time",
+          "notes": []
+        }
+      ]
+    },
+    {
+      "session": "WEEK 10 - SESSION 3 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Bench press - Hypertrophy - Week 10",
+          "sets": "1",
+          "reps": "2",
+          "notes": [
+            "Bench Press",
+            "Send a 2RM today",
+            "3-4mins rest"
+          ]
+        },
+        {
+          "title": "Back Squat - Hypertrophy - Week 10",
+          "sets": "1",
+          "reps": "4",
+          "notes": [
+            "Barbell Squats",
+            "Work to or close to a 4RM weight today, then a set of 2 with same weight",
+            "Rest as needed"
+          ]
+        },
+        {
+          "title": "Incline Bench Press - Hypertrophy - Week 10",
+          "sets": "3",
+          "reps": "6",
+          "notes": [
+            "Incline Bench Press",
+            "3 sets of 6 @ last week's 8RM weight, this should still be really tough",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "Leg press - Hypertrophy - Week 10",
+          "sets": "1",
+          "reps": "3",
+          "notes": [
+            "Leg Press",
+            "1 top set of 3 @ last week's 4RM weight",
+            "1 drop set of 8 - Work to an 8RM today",
+            "2-3mins rest between sets"
+          ]
+        },
+        {
+          "title": "Straight Bar Pushdown/EZ Bar Skullcrusher - Hypertrophy - Week 10",
+          "sets": "3",
+          "reps": "8",
+          "notes": [
+            "1) Straight Bar Pushdown",
+            "- 3 sets of 8 @heavier",
+            "2) EZ Bar Skullcrusher",
+            "2mins rest between exercises"
+          ]
+        },
+        {
+          "title": "KB Tib Raise/Calf Raise - Hypertrophy - Week 10",
+          "sets": "1",
+          "reps": "12",
+          "notes": [
+            "1) KB Tib Raises",
+            "- 12 reps - progress load weekly, reps down",
+            "2) Machine Calf Raises",
+            "90s rest between sets"
+          ]
+        }
+      ]
+    },
+    {
+      "session": "WEEK 10 - SESSION 4 - HYPERTROPHY",
+      "workouts": [
+        {
+          "title": "Activation & Potentiation - Hypertrophy - Week 10",
+          "sets": "2",
+          "reps": "15",
+          "notes": [
+            "A) King Deadlift-  2 x 15 (3-1-3 tempo)",
+            "B) Bodyweight Control Circuit",
+            "B1) 2-6 90/90 pull ups (slow tempo)",
+            "B2) 3-8 bodyweight dips",
+            "B3) 3-8 hanging knee raise",
+            "10-30s rest, 3 rounds"
+          ]
+        },
+        {
+          "title": "Romanian Deadlift - Hypertrophy - Week 10",
+          "sets": "3",
+          "reps": "7",
+          "notes": [
+            "Romanian Deadlift",
+            "3 sets of 7 - Load heavier and work up to a heavy top set of 7, think easy/moderate/hard",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "Yoke - Hypertrophy - Week 10",
+          "sets": "3",
+          "reps": "1",
+          "notes": [
+            "Yoke",
+            "3 sets of 10m - Work to a really heavy top weight here for 10m, this week with no time cap, but no drops allowed, so adjust weight with that in mind",
+            "2-3mins rest"
+          ]
+        },
+        {
+          "title": "Sandbag Front Carry - Hypertrophy - Week 10",
+          "sets": "1",
+          "reps": "Sandbag Front Carry",
+          "notes": [
+            "Work to a max weight for 30m front carry, this should be really tough for the pick, and for the carry"
+          ]
+        },
+        {
+          "title": "Neutral Grip Pull Up - Hypertrophy - Week 10",
+          "sets": "1",
+          "reps": "Neutral Grip Chin-Ups",
+          "notes": [
+            "6min EDT - In a 6min time cap, perform as many reps as possible, rest as needed in the cap"
+          ]
+        },
+        {
+          "title": "Cable Curl - Hypertrophy - Week 10",
+          "sets": "1",
+          "reps": "14",
+          "notes": [
+            "Straight Bar Cable Curls  -",
+            "1 set of 14 - 1 set of 10 - 1 set of 6-7 - load heavier than last week",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Incline DB Curl - Hypertrophy - Week 10",
+          "sets": "3",
+          "reps": "8",
+          "notes": [
+            "Incline DB Curls",
+            "3 sets of 6-8 - Load heavier again",
+            "2mins rest"
+          ]
+        },
+        {
+          "title": "Strongman Engine - Hypertrophy - Week 10 - Session 4",
+          "sets": "1",
+          "reps": "30mins of Steady State Cardio on machine of choice - I'm happy for you to do this here, or on a rest day, whatever works best, but we're looking to work in RPE6 area to just get a sweat, should feel restorative every week",
+          "notes": []
+        }
+      ]
+    }
+  ]
+}

@@ -105,6 +105,14 @@
         </div>
 
         <div class="row">
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;width:100%">
+            <span class="pill" id="authStatus">Not signed in</span>
+            <button class="btn small primary" id="signInGoogle" type="button">Sign in with Google</button>
+            <button class="btn small" id="signOut" type="button" style="display:none">Sign out</button>
+          </div>
+        </div>
+
+        <div class="row">
           <input id="search" type="text" placeholder="Search sessions/workouts…" />
         </div>
 
@@ -163,6 +171,7 @@
     </div>
   </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   /**
    * CONFIG: list your program JSON files here.
@@ -174,11 +183,28 @@
    *   "sessions": [ {"session":"WEEK 1 - SESSION 1 - ...", "workouts":[...]}, ... ]
    * }
    */
-   const PROGRAM_SOURCES = [
-  { name: "Hypertrophy",        url: "data/hypertrophy.json" },
-  { name: "Starting Strongman", url: "data/starting_strongman.json" },
-  { name: "Static Monster",     url: "data/static_monster.json" },
-];
+  const PROGRAM_SOURCES = [
+    { name: "Hypertrophy", url: "data/hypertrophy.json" },
+    // { name: "Starting Strongman", url: "data/starting_strongman.json" },
+    // { name: "Static Monster", url: "data/static_monster.json" },
+  ];
+
+  // ---- CLOUD SYNC (Supabase) ----
+  // 1) Create a Supabase project
+  // 2) Enable Google provider in Auth
+  // 3) Create the table + RLS policies (SQL provided in chat)
+  // 4) Paste your project URL + anon key here
+  const SUPABASE_URL = "PASTE_SUPABASE_URL_HERE";
+  const SUPABASE_ANON_KEY = "PASTE_SUPABASE_ANON_KEY_HERE";
+  const supabase = (SUPABASE_URL.startsWith("http") && SUPABASE_ANON_KEY.length > 20)
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
+
+  
+
+  // Debounced cloud save
+  let cloudSaveTimer = null;
+  const CLOUD_SAVE_DEBOUNCE_MS = 800;
 
   // Logs are stored separately from plan data (so updating plan doesn't wipe logs)
   const LS_KEY = "mst_tracker_logs_v2";
@@ -253,6 +279,118 @@
 
   function saveLogs(){
     localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
+    scheduleCloudSave();
+  }
+
+  function scheduleCloudSave(){
+    if (!supabase) return;
+    if (!state._user) return;
+    if (cloudSaveTimer) clearTimeout(cloudSaveTimer);
+    cloudSaveTimer = setTimeout(() => cloudSaveNow().catch(console.error), CLOUD_SAVE_DEBOUNCE_MS);
+  }
+
+  async function cloudSaveNow(){
+    if (!supabase) return;
+    if (!state._user) return;
+
+    const payload = {
+      user_id: state._user.id,
+      logs: state.logs,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error } = await supabase
+      .from("user_logs")
+      .upsert(payload, { onConflict: "user_id" });
+
+    if (error) throw error;
+  }
+
+  async function cloudLoad(){
+    if (!supabase) return;
+    if (!state._user) return;
+
+    const { data, error } = await supabase
+      .from("user_logs")
+      .select("logs")
+      .eq("user_id", state._user.id)
+      .maybeSingle();
+
+    // If no row yet, nothing to load
+    if (error) {
+      console.warn("cloudLoad error", error);
+      return;
+    }
+
+    const cloudLogs = data?.logs || {};
+    if (typeof cloudLogs !== "object" || cloudLogs === null) return;
+
+    // Merge strategy: keep everything; if same key exists in both, prefer cloud
+    const merged = { ...state.logs, ...cloudLogs };
+    state.logs = merged;
+    localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
+  }
+
+  function setAuthUI(signedIn, email){
+    const elStatus = document.getElementById("authStatus");
+    const elIn = document.getElementById("signInGoogle");
+    const elOut = document.getElementById("signOut");
+
+    if (!elStatus || !elIn || !elOut) return;
+
+    if (signedIn){
+      elStatus.textContent = email ? `Signed in: ${email}` : "Signed in";
+      elIn.style.display = "none";
+      elOut.style.display = "inline-flex";
+    } else {
+      elStatus.textContent = "Not signed in";
+      elIn.style.display = "inline-flex";
+      elOut.style.display = "none";
+    }
+  }
+
+  async function initAuth(){
+    // Still works without Supabase — you just get local-only logs.
+    if (!supabase){
+      setAuthUI(false);
+      return;
+    }
+
+    // Current session (page refresh)
+    const { data: sessData } = await supabase.auth.getSession();
+    state._user = sessData?.session?.user || null;
+    setAuthUI(!!state._user, state._user?.email);
+    if (state._user){
+      await cloudLoad();
+      renderAll();
+    }
+
+    // Subscribe to changes
+    supabase.auth.onAuthStateChange(async (_event, session) => {
+      state._user = session?.user || null;
+      setAuthUI(!!state._user, state._user?.email);
+      if (state._user){
+        await cloudLoad();
+        renderAll();
+        // Ensure a row exists (creates on first login)
+        scheduleCloudSave();
+      }
+    });
+
+    document.getElementById("signInGoogle")?.addEventListener("click", async () => {
+      const redirectTo = window.location.origin + window.location.pathname;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo }
+      });
+      if (error) alert("Sign-in failed: " + error.message);
+    });
+
+    document.getElementById("signOut")?.addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      state._user = null;
+      setAuthUI(false);
+    });
   }
 
   // Stable log key so plan updates don't kill your history
@@ -784,6 +922,7 @@
   // ---------- Init ----------
   setTimer(120);
   loadAllPrograms();
+  initAuth();
 </script>
 </body>
 </html>

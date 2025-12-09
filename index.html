@@ -67,11 +67,21 @@
     .workout-sub{color:var(--muted); font-size:12px; margin-top:3px}
     .workout-body{padding:12px; border-top:1px solid var(--line); display:none}
     .workout.open .workout-body{display:block}
-    .grid{display:grid; grid-template-columns: 70px 140px minmax(90px,1fr) minmax(90px,1fr) 70px; gap:8px; align-items:center;}
-    .grid .h{color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.12em}
-    .grid input[type="text"], .grid input[type="number"]{ min-width: 6ch; font-family:var(--mono); }
-    .grid input[type="checkbox"]{ transform: scale(1.15); }
-    .set-row{padding:8px; border:1px solid rgba(255,255,255,.05); border-radius:14px; background:rgba(255,255,255,.02); margin-top:8px;}
+
+.grid{
+  display:grid;
+  grid-template-columns: 64px minmax(7ch, 1fr) minmax(7ch, 1fr) minmax(7ch, 1fr) 52px;
+  gap:8px;
+  align-items:center;
+}
+.grid .h{color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.12em}
+.grid input[type="text"], .grid input[type="number"]{
+  width:100%;
+  min-width:0;              /* critical: prevents pushing Done off-screen */
+  font-family:var(--mono);
+  font-size:16px;           /* prevents mobile zoom */
+}
+.set-row{padding:8px; border:1px solid rgba(255,255,255,.05); border-radius:14px; background:rgba(255,255,255,.02); margin-top:8px;}
     .done{border-color:rgba(53,208,127,.35); background:rgba(53,208,127,.06);}
     .footer-actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;}
     .timer-box{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
@@ -79,20 +89,10 @@
     .timer .time{font-family:var(--mono); font-size:18px; letter-spacing:.06em; min-width:92px; text-align:center;}
     .small-note{font-size:12px; color:var(--muted); line-height:1.35}
     .two-col{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
-    
     /* Input ergonomics */
     .grid input[type="text"], .grid input[type="number"]{
       min-width: 88px; font-family: var(--mono); font-size:16px;
     }
-    
-    
-
-    /* Input ergonomics */
-    .grid input[type="text"], .grid input[type="number"]{
-      min-width: 88px; font-family: var(--mono); font-size:16px;
-    }
-    .grid input[type="checkbox"]{ transform: scale(1.15); }
-
     /* ---- Mobile session drawer ---- */
     #mobileBrowseRow { display:none; }
     .drawer{ position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; z-index:9999; }
@@ -120,9 +120,8 @@
       /* Hide the big list in the sidebar; use the drawer instead */
       #mobileBrowseRow{ display:flex; }
       #sessions{ display:none; }
-
       /* Keep inputs usable on mobile */
-      .grid{grid-template-columns: 56px minmax(96px,1fr) minmax(96px,1fr) minmax(96px,1fr) 56px;}
+      .grid{grid-template-columns: 52px minmax(7ch, 1fr) minmax(7ch, 1fr) minmax(7ch, 1fr) 52px; gap:6px;}
       .grid input[type="text"], .grid input[type="number"]{ font-size:16px; }
 
       /* Reduce clutter */
@@ -413,6 +412,22 @@
     return Array.isArray(arr) ? arr : [];
   }
 
+function getAllWorkouts(session){
+  const base = Array.isArray(session?.workouts) ? session.workouts : [];
+  const custom = getCustomWorkouts(session).map((cw, i) => ({
+    id: uid(`${session.programName}::${session.title}::custom::${i}::${cw.title}`),
+    title: cw.title,
+    index: base.length + i,
+    setsStr: String(cw.sets),
+    repsStr: String(cw.reps || ""),
+    setCount: Number(cw.sets) || 3,
+    targetReps: String(cw.reps || "").trim(),
+    notes: Array.isArray(cw.notes) ? cw.notes : [],
+    _isCustom: true,
+  }));
+  return [...base, ...custom];
+}
+
   function addCustomWorkout(session, title, setCount, reps){
     ensureCustomStore();
     const key = sessionKey(session);
@@ -661,12 +676,13 @@
   }
 
   function countLoggedInSession(session){
-    let done = 0;
-    session.workouts.forEach((w, idx) => {
-      if (countWorkoutLogged(session.programName, session.title, w, idx)) done++;
-    });
-    return done;
-  }
+  let done = 0;
+  const all = getAllWorkouts(session);
+  all.forEach((w, idx) => {
+    if (countWorkoutLogged(session.programName, session.title, w, idx)) done++;
+  });
+  return done;
+}
 
   function renderSessionsList(){
     const p = state.programById.get(state.activeProgramId);
@@ -675,13 +691,13 @@
     const sessions = (p?.sessions || []).filter(s => {
       if (!q) return true;
       if (s.title.toLowerCase().includes(q)) return true;
-      return s.workouts.some(w => w.title.toLowerCase().includes(q));
+      return getAllWorkouts(s).some(w => String(w.title||"").toLowerCase().includes(q));
     });
 
     elSessionCount.textContent = `${(p?.sessions || []).length} sessions`;
 
     elSessions.innerHTML = sessions.map(s => {
-      const total = s.workouts.length;
+      const total = getAllWorkouts(s).length;
       const done = countLoggedInSession(s);
       const active = s.id === state.activeSessionId ? "active" : "";
       return `
@@ -752,8 +768,8 @@
         <div class="grid">
           <div class="mono">#${row.set}</div>
           <input type="text" value="${escapeHtml(row.targetReps || workout.targetReps || "")}" data-act="set_target" data-wi="${workoutIndex}" data-set="${row.set}" />
-          <input type="text" placeholder="kg" value="${escapeHtml(row.weight || "")}" data-act="set_weight" data-wi="${workoutIndex}" data-set="${row.set}" />
-          <input type="text" placeholder="reps" value="${escapeHtml(row.reps || "")}" data-act="set_reps" data-wi="${workoutIndex}" data-set="${row.set}" />
+          <input type="text" inputmode="decimal" placeholder="kg" value="${escapeHtml(row.weight || "")}" data-act="set_weight" data-wi="${workoutIndex}" data-set="${row.set}" />
+          <input type="text" inputmode="numeric" placeholder="reps" value="${escapeHtml(row.reps || "")}" data-act="set_reps" data-wi="${workoutIndex}" data-set="${row.set}" />
           <input type="checkbox" ${row.done ? "checked" : ""} data-act="set_done" data-wi="${workoutIndex}" data-set="${row.set}" />
         </div>
         <div style="margin-top:8px">
@@ -775,21 +791,10 @@
 
     const done = countLoggedInSession(session);
     elActiveTitle.textContent = `${session.programName} • ${session.title}`;
-    elActiveMeta.textContent = `Workouts: ${session.workouts.length} • Logged: ${done}/${session.workouts.length}`;
-    elActivePill.textContent = `${done}/${session.workouts.length}`;
-
-    const customWorkouts = getCustomWorkouts(session).map((cw, i) => ({
-      id: uid(`${session.programName}::${session.title}::custom::${i}::${cw.title}`),
-      title: cw.title,
-      index: session.workouts.length + i,
-      setsStr: String(cw.sets),
-      repsStr: String(cw.reps || ""),
-      setCount: Number(cw.sets) || 3,
-      targetReps: String(cw.reps || "").trim(),
-      notes: Array.isArray(cw.notes) ? cw.notes : [],
-    }));
-
-    const allWorkouts = [...session.workouts, ...customWorkouts];
+    const totalWorkouts = getAllWorkouts(session).length;
+    elActiveMeta.textContent = `Workouts: ${totalWorkouts} • Logged: ${done}/${totalWorkouts}`;
+    elActivePill.textContent = `${done}/${totalWorkouts}`;
+    const allWorkouts = getAllWorkouts(session);
 
     elContent.innerHTML = allWorkouts.map((w, idx) => {
       const wlog = ensureWorkoutLog(session, w, idx);
@@ -901,7 +906,19 @@
     });
   }
 
-  function handleAction(el){
+
+function updateActiveProgress(){
+  const session = state.sessionsById.get(state.activeSessionId);
+  if (!session) return;
+
+  const total = getAllWorkouts(session).length;
+  const done = countLoggedInSession(session);
+
+  elActiveMeta.textContent = `Workouts: ${total} • Logged: ${done}/${total}`;
+  elActivePill.textContent = `${done}/${total}`;
+}
+
+function handleAction(el){
     const session = state.sessionsById.get(state.activeSessionId);
     if (!session) return;
 
@@ -915,7 +932,7 @@
     }
 
     const workoutIndex = parseInt(el.dataset.wi, 10);
-    const workout = session.workouts[workoutIndex];
+    const workout = getAllWorkouts(session)[workoutIndex];
     if (!workout) return;
 
     const wlog = ensureWorkoutLog(session, workout, workoutIndex);
@@ -948,6 +965,7 @@
       wlog.workoutNote = el.value;
       saveLogs();
       renderSessionsList();
+      updateActiveProgress();
       return;
     }
 
@@ -972,6 +990,7 @@
     renderSessionSelect();
     renderSessionsList();
     renderActiveSession();
+    updateActiveProgress();
   }
 
   // ---------- Timer ----------

@@ -938,7 +938,8 @@
         const baseTitle = cleanWorkoutTitle(title, programName).toLowerCase();
               
         if (targetReps && targetReps.toLowerCase() === baseTitle) targetReps = "";
-        if (targetReps && !/^\d+(\s*-\s*\d+)?$/.test(targetReps)) targetReps = "";
+        
+        // FIX: Removed strict regex here to allow "8, 5, 3" and "AMRAP"
               
         const notes = Array.isArray(w.notes) ? w.notes : [];
 

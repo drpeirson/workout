@@ -913,8 +913,17 @@
         const setsStr = w.sets ?? "";
         const repsStr = w.reps ?? "";
         const setCount = toIntMaybe(setsStr) ?? 3;
-        const targetReps = String(repsStr || "").trim();
+              
+        // target reps: only allow "3" or "8-12" etc.
+        // if it's junk (like the exercise name), blank it so logs default sanely.
+        let targetReps = String(repsStr || "").trim();
+        const baseTitle = cleanWorkoutTitle(title, programName).toLowerCase();
+              
+        if (targetReps && targetReps.toLowerCase() === baseTitle) targetReps = "";
+        if (targetReps && !/^\d+(\s*-\s*\d+)?$/.test(targetReps)) targetReps = "";
+              
         const notes = Array.isArray(w.notes) ? w.notes : [];
+
 
         return {
           id: wid,

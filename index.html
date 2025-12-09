@@ -1197,6 +1197,7 @@
 
     const allWorkouts = getAllWorkoutsForSession(session);
 
+    // 1. Render standard workouts
     elContent.innerHTML = allWorkouts.map((w, idx) => {
       const wlog = ensureWorkoutLog(session, w, idx);
       const logged = countWorkoutLogged(session.programName, session.title, w, idx);
@@ -1246,7 +1247,7 @@
       `;
     }).join("");
 
-    // Add custom exercise form
+    // 2. Create the "Add Exercise" box
     const addBox = document.createElement("div");
     addBox.className = "workout";
     addBox.innerHTML = `
@@ -1275,27 +1276,33 @@
     `;
     elContent.appendChild(addBox);
 
-    addBox.querySelector(".workout-head")?.addEventListener("click", () => addBox.classList.toggle("open"));
-    addBox.querySelectorAll("[data-act]").forEach(el => {}); // no-op for consistency
+    // FIX: Deleted the duplicate click listener here! 
+    // The generic listener below will handle this box now.
 
+    // 3. Attach logic to the "Add" button
     document.getElementById("customAddBtn")?.addEventListener("click", () => {
       const title = document.getElementById("customTitle")?.value || "";
       const sets = parseInt(document.getElementById("customSets")?.value || "3", 10);
       const reps = document.getElementById("customReps")?.value || "";
+      
       if (!String(title).trim()) return alert("Enter an exercise name.");
+      
       addCustomWorkout(session, title, sets, reps);
-      renderAll();
+      renderAll(); // Re-renders the list to show the new exercise
     });
 
-    // accordion toggle
+    // 4. Generic accordion toggle (Handles ALL boxes, including the new Add box)
     elContent.querySelectorAll(".workout-head").forEach(h => {
       h.addEventListener("click", (e) => {
+        // Prevent button inside header from triggering twice if clicked directly
+        if (e.target.tagName === "BUTTON") return; 
+        
         const wrap = h.closest(".workout");
         wrap.classList.toggle("open");
       });
     });
 
-    // actions
+    // 5. Attach listeners to data actions (inputs, checkboxes)
     elContent.querySelectorAll("[data-act]").forEach(el => {
       const act = el.dataset.act;
       if (act === "addSet" || act === "removeSet" || act === "startRest"){

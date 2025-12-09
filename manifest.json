@@ -1,28 +1,22 @@
 {
-  "name": "MST Workout Tracker",
-  "short_name": "MST Tracker",
+  "name": "BOLT",
+  "short_name": "BOLT",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#0b0f14",
-  "theme_color": "#0b0f14",
-  "description": "Workout tracker for MST programs with offline-ready plan data and cloud-synced logs.",
-  "categories": [
-    "health",
-    "fitness"
-  ],
+  "background_color": "#484838",
+  "theme_color": "#484838",
+  "description": "Workout tracker with cloud-synced logs.",
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ]
 }

@@ -123,6 +123,39 @@
       .authBar{gap:8px;}
     }
 
+
+    /* ---- Plan stats modal ---- */
+    .stats-grid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap:10px;
+    }
+    .stat{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 12px;
+      background:rgba(0,0,0,.18);
+    }
+    .statv{
+      font-family:var(--mono);
+      font-size:20px;
+      font-weight:900;
+      margin-top:6px;
+      letter-spacing:.02em;
+    }
+    #planSessionChart{
+      width:100%;
+      height:260px;
+      display:block;
+    }
+    .toplist{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
+    .topitem{display:flex;justify-content:space-between;gap:10px;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:8px 10px;background:rgba(255,255,255,.02);}
+    .topitem b{font-weight:900;}
+    @media (max-width: 980px){
+      .stats-grid{grid-template-columns: 1fr;}
+      #planSessionChart{height:220px;}
+    }
+
 </style>
 </head>
 <body>
@@ -154,6 +187,7 @@
 
         <div class="row">
           <button class="btn primary" id="reloadBtn">Reload plan</button>
+          <button class="btn" id="openPlanStats" type="button">Plan stats</button>
           <button class="btn danger" id="clearBtn">Clear logs</button>
         </div>
 
@@ -204,6 +238,7 @@
           <div>
             <div class="title" id="activeTitle">Loading…</div>
             <div class="subtitle" id="activeMeta">—</div>
+            <div class="subtitle" id="activeFunFact" style="margin-top:6px;opacity:.9"></div>
           </div>
           <div class="authBar">
             <div class="pill" id="activePill">—</div>
@@ -228,6 +263,51 @@
       </div>
       <div class="sessions" id="sessionsDrawer" style="max-height:70vh; overflow:auto;"></div>
       <div class="small-note">Tip: use search + the Program/Session dropdowns for quick jumps.</div>
+    </div>
+  </div>
+
+
+  <!-- Plan stats modal -->
+  <div class="drawer" id="planStatsModal" aria-hidden="true">
+    <div class="sheet" style="max-height:88vh;">
+      <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;">
+        <div style="font-weight:900;">Plan stats</div>
+        <button class="btn small" id="closePlanStats" type="button" style="max-width:120px;">Close</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat">
+          <div class="muted">Total volume</div>
+          <div class="statv"><span id="planTotalVolume">0</span> <span class="muted">kg•reps</span></div>
+        </div>
+        <div class="stat">
+          <div class="muted">Logged sessions</div>
+          <div class="statv" id="planLoggedSessions">0</div>
+        </div>
+        <div class="stat">
+          <div class="muted">Logged sets</div>
+          <div class="statv" id="planLoggedSets">0</div>
+        </div>
+        <div class="stat">
+          <div class="muted">Unique exercises</div>
+          <div class="statv" id="planUniqueExercises">0</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="small-note"><b>Volume by session (top)</b></div>
+      <canvas id="planSessionChart" width="900" height="260"
+        style="width:100%;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.18);"></canvas>
+
+      <div class="divider"></div>
+
+      <div class="small-note"><b>Top exercises</b></div>
+      <div class="toplist" id="planTopExercises"></div>
+
+      <div class="small-note" style="margin-top:8px;">
+        This is calculated from your logs (weight × reps). Plan JSON is read-only.
+      </div>
     </div>
   </div>
 
@@ -303,6 +383,17 @@
   // Mobile drawer elements
   const elDrawer = document.getElementById("drawer");
   const elSessionsDrawer = document.getElementById("sessionsDrawer");
+  const elActiveFunFact = document.getElementById("activeFunFact");
+
+  // Plan stats modal elements
+  const elPlanStatsModal = document.getElementById("planStatsModal");
+  const elPlanTotalVolume = document.getElementById("planTotalVolume");
+  const elPlanLoggedSessions = document.getElementById("planLoggedSessions");
+  const elPlanLoggedSets = document.getElementById("planLoggedSets");
+  const elPlanUniqueExercises = document.getElementById("planUniqueExercises");
+  const elPlanTopExercises = document.getElementById("planTopExercises");
+  const elPlanSessionChart = document.getElementById("planSessionChart");
+
 
   function openSessionsDrawer(){
     if (!elDrawer || !elSessionsDrawer) return;
@@ -385,6 +476,7 @@
   function saveLogs(){
     localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
     scheduleCloudSave();
+    if (elPlanStatsModal?.classList?.contains("open")) renderPlanStats();
   }
 
   // ---- Custom exercises (stored per-user in logs blob; merged into a session) ----
@@ -420,6 +512,231 @@
     arr.push(item);
     state.logs.__custom_sessions[key] = arr;
     saveLogs();
+  }
+
+
+  function numFloat(v){
+    if (v == null) return null;
+    const n = parseFloat(String(v).trim());
+    return Number.isFinite(n) ? n : null;
+  }
+  function numInt(v){
+    if (v == null) return null;
+    const n = parseInt(String(v).trim(), 10);
+    return Number.isFinite(n) ? n : null;
+  }
+  function fmtInt(n){
+    try{ return new Intl.NumberFormat().format(Math.round(n)); }catch{ return String(Math.round(n)); }
+  }
+
+  function hashInt(str){
+    // FNV-1a-ish (matches uid style but returns int)
+    let h = 2166136261;
+    for (let i=0; i<str.length; i++){
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return (h >>> 0);
+  }
+
+  function getAllWorkoutsForSession(session){
+    const base = Array.isArray(session?.workouts) ? session.workouts : [];
+
+    const custom = getCustomWorkouts(session).map((cw, i) => ({
+      id: uid(`${session.programName}::${session.title}::custom::${i}::${cw.title}`),
+      title: cw.title,
+      index: base.length + i,
+      setsStr: String(cw.sets),
+      repsStr: String(cw.reps || ""),
+      setCount: Number(cw.sets) || 3,
+      targetReps: String(cw.reps || "").trim(),
+      notes: Array.isArray(cw.notes) ? cw.notes : [],
+      _isCustom: true
+    }));
+
+    return [...base, ...custom];
+  }
+
+  function sessionLogPrefix(session){
+    return `${session.programName}|||${session.title}|||`;
+  }
+
+  function computeSessionVolumeKg(session){
+    if (!session) return 0;
+    const prefix = sessionLogPrefix(session);
+    let total = 0;
+
+    for (const k of Object.keys(state.logs || {})){
+      if (k.startsWith("__")) continue;
+      if (!k.startsWith(prefix)) continue;
+
+      const wlog = state.logs[k];
+      const sets = Array.isArray(wlog?.sets) ? wlog.sets : [];
+      for (const s of sets){
+        const w = numFloat(s?.weight);
+        const r = numInt(s?.reps);
+        if (w != null && r != null) total += (w * r);
+      }
+    }
+    return total;
+  }
+
+  function updateSessionFunFact(){
+    const session = state.sessionsById.get(state.activeSessionId);
+    if (!elActiveFunFact) return;
+    if (!session){
+      elActiveFunFact.textContent = "";
+      return;
+    }
+
+    const kg = computeSessionVolumeKg(session);
+    if (!kg || kg <= 0){
+      elActiveFunFact.textContent = "";
+      return;
+    }
+
+    const picks = [
+      { label: '3.5" floppy disks', unitKg: 0.02 },
+      { label: 'Raspberry Pi boards', unitKg: 0.045 },
+      { label: '2.5" hard drives', unitKg: 0.10 },
+      { label: '3.5" hard drives', unitKg: 0.60 },
+      { label: '1U rack servers', unitKg: 12.0 },
+      { label: 'Cisco switches', unitKg: 4.5 },
+      { label: 'desktop PCs', unitKg: 8.0 },
+    ];
+
+    const h = hashInt(`${session.programName}::${session.title}`);
+    const pick = picks[h % picks.length];
+    const count = Math.max(1, Math.round(kg / pick.unitKg));
+
+    elActiveFunFact.textContent = `You lifted ${fmtInt(kg)}kg today — about the same weight as ${fmtInt(count)} ${pick.label}.`;
+  }
+
+  function computePlanStats(){
+    const perSession = new Map();   // "Program • Session" -> volume
+    const perExercise = new Map();  // "Exercise" -> volume
+    let totalVolume = 0;
+    let loggedSets = 0;
+
+    for (const k of Object.keys(state.logs || {})){
+      if (k.startsWith("__")) continue;
+      const wlog = state.logs[k];
+      if (!wlog) continue;
+
+      const prog = String(wlog.program || "").trim();
+      const sess = String(wlog.session || "").trim();
+      const wname = cleanWorkoutTitle(String(wlog.workout || "").trim(), prog);
+
+      const sets = Array.isArray(wlog.sets) ? wlog.sets : [];
+      for (const s of sets){
+        const w = numFloat(s?.weight);
+        const r = numInt(s?.reps);
+        if (w == null || r == null) continue;
+        const v = w * r;
+        totalVolume += v;
+        loggedSets += 1;
+
+        const skey = `${prog} • ${sess}`;
+        perSession.set(skey, (perSession.get(skey) || 0) + v);
+        if (wname) perExercise.set(wname, (perExercise.get(wname) || 0) + v);
+      }
+    }
+
+    const loggedSessions = Array.from(perSession.values()).filter(v => v > 0).length;
+    const uniqueExercises = perExercise.size;
+
+    const topSessions = Array.from(perSession.entries())
+      .sort((a,b) => b[1]-a[1])
+      .slice(0, 10);
+
+    const topExercises = Array.from(perExercise.entries())
+      .sort((a,b) => b[1]-a[1])
+      .slice(0, 8);
+
+    return { totalVolume, loggedSessions, loggedSets, uniqueExercises, topSessions, topExercises };
+  }
+
+  function drawBarChart(canvas, items){
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = canvas.clientWidth || 900;
+    const cssH = canvas.clientHeight || 260;
+
+    canvas.width = Math.floor(cssW * dpr);
+    canvas.height = Math.floor(cssH * dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+
+    // background
+    ctx.clearRect(0,0,cssW,cssH);
+
+    const padL = 10, padR = 10, padT = 10, padB = 34;
+    const W = cssW - padL - padR;
+    const H = cssH - padT - padB;
+
+    const maxV = Math.max(1, ...items.map(i => i[1]));
+    const barGap = 8;
+    const barW = Math.max(10, (W - barGap*(items.length-1)) / Math.max(1, items.length));
+
+    // axis line
+    ctx.strokeStyle = "rgba(255,255,255,.12)";
+    ctx.beginPath();
+    ctx.moveTo(padL, padT + H + 0.5);
+    ctx.lineTo(padL + W, padT + H + 0.5);
+    ctx.stroke();
+
+    ctx.fillStyle = "rgba(244,195,0,.85)";
+    items.forEach((it, i) => {
+      const v = it[1];
+      const h = (v / maxV) * (H - 6);
+      const x = padL + i*(barW + barGap);
+      const y = padT + (H - h);
+      ctx.fillRect(x, y, barW, h);
+    });
+
+    // labels
+    ctx.fillStyle = "rgba(247,241,223,.85)";
+    ctx.font = "11px " + getComputedStyle(document.body).fontFamily;
+    items.forEach((it, i) => {
+      const label = it[0];
+      const x = padL + i*(barW + barGap) + barW/2;
+      const y = padT + H + 18;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(-0.55);
+      ctx.textAlign = "right";
+      ctx.fillText(label.length > 28 ? (label.slice(0,28) + "…") : label, 0, 0);
+      ctx.restore();
+    });
+  }
+
+  function renderPlanStats(){
+    if (!elPlanStatsModal) return;
+    const s = computePlanStats();
+
+    if (elPlanTotalVolume) elPlanTotalVolume.textContent = fmtInt(s.totalVolume);
+    if (elPlanLoggedSessions) elPlanLoggedSessions.textContent = fmtInt(s.loggedSessions);
+    if (elPlanLoggedSets) elPlanLoggedSets.textContent = fmtInt(s.loggedSets);
+    if (elPlanUniqueExercises) elPlanUniqueExercises.textContent = fmtInt(s.uniqueExercises);
+
+    if (elPlanTopExercises){
+      elPlanTopExercises.innerHTML = s.topExercises.length
+        ? s.topExercises.map(([name, vol]) => `
+            <div class="topitem">
+              <b>${escapeHtml(name)}</b>
+              <span class="mono">${fmtInt(vol)} kg•reps</span>
+            </div>
+          `).join("")
+        : `<div class="muted">No logged sets yet.</div>`;
+    }
+
+    // Chart
+    if (elPlanSessionChart){
+      const items = s.topSessions.length ? s.topSessions : [["No data", 1]];
+      drawBarChart(elPlanSessionChart, items);
+    }
   }
 
 
@@ -655,7 +972,8 @@
 
   function countLoggedInSession(session){
     let done = 0;
-    session.workouts.forEach((w, idx) => {
+    const all = getAllWorkoutsForSession(session);
+    all.forEach((w, idx) => {
       if (countWorkoutLogged(session.programName, session.title, w, idx)) done++;
     });
     return done;
@@ -788,23 +1106,11 @@
       return;
     }
 
-    const done = countLoggedInSession(session);
     elActiveTitle.textContent = `${session.programName} • ${session.title}`;
-    elActiveMeta.textContent = `Workouts: ${session.workouts.length} • Logged: ${done}/${session.workouts.length}`;
-    elActivePill.textContent = `${done}/${session.workouts.length}`;
+    updateActiveProgress();
+    updateSessionFunFact();
 
-    const customWorkouts = getCustomWorkouts(session).map((cw, i) => ({
-      id: uid(`${session.programName}::${session.title}::custom::${i}::${cw.title}`),
-      title: cw.title,
-      index: session.workouts.length + i,
-      setsStr: String(cw.sets),
-      repsStr: String(cw.reps || ""),
-      setCount: Number(cw.sets) || 3,
-      targetReps: String(cw.reps || "").trim(),
-      notes: Array.isArray(cw.notes) ? cw.notes : [],
-    }));
-
-    const allWorkouts = [...session.workouts, ...customWorkouts];
+    const allWorkouts = getAllWorkoutsForSession(session);
 
     elContent.innerHTML = allWorkouts.map((w, idx) => {
       const wlog = ensureWorkoutLog(session, w, idx);
@@ -920,10 +1226,18 @@
 function updateActiveProgress(){
   const session = state.sessionsById.get(state.activeSessionId);
   if (!session) return;
-  const total = session.workouts.length;
-  const done = countLoggedInSession(session);
+
+  const all = getAllWorkoutsForSession(session);
+  const total = all.length;
+
+  let done = 0;
+  all.forEach((w, idx) => {
+    if (countWorkoutLogged(session.programName, session.title, w, idx)) done++;
+  });
+
   elActiveMeta.textContent = `Workouts: ${total} • Logged: ${done}/${total}`;
   elActivePill.textContent = `${done}/${total}`;
+  updateSessionFunFact();
 }
 
 function handleAction(el){
@@ -940,7 +1254,8 @@ function handleAction(el){
     }
 
     const workoutIndex = parseInt(el.dataset.wi, 10);
-    const workout = session.workouts[workoutIndex];
+    const allWorkouts = getAllWorkoutsForSession(session);
+    const workout = allWorkouts[workoutIndex];
     if (!workout) return;
 
     const wlog = ensureWorkoutLog(session, workout, workoutIndex);
@@ -1105,6 +1420,24 @@ if (act === "set_reps"){
     if (e.target === elDrawer){
       elDrawer.classList.remove("open");
       elDrawer.setAttribute("aria-hidden", "true");
+    }
+  });
+
+  // Plan stats modal controls
+  document.getElementById("openPlanStats")?.addEventListener("click", () => {
+    if (!elPlanStatsModal) return;
+    renderPlanStats();
+    elPlanStatsModal.classList.add("open");
+    elPlanStatsModal.setAttribute("aria-hidden", "false");
+  });
+  document.getElementById("closePlanStats")?.addEventListener("click", () => {
+    elPlanStatsModal?.classList.remove("open");
+    elPlanStatsModal?.setAttribute("aria-hidden", "true");
+  });
+  elPlanStatsModal?.addEventListener("click", (e) => {
+    if (e.target === elPlanStatsModal){
+      elPlanStatsModal.classList.remove("open");
+      elPlanStatsModal.setAttribute("aria-hidden", "true");
     }
   });
 

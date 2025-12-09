@@ -24,15 +24,23 @@
       radial-gradient(900px 500px at 100% 25%, rgba(244,195,0,.10) 0%, transparent 55%), var(--bg);
       color:var(--text);
     }
-    .app{display:grid; grid-template-columns: 390px 1fr; gap:14px; height:100vh; padding:14px;}
+    .app{display:grid; grid-template-columns: 390px 1fr; gap:14px; height:100dvh;
+  min-height:100vh; padding:14px;}
     .card{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)); border:1px solid var(--line);
-      border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden;}
+      border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+}
     header{padding:14px 16px; display:flex; gap:10px; align-items:center; justify-content:space-between;
       border-bottom:1px solid var(--line);
       background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.01));}
     header .title{font-weight:800; letter-spacing:.2px; font-size:15px;}
     header .subtitle{color:var(--muted); font-size:12px; margin-top:2px;}
-    .stack{display:flex; flex-direction:column; gap:10px; padding:12px;}
+    .stack{display:flex; flex-direction:column; gap:10px; padding:12px;
+  flex:1;
+  min-height:0;
+}
     .row{display:flex; gap:10px; align-items:center;}
     .row > *{flex:1}
     .btn{appearance:none; border:1px solid var(--line); background:rgba(255,255,255,.03);
@@ -51,7 +59,17 @@
     .muted{color:var(--muted)}
     .mono{font-family:var(--mono)}
     .divider{height:1px; background:var(--line); margin:10px 0}
-    .sessions{display:flex; flex-direction:column; gap:8px; max-height: calc(100vh - 330px); overflow:auto; padding-right:6px;}
+    .sessions{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  overflow:auto;
+  padding-right:6px;
+  padding-bottom:8px;
+
+  flex:1;
+  min-height:0;
+}
     .session-item{border:1px solid var(--line); border-radius:14px; padding:10px 10px; cursor:pointer; background:rgba(0,0,0,.18);}
     .session-item:hover{border-color:#2d4364}
     .session-item.active{border-color:rgba(110,168,255,.55); background:rgba(110,168,255,.08)}
@@ -1332,66 +1350,105 @@ if (act === "set_reps"){
     updateActiveProgress();
   }
 
-  // ---------- Timer ----------
-  function setTimer(sec){
-    state.timer.total = sec;
-    state.timer.left = sec;
-    renderTimer();
+// ---------- Timer (drift-proof) ----------
+state.timer = {
+  total: 120,
+  endAt: null,      // ms epoch when timer should hit 0
+  left: 120,
+  running: false,
+  t: null
+};
+
+function setTimer(sec){
+  state.timer.total = sec;
+  state.timer.left = sec;
+  state.timer.running = false;
+  state.timer.endAt = null;
+  stopTimerLoop();
+  renderTimer();
+}
+
+function renderTimer(){
+  // recompute remaining from endAt when running
+  if (state.timer.running && state.timer.endAt){
+    const now = Date.now();
+    state.timer.left = Math.max(0, Math.ceil((state.timer.endAt - now) / 1000));
   }
-  function renderTimer(){
-    elTimerDisplay.textContent = fmtTime(state.timer.left);
+  elTimerDisplay.textContent = fmtTime(state.timer.left);
+}
+
+function stopTimerLoop(){
+  if (state.timer.t){
+    clearInterval(state.timer.t);
+    state.timer.t = null;
   }
-  function tick(){
-    if (!state.timer.running) return;
-    state.timer.left -= 1;
-    if (state.timer.left <= 0){
-      state.timer.left = 0;
-      state.timer.running = false;
-      clearInterval(state.timer.t);
-      state.timer.t = null;
-      renderTimer();
-      try{
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-        o.connect(g); g.connect(ctx.destination);
-        o.frequency.value = 880;
-        g.gain.value = 0.05;
-        o.start();
-        setTimeout(()=>{ o.stop(); ctx.close(); }, 250);
-      }catch{}
-      return;
-    }
-    renderTimer();
-  }
-  function startTimer(){
-    if (state.timer.running) return;
-    state.timer.running = true;
-    if (!state.timer.t){
-      state.timer.t = setInterval(tick, 1000);
-    }
-  }
-  function pauseTimer(){
+}
+
+function beep(){
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.value = 880;
+    g.gain.value = 0.05;
+    o.start();
+    setTimeout(()=>{ o.stop(); ctx.close(); }, 250);
+  }catch{}
+}
+
+function tickTimer(){
+  if (!state.timer.running) return;
+
+  const now = Date.now();
+  const left = Math.max(0, Math.ceil((state.timer.endAt - now) / 1000));
+  state.timer.left = left;
+  renderTimer();
+
+  if (left <= 0){
     state.timer.running = false;
+    state.timer.endAt = null;
+    stopTimerLoop();
+    beep();
   }
-  function resetTimer(){
-    state.timer.running = false;
+}
+
+function startTimer(){
+  if (state.timer.left <= 0){
+    // if at zero, restart from total
     state.timer.left = state.timer.total;
-    renderTimer();
   }
+  // set end time based on remaining
+  state.timer.endAt = Date.now() + state.timer.left * 1000;
+  state.timer.running = true;
 
-  document.getElementById("timerStart").addEventListener("click", startTimer);
-  document.getElementById("timerPause").addEventListener("click", pauseTimer);
-  document.getElementById("timerReset").addEventListener("click", resetTimer);
+  if (!state.timer.t){
+    state.timer.t = setInterval(tickTimer, 250); // smoother + less visible drift
+  }
+  tickTimer();
+}
 
-  document.getElementById("preset").addEventListener("change", (e) => {
-    setTimer(parseInt(e.target.value, 10));
-  });
-  document.getElementById("setCustom").addEventListener("click", () => {
-    const v = parseInt(document.getElementById("customSeconds").value, 10);
-    if (!Number.isFinite(v) || v < 5) return alert("Enter a custom rest time (>= 5 seconds)." );
-    setTimer(v);
-  });
+function pauseTimer(){
+  if (!state.timer.running) return;
+  // freeze remaining
+  renderTimer();              // updates left from endAt
+  state.timer.running = false;
+  state.timer.endAt = null;
+  stopTimerLoop();
+}
+
+function resetTimer(){
+  setTimer(state.timer.total);
+}
+
+// Optional: keep it accurate even if browser throttles hard.
+// When the page becomes visible again, recompute immediately.
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible"){
+    tickTimer();
+  }
+});
+
 
   // ---------- Events ----------
   elProgramSelect.addEventListener("change", () => {

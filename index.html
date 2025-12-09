@@ -324,7 +324,7 @@
     </div>
   </div>
 
-
+<script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/index-min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   /**
@@ -370,7 +370,7 @@
     activeProgramId: null,
     activeSessionId: null,
 
-    logs: loadLogs(),
+    logs: {}, // Will be populated asynchronously
 
     timer: { total: 120, left: 120, running: false, t: null }
   };
@@ -509,13 +509,65 @@
     return `${m}:${s}`;
   }
 
+  // --- ASYNC STORAGE LOGIC (INDEXEDDB) ---
+  
+  async function loadLogsAsync() {
+    try {
+      // Attempt to load from the fast IndexedDB first
+      const dbLogs = await idbKeyval.get(LS_KEY);
+      
+      if (dbLogs) {
+        state.logs = dbLogs;
+        console.log("Loaded logs from IndexedDB");
+      } else {
+        // Fallback: Check localStorage (Migration for your existing data)
+        const local = localStorage.getItem(LS_KEY);
+        if (local) {
+          state.logs = JSON.parse(local);
+          // Migrate data to new DB immediately
+          await idbKeyval.set(LS_KEY, state.logs);
+          console.log("Migrated logs from localStorage to IndexedDB");
+        }
+      }
+      
+      // Once data arrives, refresh the UI
+      renderAll(); 
+    } catch (e) {
+      console.error("Failed to load logs:", e);
+    }
+  }
+
   function loadLogs(){
+    // Legacy sync load - mostly unused now except for initial state placeholder
     try { return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); }
     catch { return {}; }
   }
 
-  function saveLogs(){
-    localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
+  // DEBOUNCED SAVE (Prevents UI freezing while typing)
+  function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+  }
+
+  const saveLogsDebounced = debounce(async () => {
+    try {
+      // Save to IndexedDB (Doesn't block the main thread)
+      await idbKeyval.set(LS_KEY, state.logs);
+      scheduleCloudSave();
+      
+      // Only re-render stats if the modal is actually open
+      if (elPlanStatsModal?.classList?.contains("open")) renderPlanStats();
+    } catch (e) {
+      console.error("Save failed", e);
+    }
+  }, 1000); // Wait 1 second after typing stops
+
+  // Helper for immediate save (e.g. toggling a checkbox)
+  async function saveLogs() {
+    await idbKeyval.set(LS_KEY, state.logs);
     scheduleCloudSave();
     if (elPlanStatsModal?.classList?.contains("open")) renderPlanStats();
   }
@@ -1197,11 +1249,10 @@
 
     const allWorkouts = getAllWorkoutsForSession(session);
 
-    // 1. Render standard workouts
-    elContent.innerHTML = allWorkouts.map((w, idx) => {
+    // 1. Generate HTML for standard workouts
+    const workoutsHtml = allWorkouts.map((w, idx) => {
       const wlog = ensureWorkoutLog(session, w, idx);
       const logged = countWorkoutLogged(session.programName, session.title, w, idx);
-
       const requiredLabel = `Required: Sets ${escapeHtml(w.setsStr || String(w.setCount))} • Reps ${escapeHtml(w.repsStr || w.targetReps || "")}`;
 
       return `
@@ -1214,95 +1265,72 @@
             <button class="btn small" type="button">Toggle</button>
           </div>
           <div class="workout-body">
-            ${w.notes?.length ? `
-              <div class="small-note"><b>Plan notes</b><br>${w.notes.map(n => escapeHtml(n)).join("<br>")}</div>
-              <div class="divider"></div>
-            ` : ""}
-
+            ${w.notes?.length ? `<div class="small-note"><b>Plan notes</b><br>${w.notes.map(n => escapeHtml(n)).join("<br>")}</div><div class="divider"></div>` : ""}
             <div class="grid">
-              <div class="h">Set</div>
-              <div class="h">Target reps</div>
-              <div class="h">Weight (kg)</div>
-              <div class="h">Reps</div>
-              <div class="h">Done</div>
+              <div class="h">Set</div><div class="h">Target reps</div><div class="h">Weight (kg)</div><div class="h">Reps</div><div class="h">Done</div>
             </div>
-
             <div id="sets_${idx}">
               ${wlog.sets.map(r => renderSetRow(session, w, idx, r)).join("")}
             </div>
-
             <div class="footer-actions">
               <button class="btn small" data-act="addSet" data-wi="${idx}">+ Add set</button>
               <button class="btn small danger" data-act="removeSet" data-wi="${idx}">− Remove set</button>
               <button class="btn small" data-act="startRest" data-sec="120">Start 120s rest</button>
               <button class="btn small" data-act="startRest" data-sec="90">Start 90s rest</button>
-              <button class="btn small" data-act="startRest" data-sec="60">Start 60s rest</button>
+              <button class="btn small" data-act="startRest" data-sec="60">Rest 60s rest</button>
             </div>
-
             <div class="divider"></div>
-            <label class="muted">Workout notes (your notes)</label>
-            <textarea data-act="workoutNote" data-wi="${idx}" placeholder="e.g. felt heavy, adjust next time…">${escapeHtml(wlog.workoutNote || "")}</textarea>
+            <label class="muted">Workout notes</label>
+            <textarea data-act="workoutNote" data-wi="${idx}" placeholder="Notes...">${escapeHtml(wlog.workoutNote || "")}</textarea>
           </div>
         </div>
       `;
     }).join("");
 
-    // 2. Create the "Add Exercise" box
-    const addBox = document.createElement("div");
-    addBox.className = "workout";
-    addBox.innerHTML = `
-      <div class="workout-head">
-        <div>
-          <div class="workout-title">Add exercise</div>
-          <div class="workout-sub">Stored to your account when signed in (doesn't modify the source JSON)</div>
+    // 2. Generate HTML for Add Exercise Box
+    const addBoxHtml = `
+      <div class="workout">
+        <div class="workout-head">
+          <div><div class="workout-title">Add exercise</div><div class="workout-sub">Custom exercise for this session</div></div>
+          <button class="btn small" type="button">Toggle</button>
         </div>
-        <button class="btn small" type="button">Toggle</button>
-      </div>
-      <div class="workout-body">
-        <div class="grid" style="grid-template-columns: 1fr 90px 120px;">
-          <div class="h">Exercise</div>
-          <div class="h">Sets</div>
-          <div class="h">Target reps</div>
-
-          <input id="customTitle" type="text" placeholder="e.g. Arnold press" />
-          <input id="customSets" type="number" min="1" step="1" value="3" />
-          <input id="customReps" type="text" placeholder="e.g. 8-12" />
-        </div>
-
-        <div class="footer-actions">
-          <button class="btn small primary" id="customAddBtn" type="button">Add</button>
+        <div class="workout-body">
+          <div class="grid" style="grid-template-columns: 1fr 90px 120px;">
+            <div class="h">Exercise</div><div class="h">Sets</div><div class="h">Target reps</div>
+            <input id="customTitle" type="text" placeholder="e.g. Arnold press" />
+            <input id="customSets" type="number" min="1" step="1" value="3" />
+            <input id="customReps" type="text" placeholder="e.g. 8-12" />
+          </div>
+          <div class="footer-actions">
+            <button class="btn small primary" id="customAddBtn" type="button">Add</button>
+          </div>
         </div>
       </div>
     `;
-    elContent.appendChild(addBox);
 
-    // FIX: Deleted the duplicate click listener here! 
-    // The generic listener below will handle this box now.
+    elContent.innerHTML = workoutsHtml + addBoxHtml;
 
-    // 3. Attach logic to the "Add" button
-    document.getElementById("customAddBtn")?.addEventListener("click", () => {
-      const title = document.getElementById("customTitle")?.value || "";
-      const sets = parseInt(document.getElementById("customSets")?.value || "3", 10);
-      const reps = document.getElementById("customReps")?.value || "";
-      
-      if (!String(title).trim()) return alert("Enter an exercise name.");
-      
-      addCustomWorkout(session, title, sets, reps);
-      renderAll(); // Re-renders the list to show the new exercise
-    });
-
-    // 4. Generic accordion toggle (Handles ALL boxes, including the new Add box)
+    // 3. EVENT DELEGATION (The Fix: One listener to rule them all)
+    // A. Toggle Logic (Handles standard workouts AND the Add Box)
     elContent.querySelectorAll(".workout-head").forEach(h => {
       h.addEventListener("click", (e) => {
-        // Prevent button inside header from triggering twice if clicked directly
-        if (e.target.tagName === "BUTTON") return; 
-        
+        if(e.target.tagName === "BUTTON") return; // Let button handle itself if needed
         const wrap = h.closest(".workout");
         wrap.classList.toggle("open");
       });
     });
 
-    // 5. Attach listeners to data actions (inputs, checkboxes)
+    // B. Add Custom Exercise Logic
+    document.getElementById("customAddBtn")?.addEventListener("click", () => {
+      const title = document.getElementById("customTitle")?.value || "";
+      const sets = parseInt(document.getElementById("customSets")?.value || "3", 10);
+      const reps = document.getElementById("customReps")?.value || "";
+      if (!String(title).trim()) return alert("Enter an exercise name.");
+      addCustomWorkout(session, title, sets, reps);
+      renderAll();
+    });
+
+    // C. Data Actions (Inputs/Checkboxes)
     elContent.querySelectorAll("[data-act]").forEach(el => {
       const act = el.dataset.act;
       if (act === "addSet" || act === "removeSet" || act === "startRest"){
@@ -1352,17 +1380,18 @@ function handleAction(el){
 
     const wlog = ensureWorkoutLog(session, workout, workoutIndex);
 
+    // Structural changes need immediate save & render
     if (act === "addSet"){
       wlog.sets.push({
         set: wlog.sets.length + 1,
-        targetReps: workout.targetReps,
+        targetReps: resolveReps(workout.targetReps, wlog.sets.length),
         weight: "",
         reps: "",
         done: false,
         note: ""
       });
-      saveLogs();
-      renderAll();
+      saveLogs(); 
+      renderActiveSession();
       return;
     }
 
@@ -1371,54 +1400,41 @@ function handleAction(el){
         wlog.sets.pop();
         wlog.sets.forEach((r, i) => r.set = i+1);
         saveLogs();
-        renderAll();
+        renderActiveSession();
       }
       return;
     }
 
+    // Text input changes use the Lazy/Debounced save
     if (act === "workoutNote"){
       wlog.workoutNote = el.value;
-      saveLogs();
-      renderSessionsList();
-    updateActiveProgress();
+      saveLogsDebounced();
       return;
     }
 
-    // set field updates
     const setNum = parseInt(el.dataset.set, 10);
     const row = wlog.sets.find(r => r.set === setNum);
     if (!row) return;
 
     if (act === "set_target"){
-          // NEW: Allow numbers, ranges (8-10), and text (AMRAP)
-          // We only strip characters that would break layout, if any. 
-          // For now, let's just limit length.
-          el.value = el.value.slice(0, 8); 
-          row.targetReps = el.value;
-        }
-
-if (act === "set_weight"){
-  // digits + one dot
-  let v = el.value.replace(/[^0-9.]/g, "");
-  const firstDot = v.indexOf(".");
-  if (firstDot !== -1){
-    v = v.slice(0, firstDot + 1) + v.slice(firstDot + 1).replaceAll(".", "");
-  }
-  el.value = v.slice(0, 6);
-  row.weight = el.value;
-}
-if (act === "set_reps"){
-  el.value = el.value.replace(/[^0-9]/g, "").slice(0, 4);
-  row.reps = el.value;
-}
-
+      el.value = el.value.slice(0, 8); 
+      row.targetReps = el.value;
+    }
+    if (act === "set_weight") row.weight = el.value;
+    if (act === "set_reps") row.reps = el.value;
     if (act === "set_note") row.note = el.value;
-    if (act === "set_done") row.done = !!el.checked;
 
-    saveLogs();
-    renderSessionsList();
-    el.closest(".set-row")?.classList.toggle("done", row.done);
-  }
+    if (act === "set_done") {
+        row.done = !!el.checked;
+        el.closest(".set-row")?.classList.toggle("done", row.done);
+        updateActiveProgress();
+        saveLogs(); // Checkboxes feel better with immediate save
+        return;
+    }
+
+    // Default for text inputs: Lazy save, NO re-render (keeps keyboard open)
+    saveLogsDebounced();
+}
 
   function renderAll(){
     renderProgramSelect();
@@ -1671,7 +1687,13 @@ document.addEventListener("visibilitychange", () => {
   }
 
   setTimer(120);
+  
+  // 1. Load Programs (Fast, usually cached)
   loadAllPrograms();
+  
+  // 2. Load User Logs (Async - prevents freezing)
+  loadLogsAsync(); 
+  
   initAuth();
 </script>
 </body>

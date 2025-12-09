@@ -441,6 +441,24 @@
 
 
   // ---------- Helpers ----------
+
+  // NEW: Smartly parses rep strings like "8, 5, 3" or "5"
+  function resolveReps(repsStr, setIndex) {
+    if (!repsStr) return "";
+    const s = String(repsStr);
+    
+    // If it contains commas, split and pick the specific index
+    if (s.includes(",")) {
+      const parts = s.split(",").map(p => p.trim());
+      // Return the part for this set, or the last part if we run out
+      // (e.g. if string is "10, 8" but we are on set 3, return "8")
+      return parts[setIndex] || parts[parts.length - 1];
+    }
+    
+    // Otherwise return the whole string (e.g. "5" or "8-12")
+    return s;
+  }
+
   function uid(str){
     let h = 2166136261;
     for (let i=0; i<str.length; i++){
@@ -1080,7 +1098,8 @@
         requiredReps: workout.targetReps,
         sets: Array.from({length: workout.setCount}, (_,i) => ({
           set: i+1,
-          targetReps: workout.targetReps,
+          // NEW: Use smart parsing here
+          targetReps: resolveReps(workout.targetReps, i),
           weight: "",
           reps: "",
           done: false,
@@ -1091,11 +1110,13 @@
       state.logs[k] = wlog;
       saveLogs();
     } else {
+      // If expanding sets, ensure new sets get the smart defaults too
       if (!Array.isArray(wlog.sets)) wlog.sets = [];
       while (wlog.sets.length < workout.setCount){
+        const i = wlog.sets.length;
         wlog.sets.push({
-          set: wlog.sets.length+1,
-          targetReps: workout.targetReps,
+          set: i + 1,
+          targetReps: resolveReps(workout.targetReps, i),
           weight: "",
           reps: "",
           done: false,
@@ -1349,9 +1370,13 @@ function handleAction(el){
     if (!row) return;
 
     if (act === "set_target"){
-  el.value = el.value.replace(/[^0-9]/g, "").slice(0, 4);
-  row.targetReps = el.value;
-}
+          // NEW: Allow numbers, ranges (8-10), and text (AMRAP)
+          // We only strip characters that would break layout, if any. 
+          // For now, let's just limit length.
+          el.value = el.value.slice(0, 8); 
+          row.targetReps = el.value;
+        }
+        
 if (act === "set_weight"){
   // digits + one dot
   let v = el.value.replace(/[^0-9.]/g, "");

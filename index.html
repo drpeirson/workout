@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="theme-color" content="#484838" />
+  <meta name="theme-color" content="#484838" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon-192.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -131,12 +131,11 @@
 
       /* Keep inputs usable on mobile */
       
-
-      /* Keep inputs usable on mobile */
       .grid{display:grid; grid-template-columns: 52px 7ch 7ch 7ch 52px; gap:6px; align-items:center; min-width:0;}
       .grid input[type="text"], .grid input[type="number"]{width:100%; min-width:0; max-width:100%; font-family:var(--mono); font-size:16px; padding:9px 10px;}
       .grid input[type="checkbox"]{ transform: scale(1.15); justify-self:center; }
-/* Reduce clutter */
+      
+      /* Reduce clutter */
       #authStatus{display:none;}
       .authBar{gap:8px;}
     }
@@ -178,7 +177,6 @@
 </head>
 <body>
   <div class="app">
-    <!-- Sidebar -->
     <div class="card">
       <header>
         <div>
@@ -199,7 +197,7 @@
             <select id="sessionSelect"></select>
           </div>
         </div>
-<div class="row">
+        <div class="row">
           <input id="search" type="text" placeholder="Search sessions/workouts…" />
         </div>
 
@@ -249,7 +247,6 @@
       </div>
     </div>
 
-    <!-- Main -->
     <div class="main">
       <div class="card">
         <header>
@@ -272,7 +269,6 @@
   </div>
 
 
-  <!-- Mobile sessions drawer -->
   <div class="drawer" id="drawer" aria-hidden="true">
     <div class="sheet">
       <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;">
@@ -285,7 +281,6 @@
   </div>
 
 
-  <!-- Plan stats modal -->
   <div class="drawer" id="planStatsModal" aria-hidden="true">
     <div class="sheet" style="max-height:88vh;">
       <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;">
@@ -338,8 +333,8 @@
    *
    * File format expected:
    * {
-   *   "program": "Hypertrophy",
-   *   "sessions": [ {"session":"WEEK 1 - SESSION 1 - ...", "workouts":[...]}, ... ]
+   * "program": "Hypertrophy",
+   * "sessions": [ {"session":"WEEK 1 - SESSION 1 - ...", "workouts":[...]}, ... ]
    * }
    */
   const PROGRAM_SOURCES = [
@@ -349,17 +344,11 @@
   ];
 
   // ---- CLOUD SYNC (Supabase) ----
-  // 1) Create a Supabase project
-  // 2) Enable Google provider in Auth
-  // 3) Create the table + RLS policies (SQL provided in chat)
-  // 4) Paste your project URL + anon key here
   const SUPABASE_URL = "https://redxigdkdjyxaofmutlv.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlZHhpZ2RrZGp5eGFvZm11dGx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyMjI5MTQsImV4cCI6MjA4MDc5ODkxNH0.24RNF4dKYNcKkAESiYNbA4_3Fvt-zTCFe5jCjR4vdn0";
   const supabase = (SUPABASE_URL.startsWith("http") && SUPABASE_ANON_KEY.length > 20)
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
-
-  
 
   // Debounced cloud save
   let cloudSaveTimer = null;
@@ -367,6 +356,9 @@
 
   // Logs are stored separately from plan data (so updating plan doesn't wipe logs)
   const LS_KEY = "mst_tracker_logs_v2";
+
+  // Preferences key (new)
+  const PREFS_KEY = "mst_tracker_prefs_v1";
 
   // ---------- State ----------
   const state = {
@@ -413,6 +405,18 @@
   const elPlanSessionChart = document.getElementById("planSessionChart");
 
 
+  function savePrefs() {
+    try {
+      const prefs = {
+        programId: state.activeProgramId,
+        sessionId: state.activeSessionId
+      };
+      localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+    } catch (e) {
+      console.warn("Failed to save prefs", e);
+    }
+  }
+
   function openSessionsDrawer(){
     if (!elDrawer || !elSessionsDrawer) return;
     // Copy rendered session list from sidebar (hidden on mobile but kept in DOM)
@@ -423,6 +427,7 @@
       item.addEventListener("click", () => {
         state.activeSessionId = item.dataset.sid;
         elSessionSelect.value = state.activeSessionId;
+        savePrefs(); // Save state on change
         elDrawer.classList.remove("open");
         elDrawer.setAttribute("aria-hidden", "true");
         renderAll();
@@ -958,9 +963,27 @@
       }
     }
 
-    // Default selection
-    state.activeProgramId = state.programs[0]?.id || null;
-    state.activeSessionId = state.programs[0]?.sessions[0]?.id || null;
+    // Load preferences
+    let prefs = {};
+    try { prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || "{}"); } catch {}
+
+    // 1. Restore program
+    if (prefs.programId && state.programById.has(prefs.programId)) {
+      state.activeProgramId = prefs.programId;
+    } else {
+      state.activeProgramId = state.programs[0]?.id || null;
+    }
+
+    // 2. Restore session
+    const activeProgram = state.programById.get(state.activeProgramId);
+    // Verify session exists in this program
+    const sessionExists = activeProgram?.sessions.some(s => s.id === prefs.sessionId);
+
+    if (sessionExists) {
+      state.activeSessionId = prefs.sessionId;
+    } else {
+      state.activeSessionId = activeProgram?.sessions[0]?.id || null;
+    }
 
     renderAll();
   }
@@ -1028,6 +1051,7 @@
       item.addEventListener("click", () => {
         state.activeSessionId = item.dataset.sid;
         elSessionSelect.value = state.activeSessionId;
+        savePrefs(); // Save on click
         renderAll();
       });
     });
@@ -1455,11 +1479,13 @@ document.addEventListener("visibilitychange", () => {
     state.activeProgramId = elProgramSelect.value;
     const p = state.programById.get(state.activeProgramId);
     state.activeSessionId = p?.sessions[0]?.id || null;
+    savePrefs(); // SAVE PREFS
     renderAll();
   });
 
   elSessionSelect.addEventListener("change", () => {
     state.activeSessionId = elSessionSelect.value;
+    savePrefs(); // SAVE PREFS
     renderAll();
   });
 

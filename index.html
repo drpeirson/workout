@@ -122,8 +122,20 @@
       #sessions{ display:none; }
 
       /* Keep inputs usable on mobile */
-      .grid{grid-template-columns: 52px minmax(7ch,1fr) minmax(7ch,1fr) minmax(7ch,1fr) 52px; gap:6px;}
-      .grid input[type="text"], .grid input[type="number"]{ font-size:16px; }
+      .grid{
+  display:grid;
+  grid-template-columns: 52px 7ch 7ch 7ch 52px;
+  gap:6px;
+  align-items:center;
+  min-width:0;
+}
+.grid input[type="text"], .grid input[type="number"]{
+  width:100%;
+  min-width:0;
+  font-family:var(--mono);
+  font-size:16px;
+}
+
 
       /* Reduce clutter */
       #authStatus{display:none;}
@@ -754,33 +766,27 @@
 <input
   type="text"
   inputmode="numeric"
-  pattern="[0-9]*"
+  maxlength="4"
   value="${escapeHtml(row.targetReps || workout.targetReps || "")}"
-  data-act="set_target"
-  data-wi="${workoutIndex}"
-  data-set="${row.set}"
+  data-act="set_target" data-wi="${workoutIndex}" data-set="${row.set}"
 />
 
 <input
   type="text"
   inputmode="decimal"
-  pattern="[0-9]*[.,]?[0-9]*"
+  maxlength="6"
   placeholder="kg"
   value="${escapeHtml(row.weight || "")}"
-  data-act="set_weight"
-  data-wi="${workoutIndex}"
-  data-set="${row.set}"
+  data-act="set_weight" data-wi="${workoutIndex}" data-set="${row.set}"
 />
 
 <input
   type="text"
   inputmode="numeric"
-  pattern="[0-9]*"
+  maxlength="4"
   placeholder="reps"
   value="${escapeHtml(row.reps || "")}"
-  data-act="set_reps"
-  data-wi="${workoutIndex}"
-  data-set="${row.set}"
+  data-act="set_reps" data-wi="${workoutIndex}" data-set="${row.set}"
 />
           <input type="checkbox" ${row.done ? "checked" : ""} data-act="set_done" data-wi="${workoutIndex}" data-set="${row.set}" />
         </div>
@@ -996,9 +1002,25 @@ function handleAction(el){
     const row = wlog.sets.find(r => r.set === setNum);
     if (!row) return;
 
-    if (act === "set_target") row.targetReps = el.value;
-    if (act === "set_weight") row.weight = el.value;
-    if (act === "set_reps") row.reps = el.value;
+    if (act === "set_target"){
+  el.value = el.value.replace(/[^0-9]/g, "").slice(0, 4);
+  row.targetReps = el.value;
+}
+if (act === "set_weight"){
+  // digits + one dot
+  let v = el.value.replace(/[^0-9.]/g, "");
+  const firstDot = v.indexOf(".");
+  if (firstDot !== -1){
+    v = v.slice(0, firstDot + 1) + v.slice(firstDot + 1).replaceAll(".", "");
+  }
+  el.value = v.slice(0, 6);
+  row.weight = el.value;
+}
+if (act === "set_reps"){
+  el.value = el.value.replace(/[^0-9]/g, "").slice(0, 4);
+  row.reps = el.value;
+}
+
     if (act === "set_note") row.note = el.value;
     if (act === "set_done") row.done = !!el.checked;
 

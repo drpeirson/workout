@@ -751,9 +751,37 @@
       <div class="set-row ${doneClass}">
         <div class="grid">
           <div class="mono">#${row.set}</div>
-          <input type="text" value="${escapeHtml(row.targetReps || workout.targetReps || "")}" data-act="set_target" data-wi="${workoutIndex}" data-set="${row.set}" />
-          <input type="text" placeholder="kg" value="${escapeHtml(row.weight || "")}" inputmode="decimal" data-act="set_weight" data-wi="${workoutIndex}" data-set="${row.set}" />
-          <input type="text" placeholder="reps" value="${escapeHtml(row.reps || "")}" inputmode="numeric" data-act="set_reps" data-wi="${workoutIndex}" data-set="${row.set}" />
+<input
+  type="text"
+  inputmode="numeric"
+  pattern="[0-9]*"
+  value="${escapeHtml(row.targetReps || workout.targetReps || "")}"
+  data-act="set_target"
+  data-wi="${workoutIndex}"
+  data-set="${row.set}"
+/>
+
+<input
+  type="text"
+  inputmode="decimal"
+  pattern="[0-9]*[.,]?[0-9]*"
+  placeholder="kg"
+  value="${escapeHtml(row.weight || "")}"
+  data-act="set_weight"
+  data-wi="${workoutIndex}"
+  data-set="${row.set}"
+/>
+
+<input
+  type="text"
+  inputmode="numeric"
+  pattern="[0-9]*"
+  placeholder="reps"
+  value="${escapeHtml(row.reps || "")}"
+  data-act="set_reps"
+  data-wi="${workoutIndex}"
+  data-set="${row.set}"
+/>
           <input type="checkbox" ${row.done ? "checked" : ""} data-act="set_done" data-wi="${workoutIndex}" data-set="${row.set}" />
         </div>
         <div style="margin-top:8px">

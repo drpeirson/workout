@@ -1130,35 +1130,47 @@
 
   function renderSetRow(session, workout, workoutIndex, row){
     const doneClass = row.done ? "done" : "";
+
+    // --- NEW LOGIC START ---
+    // 1. Calculate what the target *should* be for this specific set (e.g. Set 1 = "8")
+    // row.set is 1-based, so we subtract 1 for the array index
+    const smartTarget = resolveReps(workout.targetReps, row.set - 1);
+
+    // 2. Determine what to display.
+    // If the saved value is empty, OR if it looks like the old full string "8, 5, 3",
+    // we overwrite it with the smart target.
+    let displayValue = row.targetReps;
+    if (!displayValue || displayValue === workout.targetReps || displayValue.includes(",")) {
+      displayValue = smartTarget;
+    }
+    // --- NEW LOGIC END ---
+
     return `
       <div class="set-row ${doneClass}">
         <div class="grid">
           <div class="mono">#${row.set}</div>
-<input
-  type="text"
-  inputmode="numeric"
-  maxlength="4"
-  value="${escapeHtml(row.targetReps || workout.targetReps || "")}"
-  data-act="set_target" data-wi="${workoutIndex}" data-set="${row.set}"
-/>
+          <input
+            type="text"
+            placeholder="${escapeHtml(smartTarget)}"
+            value="${escapeHtml(displayValue)}"
+            data-act="set_target" data-wi="${workoutIndex}" data-set="${row.set}"
+          />
 
-<input
-  type="text"
-  inputmode="decimal"
-  maxlength="6"
-  placeholder="kg"
-  value="${escapeHtml(row.weight || "")}"
-  data-act="set_weight" data-wi="${workoutIndex}" data-set="${row.set}"
-/>
+          <input
+            type="text"
+            inputmode="decimal"
+            placeholder="kg"
+            value="${escapeHtml(row.weight || "")}"
+            data-act="set_weight" data-wi="${workoutIndex}" data-set="${row.set}"
+          />
 
-<input
-  type="text"
-  inputmode="numeric"
-  maxlength="4"
-  placeholder="reps"
-  value="${escapeHtml(row.reps || "")}"
-  data-act="set_reps" data-wi="${workoutIndex}" data-set="${row.set}"
-/>
+          <input
+            type="text"
+            inputmode="numeric"
+            placeholder="reps"
+            value="${escapeHtml(row.reps || "")}"
+            data-act="set_reps" data-wi="${workoutIndex}" data-set="${row.set}"
+          />
           <input type="checkbox" ${row.done ? "checked" : ""} data-act="set_done" data-wi="${workoutIndex}" data-set="${row.set}" />
         </div>
         <div style="margin-top:8px">
@@ -1376,7 +1388,7 @@ function handleAction(el){
           el.value = el.value.slice(0, 8); 
           row.targetReps = el.value;
         }
-        
+
 if (act === "set_weight"){
   // digits + one dot
   let v = el.value.replace(/[^0-9.]/g, "");

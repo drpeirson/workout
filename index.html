@@ -361,7 +361,7 @@
     let t = String(title || "").trim();
     if (!t) return t;
     if (programName){
-      const progRe = new RegExp("\s*-\s*" + escapeRegExp(programName) + "\b.*$", "i");
+      const progRe = new RegExp("\\s*-\\s*" + escapeRegExp(programName) + "\\b.*$", "i");
       if (progRe.test(t)) t = t.replace(progRe, "").trim();
     }
     t = t.replace(/\s*-\s*WEEK\s*\d+\b.*$/i, "").trim();

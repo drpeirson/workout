@@ -67,8 +67,10 @@
     .workout-sub{color:var(--muted); font-size:12px; margin-top:3px}
     .workout-body{padding:12px; border-top:1px solid var(--line); display:none}
     .workout.open .workout-body{display:block}
-    .grid{display:grid; grid-template-columns: 70px 140px 1fr 1fr 70px; gap:8px; align-items:center;}
+    .grid{display:grid; grid-template-columns: 70px 140px minmax(90px,1fr) minmax(90px,1fr) 70px; gap:8px; align-items:center;}
     .grid .h{color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.12em}
+    .grid input[type="text"], .grid input[type="number"]{ min-width: 6ch; font-family:var(--mono); }
+    .grid input[type="checkbox"]{ transform: scale(1.15); }
     .set-row{padding:8px; border:1px solid rgba(255,255,255,.05); border-radius:14px; background:rgba(255,255,255,.02); margin-top:8px;}
     .done{border-color:rgba(53,208,127,.35); background:rgba(53,208,127,.06);}
     .footer-actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;}
@@ -102,6 +104,15 @@
       #mobileBrowseRow{ display:flex; }
       /* Hide the big list in the sidebar; use the drawer instead */
       #sessions{ display:none; }
+      .grid{grid-template-columns: 56px minmax(90px,1fr) minmax(90px,1fr) minmax(90px,1fr) 56px;}
+      .grid input[type="text"], .grid input[type="number"]{ font-size:16px; }
+    }
+    /* Auth UI */
+    #authAvatar{width:32px;height:32px;border-radius:999px;border:1px solid var(--line);display:none;object-fit:cover;}
+    .authBar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
+    @media (max-width: 980px){
+      #authStatus{display:none;}
+      .authBar{gap:8px;}
     }
 
   </style>
@@ -129,16 +140,7 @@
             <select id="sessionSelect"></select>
           </div>
         </div>
-
-        <div class="row">
-          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;width:100%">
-            <span class="pill" id="authStatus">Not signed in</span>
-            <button class="btn small primary" id="signInGoogle" type="button">Sign in with Google</button>
-            <button class="btn small" id="signOut" type="button" style="display:none">Sign out</button>
-          </div>
-        </div>
-
-        <div class="row">
+<div class="row">
           <input id="search" type="text" placeholder="Search sessions/workouts…" />
         </div>
 
@@ -195,7 +197,13 @@
             <div class="title" id="activeTitle">Loading…</div>
             <div class="subtitle" id="activeMeta">—</div>
           </div>
-          <div class="pill" id="activePill">—</div>
+          <div class="authBar">
+            <img id="authAvatar" alt="profile" />
+            <span class="pill" id="authStatus">Not signed in</span>
+            <button class="btn small primary" id="signInGoogle" type="button">Sign in</button>
+            <button class="btn small" id="signOut" type="button" style="display:none">Sign out</button>
+            <div class="pill" id="activePill">—</div>
+          </div>
         </header>
         <div class="content" id="content"></div>
       </div>
@@ -329,6 +337,24 @@
       .replaceAll("'","&#039;");
   }
 
+
+  function escapeRegExp(s){
+    return String(s).replace(/[.*+?^${}()|[\]\]/g, "\$&");
+  }
+
+  function cleanWorkoutTitle(title, programName){
+    let t = String(title || "").trim();
+    if (!t) return t;
+    if (programName){
+      const progRe = new RegExp("\s*-\s*" + escapeRegExp(programName) + "\b.*$", "i");
+      if (progRe.test(t)) t = t.replace(progRe, "").trim();
+    }
+    t = t.replace(/\s*-\s*WEEK\s*\d+\b.*$/i, "").trim();
+    t = t.replace(/\s*-\s*Week\s*\d+\b.*$/i, "").trim();
+    t = t.replace(/\s*-\s*SESSION\s*\d+\b.*$/i, "").trim();
+    return t;
+  }
+
   function toIntMaybe(v){
     if (v == null) return null;
     const s = String(v).trim();
@@ -352,6 +378,42 @@
     localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
     scheduleCloudSave();
   }
+
+  // ---- Custom exercises (stored per-user in logs blob; merged into a session) ----
+  function sessionKey(session){
+    return `${session.programName}|||${session.title}`;
+  }
+
+  function ensureCustomStore(){
+    if (typeof state.logs !== "object" || state.logs === null) state.logs = {};
+    if (!state.logs.__custom_sessions || typeof state.logs.__custom_sessions !== "object"){
+      state.logs.__custom_sessions = {};
+    }
+  }
+
+  function getCustomWorkouts(session){
+    ensureCustomStore();
+    const key = sessionKey(session);
+    const arr = state.logs.__custom_sessions[key];
+    return Array.isArray(arr) ? arr : [];
+  }
+
+  function addCustomWorkout(session, title, setCount, reps){
+    ensureCustomStore();
+    const key = sessionKey(session);
+    const arr = getCustomWorkouts(session);
+    const item = {
+      title: String(title || "").trim(),
+      sets: Number(setCount) || 3,
+      reps: String(reps || "").trim(),
+      notes: [],
+      created_at: new Date().toISOString()
+    };
+    arr.push(item);
+    state.logs.__custom_sessions[key] = arr;
+    saveLogs();
+  }
+
 
   function scheduleCloudSave(){
     if (!supabase) return;
@@ -406,17 +468,28 @@
     const elStatus = document.getElementById("authStatus");
     const elIn = document.getElementById("signInGoogle");
     const elOut = document.getElementById("signOut");
+    const elAv = document.getElementById("authAvatar");
 
     if (!elStatus || !elIn || !elOut) return;
 
+    const meta = state._user?.user_metadata || {};
+    const avatar = meta.avatar_url || meta.picture || meta.avatar || meta.profile_picture || "";
+
     if (signedIn){
-      elStatus.textContent = email ? `Signed in: ${email}` : "Signed in";
+      elStatus.textContent = email ? email : "Signed in";
       elIn.style.display = "none";
       elOut.style.display = "inline-flex";
+      if (elAv && avatar){
+        elAv.src = avatar;
+        elAv.style.display = "inline-block";
+      } else if (elAv){
+        elAv.style.display = "none";
+      }
     } else {
       elStatus.textContent = "Not signed in";
       elIn.style.display = "inline-flex";
       elOut.style.display = "none";
+      if (elAv) elAv.style.display = "none";
     }
   }
 
@@ -664,7 +737,7 @@
         <div class="grid">
           <div class="mono">#${row.set}</div>
           <input type="text" value="${escapeHtml(row.targetReps || workout.targetReps || "")}" data-act="set_target" data-wi="${workoutIndex}" data-set="${row.set}" />
-          <input type="text" placeholder="kg/lb" value="${escapeHtml(row.weight || "")}" data-act="set_weight" data-wi="${workoutIndex}" data-set="${row.set}" />
+          <input type="text" placeholder="kg" value="${escapeHtml(row.weight || "")}" data-act="set_weight" data-wi="${workoutIndex}" data-set="${row.set}" />
           <input type="text" placeholder="reps" value="${escapeHtml(row.reps || "")}" data-act="set_reps" data-wi="${workoutIndex}" data-set="${row.set}" />
           <input type="checkbox" ${row.done ? "checked" : ""} data-act="set_done" data-wi="${workoutIndex}" data-set="${row.set}" />
         </div>
@@ -690,7 +763,20 @@
     elActiveMeta.textContent = `Workouts: ${session.workouts.length} • Logged: ${done}/${session.workouts.length}`;
     elActivePill.textContent = `${done}/${session.workouts.length}`;
 
-    elContent.innerHTML = session.workouts.map((w, idx) => {
+    const customWorkouts = getCustomWorkouts(session).map((cw, i) => ({
+      id: uid(`${session.programName}::${session.title}::custom::${i}::${cw.title}`),
+      title: cw.title,
+      index: session.workouts.length + i,
+      setsStr: String(cw.sets),
+      repsStr: String(cw.reps || ""),
+      setCount: Number(cw.sets) || 3,
+      targetReps: String(cw.reps || "").trim(),
+      notes: Array.isArray(cw.notes) ? cw.notes : [],
+    }));
+
+    const allWorkouts = [...session.workouts, ...customWorkouts];
+
+    elContent.innerHTML = allWorkouts.map((w, idx) => {
       const wlog = ensureWorkoutLog(session, w, idx);
       const logged = countWorkoutLogged(session.programName, session.title, w, idx);
 
@@ -700,7 +786,7 @@
         <div class="workout ${idx===0 ? "open" : ""}" data-wi="${idx}">
           <div class="workout-head">
             <div>
-              <div class="workout-title">${escapeHtml(w.title)} ${logged ? '<span class="pill" style="margin-left:8px;border-color:rgba(53,208,127,.35);background:rgba(53,208,127,.10);color:#c8ffe2">logged</span>' : ''}</div>
+              <div class="workout-title">${escapeHtml(cleanWorkoutTitle(w.title, session.programName))} ${logged ? '<span class="pill" style="margin-left:8px;border-color:rgba(53,208,127,.35);background:rgba(53,208,127,.10);color:#c8ffe2">logged</span>' : ''}</div>
               <div class="workout-sub">${requiredLabel}</div>
             </div>
             <button class="btn small" type="button">Toggle</button>
@@ -714,7 +800,7 @@
             <div class="grid">
               <div class="h">Set</div>
               <div class="h">Target reps</div>
-              <div class="h">Weight</div>
+              <div class="h">Weight (kg)</div>
               <div class="h">Reps</div>
               <div class="h">Done</div>
             </div>
@@ -738,6 +824,47 @@
         </div>
       `;
     }).join("");
+
+    // Add custom exercise form
+    const addBox = document.createElement("div");
+    addBox.className = "workout";
+    addBox.innerHTML = `
+      <div class="workout-head">
+        <div>
+          <div class="workout-title">Add exercise</div>
+          <div class="workout-sub">Stored to your account when signed in (doesn't modify the source JSON)</div>
+        </div>
+        <button class="btn small" type="button">Toggle</button>
+      </div>
+      <div class="workout-body">
+        <div class="grid" style="grid-template-columns: 1fr 90px 120px;">
+          <div class="h">Exercise</div>
+          <div class="h">Sets</div>
+          <div class="h">Target reps</div>
+
+          <input id="customTitle" type="text" placeholder="e.g. Arnold press" />
+          <input id="customSets" type="number" min="1" step="1" value="3" />
+          <input id="customReps" type="text" placeholder="e.g. 8-12" />
+        </div>
+
+        <div class="footer-actions">
+          <button class="btn small primary" id="customAddBtn" type="button">Add</button>
+        </div>
+      </div>
+    `;
+    elContent.appendChild(addBox);
+
+    addBox.querySelector(".workout-head")?.addEventListener("click", () => addBox.classList.toggle("open"));
+    addBox.querySelectorAll("[data-act]").forEach(el => {}); // no-op for consistency
+
+    document.getElementById("customAddBtn")?.addEventListener("click", () => {
+      const title = document.getElementById("customTitle")?.value || "";
+      const sets = parseInt(document.getElementById("customSets")?.value || "3", 10);
+      const reps = document.getElementById("customReps")?.value || "";
+      if (!String(title).trim()) return alert("Enter an exercise name.");
+      addCustomWorkout(session, title, sets, reps);
+      renderAll();
+    });
 
     // accordion toggle
     elContent.querySelectorAll(".workout-head").forEach(h => {
@@ -966,6 +1093,7 @@
     rows.push(["program","session","workout","workoutIndex","set","targetReps","weight","reps","done","setNote","workoutNote"].join(","));
 
     for (const k of Object.keys(state.logs)){
+      if (k.startsWith("__")) continue;
       const wlog = state.logs[k];
       const prog = (wlog.program || "").replaceAll('"','""');
       const sess = (wlog.session || "").replaceAll('"','""');

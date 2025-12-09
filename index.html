@@ -354,9 +354,8 @@
 
 
   function escapeRegExp(s){
-    return String(s).replace(/[.*+?^${}()|[\]\]/g, "\$&");
-  }()|[\]\]/g, "\$&");
-  }
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
   function cleanWorkoutTitle(title, programName){
     let t = String(title || "").trim();

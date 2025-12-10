@@ -188,7 +188,7 @@
           <div>
             <div class="title" id="activeTitle">Loading…</div>
             <div class="subtitle" id="activeMeta">—</div>
-            <div class="subtitle" id="activeFunFact" style="margin-top:6px;opacity:.9"></div>
+            <div class="subtitle" id="activeFunFact" style="margin-top:6px;opacity:.9;font-weight:500;color:var(--accent);"></div>
           </div>
           <div class="authBar">
             <div class="pill" id="activePill">—</div>
@@ -286,7 +286,8 @@
     activeProgramId: null,
     activeSessionId: null,
     logs: {}, 
-    timer: { total: 120, left: 120, running: false, t: null }
+    timer: { total: 120, left: 120, running: false, t: null },
+    funFacts: []
   };
 
   // --- HELPERS ---
@@ -578,7 +579,6 @@
       const badge = logged ? '<span class="pill" style="margin-left:8px;border-color:rgba(53,208,127,.35);background:rgba(53,208,127,.10);color:#c8ffe2">logged</span>' : '';
       const requiredLabel = `Required: Sets ${escapeHtml(w.setsStr||String(w.setCount))} • Reps ${escapeHtml(w.repsStr||w.targetReps||"")}`;
       
-      // Remove Button for custom exercises
       const deleteBtn = w._isCustom 
         ? `<button class="btn danger small" onclick="removeCustomWorkout(${w._customIndex}); event.stopPropagation();" style="margin-right:8px;">Remove</button>`
         : '';
@@ -744,6 +744,66 @@
     }
   };
 
+  // --- FUN FACTS LOGIC ---
+  async function loadFunFacts() {
+    try {
+      const res = await fetch("fun_facts.json");
+      if(res.ok) state.funFacts = await res.json();
+    } catch(e) { console.warn("Failed to load fun facts", e); }
+  }
+
+  function numFloat(v){ const n=parseFloat(String(v).trim()); return Number.isFinite(n)?n:null; }
+  function numInt(v){ const n=parseInt(String(v).trim(),10); return Number.isFinite(n)?n:null; }
+  function fmtInt(n){ try{return new Intl.NumberFormat().format(Math.round(n));}catch{return String(Math.round(n));} }
+  function hashInt(str){
+    let h=2166136261;
+    for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); }
+    return (h>>>0);
+  }
+
+  function sessionLogPrefix(session){ return `${session.programName}|||${session.title}|||`; }
+
+  function computeSessionVolumeKg(session){
+    if (!session) return 0;
+    const prefix = sessionLogPrefix(session);
+    let total = 0;
+    for (const k of Object.keys(state.logs || {})){
+      if (k.startsWith("__") || !k.startsWith(prefix)) continue;
+      const wlog = state.logs[k];
+      const sets = Array.isArray(wlog?.sets) ? wlog.sets : [];
+      for (const s of sets){
+        const w = numFloat(s?.weight);
+        const r = numInt(s?.reps);
+        if (w != null && r != null) total += (w * r);
+      }
+    }
+    return total;
+  }
+
+  function updateSessionFunFact(){
+    const session = state.sessionsById.get(state.activeSessionId);
+    const elFact = document.getElementById("activeFunFact");
+    if (!elFact || !session) {
+      if(elFact) elFact.textContent = "";
+      return;
+    }
+    const kg = computeSessionVolumeKg(session);
+    if (!kg || kg <= 0){ elFact.textContent = ""; return; }
+    
+    // Default picks if file fails
+    let picks = [
+      { label: '3.5" floppy disks', unitKg: 0.02 },
+      { label: 'Raspberry Pi boards', unitKg: 0.045 },
+      { label: 'desktop PCs', unitKg: 8.0 }
+    ];
+    if (state.funFacts && state.funFacts.length > 0) picks = state.funFacts;
+
+    const h = hashInt(`${session.programName}::${session.title}`);
+    const pick = picks[h % picks.length];
+    const count = Math.max(1, Math.round(kg / pick.unitKg));
+    elFact.textContent = `You lifted ${fmtInt(kg)}kg today — about the same weight as ${fmtInt(count)} ${pick.label}.`;
+  }
+
   async function loadAllPrograms(){
     try {
       state.programs=[];
@@ -867,123 +927,9 @@
   // Start
   if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
   
-  // Custom Exercises helpers
-  function sessionKey(session){ return `${session.programName}|||${session.title}`; }
-  function ensureCustomStore(){
-    if (typeof state.logs !== "object" || state.logs === null) state.logs = {};
-    if (!state.logs.__custom_sessions) state.logs.__custom_sessions = {};
-  }
-  function getCustomWorkouts(session){
-    ensureCustomStore();
-    const key = sessionKey(session);
-    return state.logs.__custom_sessions[key] || [];
-  }
-  function addCustomWorkout(session, title, setCount, reps){
-    ensureCustomStore();
-    const key = sessionKey(session);
-    const arr = getCustomWorkouts(session);
-    arr.push({
-      title: String(title||"").trim(),
-      sets: Number(setCount)||3,
-      reps: String(reps||"").trim(),
-      notes: [],
-      created_at: new Date().toISOString()
-    });
-    state.logs.__custom_sessions[key] = arr;
-    saveLogs();
-  }
-  function getAllWorkoutsForSession(session){
-    const base = Array.isArray(session?.workouts) ? session.workouts : [];
-    const custom = getCustomWorkouts(session).map((cw, i) => ({
-      id: uid(`${session.programName}::${session.title}::custom::${i}::${cw.title}`),
-      title: cw.title,
-      index: base.length + i,
-      setsStr: String(cw.sets),
-      repsStr: String(cw.reps || ""),
-      setCount: Number(cw.sets) || 3,
-      targetReps: String(cw.reps || "").trim(),
-      notes: Array.isArray(cw.notes) ? cw.notes : [],
-      _isCustom: true,
-      _customIndex: i
-    }));
-    return [...base, ...custom];
-  }
-  function savePrefs() {
-    try {
-      const prefs = {
-        programId: state.activeProgramId,
-        sessionId: state.activeSessionId
-      };
-      localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
-    } catch (e) {
-      console.warn("Failed to save prefs", e);
-    }
-  }
-  function updateSessionFunFact(){}
-  function scheduleCloudSave(){
-    if(!supabase || !state._user) return;
-    if(cloudSaveTimer) clearTimeout(cloudSaveTimer);
-    cloudSaveTimer = setTimeout(()=>cloudSaveNow().catch(console.error), CLOUD_SAVE_DEBOUNCE_MS);
-  }
-  async function cloudSaveNow(){
-    if(!supabase || !state._user) return;
-    const payload = { user_id: state._user.id, logs: state.logs, updated_at: new Date().toISOString() };
-    const {error} = await supabase.from("user_logs").upsert(payload, {onConflict:"user_id"});
-    if(error) throw error;
-  }
-  async function cloudLoad(){
-    if(!supabase || !state._user) return;
-    const {data, error} = await supabase.from("user_logs").select("logs").eq("user_id", state._user.id).maybeSingle();
-    if(error){ console.warn("cloudLoad error", error); return; }
-    const cloudLogs = data?.logs||{};
-    if(typeof cloudLogs!=="object" || cloudLogs===null) return;
-    state.logs = {...state.logs, ...cloudLogs};
-    await saveLogs(); 
-  }
-  function setAuthUI(signedIn, email){
-    const elStatus = document.getElementById("authStatus");
-    const elIn = document.getElementById("signInGoogle");
-    const elOut = document.getElementById("signOut");
-    const elAv = document.getElementById("authAvatar");
-    if (!elStatus) return;
-    const meta = state._user?.user_metadata || {};
-    const avatar = meta.avatar_url || meta.picture || "";
-    if (signedIn){
-      elStatus.textContent = email ? email : "Signed in";
-      elIn.style.display="none"; elOut.style.display="inline-flex";
-      if(elAv && avatar){ elAv.src=avatar; elAv.style.display="inline-block"; }
-      else if(elAv) elAv.style.display="none";
-    } else {
-      elStatus.textContent = "Not signed in";
-      elIn.style.display="inline-flex"; elOut.style.display="none";
-      if(elAv) elAv.style.display="none";
-    }
-  }
-  async function initAuth(){
-    if(!supabase){ setAuthUI(false); return; }
-    const {data:sessData} = await supabase.auth.getSession();
-    state._user = sessData?.session?.user || null;
-    setAuthUI(!!state._user, state._user?.email);
-    if(state._user){ await cloudLoad(); renderAll(); }
-    supabase.auth.onAuthStateChange(async (_event, session)=>{
-      state._user = session?.user || null;
-      setAuthUI(!!state._user, state._user?.email);
-      if(state._user){ await cloudLoad(); renderAll(); scheduleCloudSave(); }
-    });
-    document.getElementById("signInGoogle")?.addEventListener("click", async()=>{
-      const redirectTo = new URL(".", window.location.href).toString();
-      const {error} = await supabase.auth.signInWithOAuth({provider:"google", options:{redirectTo}});
-      if(error) alert("Sign-in failed: "+error.message);
-    });
-    document.getElementById("signOut")?.addEventListener("click", async()=>{
-      await supabase.auth.signOut();
-      state._user = null;
-      setAuthUI(false);
-    });
-  }
-
   loadAllPrograms();
   loadLogsAsync();
+  loadFunFacts(); // <--- NEW: Load facts at startup
   initAuth();
 
 </script>

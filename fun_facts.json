@@ -1,0 +1,14 @@
+[
+  { "label": "3.5\" floppy disks", "unitKg": 0.02 },
+  { "label": "Raspberry Pi boards", "unitKg": 0.045 },
+  { "label": "2.5\" hard drives", "unitKg": 0.10 },
+  { "label": "3.5\" hard drives", "unitKg": 0.60 },
+  { "label": "mechanical keyboards", "unitKg": 1.2 },
+  { "label": "RTX 4090 GPUs", "unitKg": 2.2 },
+  { "label": "15\" Laptops", "unitKg": 2.5 },
+  { "label": "Cisco switches", "unitKg": 4.5 },
+  { "label": "desktop PCs", "unitKg": 8.0 },
+  { "label": "1U rack servers", "unitKg": 12.0 },
+  { "label": "CRT Monitors", "unitKg": 18.0 },
+  { "label": "42U Server Racks", "unitKg": 110.0 }
+]

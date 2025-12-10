@@ -459,11 +459,22 @@
   // --- ASYNC STORAGE LOGIC ---
   async function loadLogsAsync() {
     try {
+      // 1. Check if library loaded. If not, fallback to localStorage immediately.
+      // This prevents the "Loading..." freeze if CDN fails.
+      if (typeof idbKeyval === 'undefined') {
+        console.warn("IndexedDB library not loaded. Falling back to localStorage.");
+        state.logs = loadLogs(); // Fallback sync load
+        renderAll();
+        return;
+      }
+
+      // 2. Try DB Load
       const dbLogs = await idbKeyval.get(LS_KEY);
       if (dbLogs) {
         state.logs = dbLogs;
         console.log("Loaded logs from IndexedDB");
       } else {
+        // 3. Migration logic
         const local = localStorage.getItem(LS_KEY);
         if (local) {
           state.logs = JSON.parse(local);
@@ -471,10 +482,18 @@
           console.log("Migrated logs from localStorage");
         }
       }
-      renderAll(); 
     } catch (e) {
-      console.error("Failed to load logs:", e);
+      console.warn("Async load failed, using fallback:", e);
+      state.logs = loadLogs();
+    } finally {
+      renderAll(); // ALWAYS render, never leave user on "Loading..."
     }
+  }
+
+  function loadLogs(){
+    // Legacy sync load - fallback only
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); }
+    catch { return {}; }
   }
 
   // Debounce helper
@@ -488,16 +507,26 @@
 
   const saveLogsDebounced = debounce(async () => {
     try {
-      await idbKeyval.set(LS_KEY, state.logs);
+      if (typeof idbKeyval !== 'undefined') {
+        await idbKeyval.set(LS_KEY, state.logs);
+      } else {
+        localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
+      }
       scheduleCloudSave();
       if (elPlanStatsModal?.classList?.contains("open")) renderPlanStats();
     } catch (e) { console.error("Save failed", e); }
   }, 500); // 500ms delay
 
   async function saveLogs() {
-    await idbKeyval.set(LS_KEY, state.logs);
-    scheduleCloudSave();
-    if (elPlanStatsModal?.classList?.contains("open")) renderPlanStats();
+    try {
+      if (typeof idbKeyval !== 'undefined') {
+        await idbKeyval.set(LS_KEY, state.logs);
+      } else {
+        localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
+      }
+      scheduleCloudSave();
+      if (elPlanStatsModal?.classList?.contains("open")) renderPlanStats();
+    } catch (e) { console.error("Immediate save failed", e); }
   }
 
   // --- Custom Exercises ---
@@ -1210,7 +1239,7 @@
   // --- SAFETY: Force save when leaving ---
   window.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") {
-      idbKeyval.set(LS_KEY, state.logs).catch(console.error);
+      if (typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, state.logs).catch(console.error);
     }
   });
 

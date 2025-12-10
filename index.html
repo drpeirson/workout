@@ -444,7 +444,35 @@
     } catch (e) { console.error("Immediate save failed", e); }
   }
 
-  // --- CLOUD SYNC & AUTH --- (Restored)
+  // --- LOGIC ---
+  function ensureWorkoutLog(session, workout, workoutIndex){
+    const k = `${session.programName}|||${session.title}|||${workoutIndex}|||${workout.title}`;
+    let wlog = state.logs[k];
+    if(!wlog){
+      wlog = {
+        program: session.programName, session: session.title, workout: workout.title, workoutIndex,
+        requiredSets: workout.setCount, requiredReps: workout.targetReps,
+        sets: Array.from({length: workout.setCount}, (_,i) => ({
+          set: i+1, targetReps: resolveReps(workout.targetReps, i),
+          weight:"", reps:"", done:false, note:""
+        })),
+        workoutNote:""
+      };
+      state.logs[k] = wlog;
+    } else {
+      if(!Array.isArray(wlog.sets)) wlog.sets=[];
+      while(wlog.sets.length < workout.setCount){
+        const i = wlog.sets.length;
+        wlog.sets.push({
+          set: i+1, targetReps: resolveReps(workout.targetReps, i),
+          weight:"", reps:"", done:false, note:""
+        });
+      }
+    }
+    return wlog;
+  }
+
+  // --- AUTH FUNCTIONS (RESTORED) ---
   function scheduleCloudSave(){
     if(!supabase || !state._user) return;
     if(cloudSaveTimer) clearTimeout(cloudSaveTimer);
@@ -511,35 +539,7 @@
     });
   }
 
-  // --- LOGIC ---
-  function ensureWorkoutLog(session, workout, workoutIndex){
-    const k = `${session.programName}|||${session.title}|||${workoutIndex}|||${workout.title}`;
-    let wlog = state.logs[k];
-    if(!wlog){
-      wlog = {
-        program: session.programName, session: session.title, workout: workout.title, workoutIndex,
-        requiredSets: workout.setCount, requiredReps: workout.targetReps,
-        sets: Array.from({length: workout.setCount}, (_,i) => ({
-          set: i+1, targetReps: resolveReps(workout.targetReps, i),
-          weight:"", reps:"", done:false, note:""
-        })),
-        workoutNote:""
-      };
-      state.logs[k] = wlog;
-    } else {
-      if(!Array.isArray(wlog.sets)) wlog.sets=[];
-      while(wlog.sets.length < workout.setCount){
-        const i = wlog.sets.length;
-        wlog.sets.push({
-          set: i+1, targetReps: resolveReps(workout.targetReps, i),
-          weight:"", reps:"", done:false, note:""
-        });
-      }
-    }
-    return wlog;
-  }
-
-  // --- RENDERING FUNCTIONS ---
+  // --- RENDERING ---
   function renderProgramSelect(){
     const elProg = document.getElementById("programSelect");
     elProg.innerHTML = state.programs.map(p =>
@@ -899,7 +899,8 @@
                    setCount: toIntMaybe(sStr) ?? 3,
                    targetReps: tReps,
                    setsStr: String(sStr), repsStr: String(rStr),
-                   notes: Array.isArray(w.notes)?w.notes:[]
+                   notes: Array.isArray(w.notes)?w.notes:[],
+                   _isCustom: false
                  };
                })
              };
@@ -994,6 +995,59 @@
   // Start
   if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
   
+  // Custom Exercises helpers
+  function sessionKey(session){ return `${session.programName}|||${session.title}`; }
+  function ensureCustomStore(){
+    if (typeof state.logs !== "object" || state.logs === null) state.logs = {};
+    if (!state.logs.__custom_sessions) state.logs.__custom_sessions = {};
+  }
+  function getCustomWorkouts(session){
+    ensureCustomStore();
+    const key = sessionKey(session);
+    return state.logs.__custom_sessions[key] || [];
+  }
+  function addCustomWorkout(session, title, setCount, reps){
+    ensureCustomStore();
+    const key = sessionKey(session);
+    const arr = getCustomWorkouts(session);
+    arr.push({
+      title: String(title||"").trim(),
+      sets: Number(setCount)||3,
+      reps: String(reps||"").trim(),
+      notes: [],
+      created_at: new Date().toISOString()
+    });
+    state.logs.__custom_sessions[key] = arr;
+    saveLogs();
+  }
+  function getAllWorkoutsForSession(session){
+    const base = Array.isArray(session?.workouts) ? session.workouts : [];
+    const custom = getCustomWorkouts(session).map((cw, i) => ({
+      id: uid(`${session.programName}::${session.title}::custom::${i}::${cw.title}`),
+      title: cw.title,
+      index: base.length + i,
+      setsStr: String(cw.sets),
+      repsStr: String(cw.reps || ""),
+      setCount: Number(cw.sets) || 3,
+      targetReps: String(cw.reps || "").trim(),
+      notes: Array.isArray(cw.notes) ? cw.notes : [],
+      _isCustom: true,
+      _customIndex: i
+    }));
+    return [...base, ...custom];
+  }
+  function savePrefs() {
+    try {
+      const prefs = {
+        programId: state.activeProgramId,
+        sessionId: state.activeSessionId
+      };
+      localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+    } catch (e) {
+      console.warn("Failed to save prefs", e);
+    }
+  }
+
   loadAllPrograms();
   loadLogsAsync();
   loadFunFacts(); // Load facts

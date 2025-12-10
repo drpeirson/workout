@@ -1,14 +1,13 @@
 /* MST Workout Tracker - Service Worker */
-const CACHE_NAME = "bolt-cache-v16"; // Bumped for Auth Fix
+const CACHE_NAME = "bolt-cache-v17"; // Bumped for Auth Fix
 
-// App shell & External Libraries
 const CORE_ASSETS = [
   "./",
   "index.html",
   "manifest.json",
   "icon-192.png",
   "icon-512.png",
-  "fun_facts.json",
+  "fun_facts.json", 
   "https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/index-min.js",
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
 ];
@@ -45,10 +44,8 @@ function isProgramJson(url) {
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
-
   const url = req.url;
 
-  // 1. Navigations (HTML)
   if (req.mode === "navigate") {
     event.respondWith(
       fetch(req).then((res) => {
@@ -60,7 +57,6 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // 2. Program JSON
   if (isProgramJson(url)) {
     event.respondWith(
       caches.match(req).then((cached) => {
@@ -75,7 +71,6 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // 3. Assets & Libraries
   if (isSameOrigin(url) || CORE_ASSETS.includes(url)) {
     event.respondWith(
       caches.match(req).then((cached) => {

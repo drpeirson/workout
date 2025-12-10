@@ -268,7 +268,7 @@
 
   const SUPABASE_URL = "https://redxigdkdjyxaofmutlv.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlZHhpZ2RrZGp5eGFvZm11dGx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyMjI5MTQsImV4cCI6MjA4MDc5ODkxNH0.24RNF4dKYNcKkAESiYNbA4_3Fvt-zTCFe5jCjR4vdn0";
-  const supabase = (typeof window.supabase !== 'undefined' && SUPABASE_URL.startsWith("http")) 
+  const supabase = (typeof window.supabase !== 'undefined' && SUPABASE_ANON_KEY.length > 20) 
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) 
     : null;
 
@@ -340,6 +340,84 @@
     return `${m}:${s}`;
   }
 
+  // --- TIMER LOGIC ---
+  function setTimer(sec){
+    state.timer.total = sec;
+    state.timer.left = sec;
+    state.timer.running = false;
+    state.timer.endAt = null;
+    stopTimerLoop();
+    renderTimer();
+  }
+
+  function renderTimer(){
+    if (state.timer.running && state.timer.endAt){
+      const now = Date.now();
+      state.timer.left = Math.max(0, Math.ceil((state.timer.endAt - now) / 1000));
+    }
+    const elDisplay = document.getElementById("timerDisplay");
+    if(elDisplay) elDisplay.textContent = fmtTime(state.timer.left);
+  }
+
+  function stopTimerLoop(){
+    if (state.timer.t){
+      clearInterval(state.timer.t);
+      state.timer.t = null;
+    }
+  }
+
+  function beep(){
+    try{
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = 880;
+      g.gain.value = 0.05;
+      o.start();
+      setTimeout(()=>{ o.stop(); ctx.close(); }, 250);
+    }catch{}
+  }
+
+  function tickTimer(){
+    if (!state.timer.running) return;
+    const now = Date.now();
+    const left = Math.max(0, Math.ceil((state.timer.endAt - now) / 1000));
+    state.timer.left = left;
+    renderTimer();
+
+    if (left <= 0){
+      state.timer.running = false;
+      state.timer.endAt = null;
+      stopTimerLoop();
+      beep();
+    }
+  }
+
+  function startTimer(){
+    if (state.timer.left <= 0) state.timer.left = state.timer.total;
+    state.timer.endAt = Date.now() + state.timer.left * 1000;
+    state.timer.running = true;
+    if (!state.timer.t) state.timer.t = setInterval(tickTimer, 250);
+    tickTimer();
+  }
+
+  function pauseTimer(){
+    if (!state.timer.running) return;
+    renderTimer();
+    state.timer.running = false;
+    state.timer.endAt = null;
+    stopTimerLoop();
+  }
+
+  function resetTimer(){
+    setTimer(state.timer.total);
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") tickTimer();
+  });
+
   // --- STORAGE ---
   function debounce(func, wait) {
     let timeout;
@@ -349,7 +427,6 @@
     };
   }
 
-  // Save debounce (lazy save)
   const saveLogsDebounced = debounce(async () => {
     try {
       if (typeof idbKeyval !== 'undefined') await idbKeyval.set(LS_KEY, state.logs);
@@ -358,7 +435,6 @@
     } catch (e) { console.error("Save failed", e); }
   }, 500);
 
-  // Immediate save
   async function saveLogs() {
     try {
       if (typeof idbKeyval !== 'undefined') await idbKeyval.set(LS_KEY, state.logs);
@@ -395,7 +471,7 @@
     return wlog;
   }
 
-  // --- RENDERING FUNCTIONS (GLOBAL) ---
+  // --- RENDERING ---
   function renderProgramSelect(){
     const elProg = document.getElementById("programSelect");
     elProg.innerHTML = state.programs.map(p =>
@@ -570,7 +646,7 @@
     renderActiveSession();
   }
 
-  // --- ACTIONS (Global Window Scope) ---
+  // --- ACTIONS ---
   window.pickSession = (sid) => {
     state.activeSessionId = sid;
     savePrefs();
@@ -754,6 +830,17 @@
   document.getElementById("closeSessions").addEventListener("click", () => {
     const d = document.getElementById("drawer");
     d.classList.remove("open"); d.setAttribute("aria-hidden", "true");
+  });
+
+  document.getElementById("timerStart")?.addEventListener("click", startTimer);
+  document.getElementById("timerPause")?.addEventListener("click", pauseTimer);
+  document.getElementById("timerReset")?.addEventListener("click", resetTimer);
+  document.getElementById("setCustom")?.addEventListener("click", () => {
+     const val = parseInt(document.getElementById("customSeconds").value, 10);
+     if(val) setTimer(val);
+  });
+  document.getElementById("preset")?.addEventListener("change", (e) => {
+     setTimer(parseInt(e.target.value, 10));
   });
 
   // Start

@@ -1,13 +1,15 @@
 /* MST Workout Tracker - Service Worker */
-const CACHE_NAME = "bolt-cache-v9"; // Version bumped
+const CACHE_NAME = "bolt-cache-v10"; // Version bumped to force update
 
-// App shell
+// App shell & External Libraries (Must cache these for offline to work)
 const CORE_ASSETS = [
   "./",
   "index.html",
   "manifest.json",
   "icon-192.png",
-  "icon-512.png"
+  "icon-512.png",
+  "https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/index-min.js",
+  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
 ];
 
 self.addEventListener("install", (event) => {
@@ -45,7 +47,7 @@ self.addEventListener("fetch", (event) => {
 
   const url = req.url;
 
-  // Navigations
+  // 1. Navigations (HTML)
   if (req.mode === "navigate") {
     event.respondWith(
       fetch(req).then((res) => {
@@ -57,7 +59,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Program JSON (Stale-while-revalidate)
+  // 2. Program JSON (Stale-while-revalidate)
   if (isProgramJson(url)) {
     event.respondWith(
       caches.match(req).then((cached) => {
@@ -72,14 +74,18 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Other assets (Cache first)
-  if (isSameOrigin(url)) {
+  // 3. External Libraries (CDN) & Local Assets
+  // We check if the URL is in our CORE_ASSETS list or is local
+  if (isSameOrigin(url) || CORE_ASSETS.includes(url)) {
     event.respondWith(
       caches.match(req).then((cached) => {
         if (cached) return cached;
         return fetch(req).then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then((c) => c.put(req, copy)).catch(() => {});
+          // Cache new requests dynamically if they are valid
+          if(res.ok) {
+             const copy = res.clone();
+             caches.open(CACHE_NAME).then((c) => c.put(req, copy)).catch(() => {});
+          }
           return res;
         });
       })

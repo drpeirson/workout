@@ -83,7 +83,8 @@
     #authAvatar{width:32px;height:32px;border-radius:999px;border:1px solid var(--line);display:none;object-fit:cover;}
     .authBar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
     
-    #errorBox { display:none; position:fixed; top:0; left:0; right:0; background:rgba(255,0,0,0.9); color:white; padding:20px; z-index:99999; font-family:monospace; white-space:pre-wrap; }
+    /* Error Box */
+    #errorBox { display:none; position:fixed; top:0; left:0; right:0; background:rgba(255,0,0,0.95); color:white; padding:20px; z-index:99999; font-family:monospace; white-space:pre-wrap; }
     
     @media (max-width: 980px){
       .app{grid-template-columns:1fr; height:auto;}
@@ -243,12 +244,12 @@
     const box = document.getElementById('errorBox');
     if(box) {
       box.style.display = 'block';
-      box.textContent += `Error: ${e.message} at ${e.filename}:${e.lineno}\n\n`;
+      box.textContent += `Error: ${e.message}\n`;
     }
   });
 
   function emergencyReset() {
-    if(!confirm("Reset app? This clears cached code (fixes bugs). Your logs should be safe.")) return;
+    if(!confirm("Reset app? This clears cached code. Your logs are safe.")) return;
     if('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(function(registrations) {
         for(let registration of registrations) { registration.unregister(); }
@@ -275,6 +276,7 @@
   const LS_KEY = "mst_tracker_logs_v2";
   const PREFS_KEY = "mst_tracker_prefs_v1";
   let cloudSaveTimer = null;
+  const CLOUD_SAVE_DEBOUNCE_MS = 800;
 
   // --- STATE ---
   const state = {
@@ -340,33 +342,6 @@
   }
 
   // --- STORAGE ---
-  async function loadLogsAsync() {
-    try {
-      if (typeof idbKeyval === 'undefined') {
-        console.warn("IDB library missing, using localStorage");
-        state.logs = JSON.parse(localStorage.getItem(LS_KEY) || "{}");
-        renderAll();
-        return;
-      }
-      
-      const dbLogs = await idbKeyval.get(LS_KEY);
-      if (dbLogs) {
-        state.logs = dbLogs;
-      } else {
-        const local = localStorage.getItem(LS_KEY);
-        if (local) {
-          state.logs = JSON.parse(local);
-          await idbKeyval.set(LS_KEY, state.logs);
-        }
-      }
-      renderAll();
-    } catch (e) {
-      console.error("Load failed", e);
-      state.logs = {}; 
-      renderAll();
-    }
-  }
-
   function debounce(func, wait) {
     let timeout;
     return function(...args) {
@@ -375,24 +350,22 @@
     };
   }
 
+  // Save debounce (lazy save)
   const saveLogsDebounced = debounce(async () => {
     try {
       if (typeof idbKeyval !== 'undefined') await idbKeyval.set(LS_KEY, state.logs);
       else localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
-      
-      if(supabase && state._user) {
-        const payload = { user_id: state._user.id, logs: state.logs, updated_at: new Date().toISOString() };
-        supabase.from("user_logs").upsert(payload, {onConflict:"user_id"}).then(({error}) => {
-           if(error) console.error("Cloud save error", error);
-        });
-      }
+      scheduleCloudSave();
     } catch (e) { console.error("Save failed", e); }
   }, 500);
 
+  // Immediate save
   async function saveLogs() {
-    saveLogsDebounced(); // Use debounce even for immediate calls to route logic safely, or call logic directly
-    // Force immediate IDB write for safety
-    if (typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, state.logs).catch(()=>{});
+    try {
+      if (typeof idbKeyval !== 'undefined') await idbKeyval.set(LS_KEY, state.logs);
+      else localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
+      scheduleCloudSave();
+    } catch (e) { console.error("Immediate save failed", e); }
   }
 
   // --- LOGIC ---
@@ -411,6 +384,7 @@
       };
       state.logs[k] = wlog;
     } else {
+      // Ensure sets array is robust
       if(!Array.isArray(wlog.sets)) wlog.sets=[];
       while(wlog.sets.length < workout.setCount){
         const i = wlog.sets.length;
@@ -423,191 +397,232 @@
     return wlog;
   }
 
-  async function loadAllPrograms(){
-    try {
-      state.programs=[];
-      for(const src of PROGRAM_SOURCES){
-        const res = await fetch(src.url, {cache:"no-store"});
-        if(!res.ok) throw new Error(res.statusText);
-        const raw = await res.json();
-        
-        const prog = { 
-          id: uid(`program::${raw.program}`), 
-          name: raw.program, 
-          sessions: (raw.sessions||[]).map((s,si)=>{
-             const sTitle = s.session || `Session ${si+1}`;
-             return {
-               id: uid(`program::${raw.program}::session::${sTitle}::${si}`),
-               title: sTitle,
-               programName: raw.program,
-               workouts: (s.workouts||[]).map((w,wi)=>{
-                 const wTitle = w.title || `Workout ${wi+1}`;
-                 const sStr = w.sets??""; const rStr=w.reps??"";
-                 
-                 // Smart Rep Logic
-                 let tReps = String(rStr).trim();
-                 if (tReps.toLowerCase() === cleanWorkoutTitle(wTitle, raw.program).toLowerCase()) tReps = "";
-
-                 return {
-                   id: uid(`w::${sTitle}::${wi}::${wTitle}`),
-                   title: wTitle,
-                   setCount: toIntMaybe(sStr) ?? 3,
-                   targetReps: tReps,
-                   setsStr: String(sStr), repsStr: String(rStr),
-                   notes: Array.isArray(w.notes)?w.notes:[]
-                 };
-               })
-             };
-          })
-        };
-        state.programs.push(prog);
-      }
-      
-      // Indexing
-      state.programById.clear(); state.sessionsById.clear();
-      for(const p of state.programs){
-        state.programById.set(p.id, p);
-        for(const s of p.sessions) state.sessionsById.set(s.id, s);
-      }
-
-      // Prefs
-      let prefs = {};
-      try{ prefs = JSON.parse(localStorage.getItem(PREFS_KEY)||"{}"); }catch{}
-      
-      if(prefs.programId && state.programById.has(prefs.programId)) state.activeProgramId = prefs.programId;
-      else state.activeProgramId = state.programs[0]?.id || null;
-
-      const actProg = state.programById.get(state.activeProgramId);
-      if(actProg){
-         const sessExists = actProg.sessions.some(s=>s.id===prefs.sessionId);
-         state.activeSessionId = sessExists ? prefs.sessionId : actProg.sessions[0]?.id;
-      }
-
-      renderAll();
-    } catch(e) {
-      console.error("Program Load Error", e);
-      document.getElementById("content").innerHTML = `<div class="muted">Error loading programs: ${e.message}</div>`;
-    }
+  // --- RENDERING FUNCTIONS (MOVED TO GLOBAL SCOPE) ---
+  
+  function renderProgramSelect(){
+    const elProg = document.getElementById("programSelect");
+    elProg.innerHTML = state.programs.map(p =>
+      `<option value="${p.id}" ${p.id===state.activeProgramId?"selected":""}>${escapeHtml(p.name)}</option>`
+    ).join("");
   }
 
-  // --- RENDER ---
-  function renderAll(){
-    const elProg = document.getElementById("programSelect");
+  function renderSessionSelect(){
     const elSess = document.getElementById("sessionSelect");
+    const p = state.programById.get(state.activeProgramId);
+    const sessions = p?.sessions || [];
+    elSess.innerHTML = sessions.map(s =>
+      `<option value="${s.id}" ${s.id===state.activeSessionId?"selected":""}>${escapeHtml(s.title)}</option>`
+    ).join("");
+  }
+
+  function countWorkoutLogged(programName, sessionTitle, workout, workoutIndex){
+    const k = `${programName}|||${sessionTitle}|||${workoutIndex}|||${workout.title}`;
+    const wlog = state.logs[k];
+    if(!wlog || !Array.isArray(wlog.sets)) return false;
+    return wlog.sets.some(r => (r.weight || r.reps || r.done));
+  }
+
+  function countLoggedInSession(session){
+    let done = 0;
+    getAllWorkoutsForSession(session).forEach((w,idx)=>{
+      if(countWorkoutLogged(session.programName, session.title, w, idx)) done++;
+    });
+    return done;
+  }
+
+  function renderSessionsList(){
     const elList = document.getElementById("sessions");
+    const elCount = document.getElementById("sessionCount");
+    const p = state.programById.get(state.activeProgramId);
+    const q = document.getElementById("search").value.trim().toLowerCase();
+    
+    const sessions = (p?.sessions || []).filter(s => {
+      if (!q) return true;
+      if (s.title.toLowerCase().includes(q)) return true;
+      return s.workouts.some(w => w.title.toLowerCase().includes(q));
+    });
+
+    elCount.textContent = `${(p?.sessions||[]).length} sessions`;
+    
+    elList.innerHTML = sessions.map(s => {
+      const total = s.workouts.length;
+      const done = countLoggedInSession(s);
+      const active = s.id === state.activeSessionId ? "active" : "";
+      return `
+        <div class="session-item ${active}" onclick="pickSession('${s.id}')">
+          <div class="name">${escapeHtml(s.title)}</div>
+          <div class="meta"><span class="badge">${total} workouts</span><span class="badge">${done}/${total} logged</span></div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderSetRow(session, workout, workoutIndex, row){
+    const doneClass = row.done ? "done" : "";
+    const smartTarget = resolveReps(workout.targetReps, row.set - 1);
+    let displayValue = row.targetReps;
+    if (!displayValue || displayValue === workout.targetReps || displayValue.includes(",")) {
+      displayValue = smartTarget;
+    }
+
+    return `
+      <div class="set-row ${doneClass}">
+        <div class="grid">
+          <div class="mono">#${row.set}</div>
+          <input type="text" placeholder="${escapeHtml(smartTarget)}" value="${escapeHtml(displayValue)}" oninput="updateSet(this, ${workoutIndex}, ${row.set}, 'targetReps')">
+          <input type="text" inputmode="decimal" placeholder="kg" value="${escapeHtml(row.weight||"")}" oninput="updateSet(this, ${workoutIndex}, ${row.set}, 'weight')">
+          <input type="text" inputmode="numeric" placeholder="reps" value="${escapeHtml(row.reps||"")}" oninput="updateSet(this, ${workoutIndex}, ${row.set}, 'reps')">
+          <input type="checkbox" ${row.done?"checked":""} onchange="updateSet(this, ${workoutIndex}, ${row.set}, 'done')">
+        </div>
+        <div style="margin-top:8px">
+          <input type="text" placeholder="Set note (optional)" value="${escapeHtml(row.note||"")}" oninput="updateSet(this, ${workoutIndex}, ${row.set}, 'note')">
+        </div>
+      </div>
+    `;
+  }
+
+  function renderActiveSession(){
     const elMain = document.getElementById("content");
     const elHead = document.getElementById("activeTitle");
-
-    // 1. Dropdowns
-    elProg.innerHTML = state.programs.map(p=>`<option value="${p.id}" ${p.id===state.activeProgramId?"selected":""}>${escapeHtml(p.name)}</option>`).join("");
-    
-    const activeProg = state.programById.get(state.activeProgramId);
-    const sessions = activeProg?.sessions || [];
-    elSess.innerHTML = sessions.map(s=>`<option value="${s.id}" ${s.id===state.activeSessionId?"selected":""}>${escapeHtml(s.title)}</option>`).join("");
-
-    // 2. Sidebar List
-    const q = document.getElementById("search").value.toLowerCase();
-    const filtered = sessions.filter(s => !q || s.title.toLowerCase().includes(q));
-    document.getElementById("sessionCount").textContent = `${sessions.length} sessions`;
-    
-    elList.innerHTML = filtered.map(s => {
-      const active = s.id===state.activeSessionId ? "active" : "";
-      return `<div class="session-item ${active}" onclick="pickSession('${s.id}')">
-        <div class="name">${escapeHtml(s.title)}</div>
-      </div>`;
-    }).join("");
-
-    // 3. Main View
     const session = state.sessionsById.get(state.activeSessionId);
-    if(!session) {
-      elHead.textContent = "No Session";
-      elMain.innerHTML = "";
+    
+    if (!session){
+      elHead.textContent = "No session loaded";
+      document.getElementById("activeMeta").textContent = "Check sources";
+      document.getElementById("activePill").textContent = "—";
+      elMain.innerHTML = `<div class="muted">Nothing selected.</div>`;
       return;
     }
-    
-    elHead.textContent = `${session.programName} • ${session.title}`;
-    
-    // Render Workouts
-    elMain.innerHTML = session.workouts.map((w, idx) => {
-      const wlog = ensureWorkoutLog(session, w, idx);
-      const isLogged = wlog.sets.some(s=>s.done || s.weight || s.reps);
-      const badge = isLogged ? '<span class="pill" style="margin-left:8px;border-color:#35d07f;color:#c8ffe2">logged</span>' : '';
-      
-      const setsHtml = wlog.sets.map(r => {
-        const smartTarget = resolveReps(w.targetReps, r.set-1);
-        let displayVal = r.targetReps;
-        // Fix old bad data or defaults
-        if(!displayVal || displayVal===w.targetReps || displayVal.includes(",")) displayVal = smartTarget;
 
-        return `
-        <div class="set-row ${r.done?'done':''}">
-          <div class="grid">
-            <div class="mono">#${r.set}</div>
-            <input type="text" placeholder="${smartTarget}" value="${escapeHtml(displayVal)}" oninput="updateSet(this, ${idx}, ${r.set}, 'targetReps')">
-            <input type="text" inputmode="decimal" placeholder="kg" value="${escapeHtml(r.weight)}" oninput="updateSet(this, ${idx}, ${r.set}, 'weight')">
-            <input type="text" inputmode="numeric" placeholder="reps" value="${escapeHtml(r.reps)}" oninput="updateSet(this, ${idx}, ${r.set}, 'reps')">
-            <input type="checkbox" ${r.done?'checked':''} onchange="updateSet(this, ${idx}, ${r.set}, 'done')">
-          </div>
-          <div style="margin-top:8px">
-             <input type="text" placeholder="Notes..." value="${escapeHtml(r.note)}" oninput="updateSet(this, ${idx}, ${r.set}, 'note')">
-          </div>
-        </div>`;
-      }).join("");
+    elHead.textContent = `${session.programName} • ${session.title}`;
+    updateActiveProgress();
+    updateSessionFunFact();
+
+    const allWorkouts = getAllWorkoutsForSession(session);
+    const workoutsHtml = allWorkouts.map((w, idx) => {
+      const wlog = ensureWorkoutLog(session, w, idx);
+      const logged = countWorkoutLogged(session.programName, session.title, w, idx);
+      const badge = logged ? '<span class="pill" style="margin-left:8px;border-color:rgba(53,208,127,.35);background:rgba(53,208,127,.10);color:#c8ffe2">logged</span>' : '';
+      const requiredLabel = `Required: Sets ${escapeHtml(w.setsStr||String(w.setCount))} • Reps ${escapeHtml(w.repsStr||w.targetReps||"")}`;
 
       return `
-      <div class="workout ${idx===0?'open':''}">
-        <div class="workout-head" onclick="toggleWorkout(this)">
-          <div>
-            <div class="workout-title" id="t_${idx}">${escapeHtml(cleanWorkoutTitle(w.title))} ${badge}</div>
-            <div class="workout-sub">Sets ${w.setCount} • Reps ${w.targetReps}</div>
+        <div class="workout ${idx===0 ? "open" : ""}" data-wi="${idx}">
+          <div class="workout-head" onclick="toggleWorkout(this)">
+            <div>
+              <div class="workout-title" id="title_${idx}">${escapeHtml(cleanWorkoutTitle(w.title, session.programName))} ${badge}</div>
+              <div class="workout-sub">${requiredLabel}</div>
+            </div>
+            <button class="btn small">Toggle</button>
           </div>
+          <div class="workout-body">
+            ${w.notes?.length ? `<div class="small-note"><b>Plan notes</b><br>${w.notes.map(n=>escapeHtml(n)).join("<br>")}</div><div class="divider"></div>` : ""}
+            <div class="grid"><div class="h">Set</div><div class="h">Target</div><div class="h">Kg</div><div class="h">Reps</div><div class="h">Done</div></div>
+            <div id="sets_${idx}">${wlog.sets.map(r=>renderSetRow(session,w,idx,r)).join("")}</div>
+            <div class="footer-actions">
+              <button class="btn small" onclick="modSet(${idx}, 1)">+ Set</button>
+              <button class="btn small danger" onclick="modSet(${idx}, -1)">− Set</button>
+              <button class="btn small" onclick="startRest(120)">Start 120s rest</button>
+              <button class="btn small" onclick="startRest(90)">Start 90s rest</button>
+              <button class="btn small" onclick="startRest(60)">Start 60s rest</button>
+            </div>
+            <div class="divider"></div>
+            <label class="muted">Workout notes</label>
+            <textarea oninput="updateWorkoutNote(this, ${idx})" placeholder="Notes...">${escapeHtml(wlog.workoutNote||"")}</textarea>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    const addBoxHtml = `
+      <div class="workout">
+        <div class="workout-head" onclick="toggleWorkout(this)">
+          <div><div class="workout-title">Add exercise</div><div class="workout-sub">Custom exercise</div></div>
           <button class="btn small">Toggle</button>
         </div>
         <div class="workout-body">
-          ${w.notes.length ? `<div class="small-note">${w.notes.join("<br>")}</div><div class="divider"></div>` : ""}
-          <div class="grid"><div class="h">Set</div><div class="h">Target</div><div class="h">Kg</div><div class="h">Reps</div><div class="h">Done</div></div>
-          ${setsHtml}
-          <div class="footer-actions">
-             <button class="btn small" onclick="modSet(${idx}, 1)">+ Set</button>
-             <button class="btn small danger" onclick="modSet(${idx}, -1)">- Set</button>
+          <div class="grid" style="grid-template-columns: 1fr 90px 120px;">
+            <div class="h">Exercise</div><div class="h">Sets</div><div class="h">Target reps</div>
+            <input id="customTitle" type="text" placeholder="e.g. Arnold press" />
+            <input id="customSets" type="number" min="1" step="1" value="3" />
+            <input id="customReps" type="text" placeholder="e.g. 8-12" />
           </div>
+          <div class="footer-actions"><button class="btn small primary" onclick="handleCustomAdd()">Add</button></div>
         </div>
-      </div>`;
-    }).join("");
+      </div>
+    `;
+    elMain.innerHTML = workoutsHtml + addBoxHtml;
   }
 
-  // --- ACTIONS (Global Scope for onclick) ---
+  function updateActiveProgress(){
+    const session = state.sessionsById.get(state.activeSessionId);
+    if (!session) return;
+    const all = getAllWorkoutsForSession(session);
+    const total = all.length;
+    let done = 0;
+    all.forEach((w, idx) => {
+      if (countWorkoutLogged(session.programName, session.title, w, idx)) done++;
+    });
+    document.getElementById("activeMeta").textContent = `Workouts: ${total} • Logged: ${done}/${total}`;
+    document.getElementById("activePill").textContent = `${done}/${total}`;
+  }
+
+  function renderAll(){
+    renderProgramSelect();
+    renderSessionSelect();
+    renderSessionsList();
+    renderActiveSession();
+  }
+
+  // --- ACTIONS (Global Window Scope for onclick) ---
   window.pickSession = (sid) => {
     state.activeSessionId = sid;
     savePrefs();
     renderAll();
+    // Mobile drawer handling
+    const drawer = document.getElementById("drawer");
+    if(drawer.classList.contains("open")){
+       drawer.classList.remove("open"); drawer.setAttribute("aria-hidden", "true");
+    }
+    document.getElementById("content")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   window.toggleWorkout = (el) => {
-    el.closest('.workout').classList.toggle('open');
+    // Avoid double toggle if button clicked
+    if(event.target.tagName !== "BUTTON") el.closest('.workout').classList.toggle('open');
   };
 
   window.modSet = (wIdx, delta) => {
     const session = state.sessionsById.get(state.activeSessionId);
-    const w = session.workouts[wIdx];
+    const w = getAllWorkoutsForSession(session)[wIdx];
     const wlog = ensureWorkoutLog(session, w, wIdx);
     
     if(delta > 0) {
       wlog.sets.push({
-        set: wlog.sets.length+1, 
-        targetReps: resolveReps(w.targetReps, wlog.sets.length),
+        set: wlog.sets.length+1, targetReps: resolveReps(w.targetReps, wlog.sets.length),
         weight:"", reps:"", done:false, note:""
       });
     } else if (wlog.sets.length > 1) {
       wlog.sets.pop();
     }
     saveLogs();
-    renderAll(); // Re-render to show/hide rows
+    renderActiveSession();
+  };
+
+  window.startRest = (sec) => {
+    setTimer(sec); startTimer();
+  };
+
+  window.updateWorkoutNote = (el, wIdx) => {
+    const session = state.sessionsById.get(state.activeSessionId);
+    const w = getAllWorkoutsForSession(session)[wIdx];
+    const wlog = ensureWorkoutLog(session, w, wIdx);
+    wlog.workoutNote = el.value;
+    saveLogsDebounced();
   };
 
   window.updateSet = (el, wIdx, setNum, field) => {
     const session = state.sessionsById.get(state.activeSessionId);
-    const w = session.workouts[wIdx];
+    const w = getAllWorkoutsForSession(session)[wIdx];
     const wlog = ensureWorkoutLog(session, w, wIdx);
     const row = wlog.sets.find(r => r.set === setNum);
     if(!row) return;
@@ -615,40 +630,105 @@
     if(field === 'done') {
       row.done = el.checked;
       el.closest('.set-row').classList.toggle('done', row.done);
-      saveLogs(); // Instant save for checkboxes
+      saveLogs(); // Instant save
       
       // Live badge update
       const isLogged = wlog.sets.some(s=>s.done||s.weight||s.reps);
-      const tEl = document.getElementById(`t_${wIdx}`);
-      if(tEl && isLogged && !tEl.innerHTML.includes("logged")) {
-         tEl.innerHTML += ' <span class="pill" style="margin-left:8px;border-color:#35d07f;color:#c8ffe2">logged</span>';
+      const tEl = document.getElementById(`title_${wIdx}`);
+      if(tEl) {
+         const cleanTitle = escapeHtml(cleanWorkoutTitle(w.title, session.programName));
+         const badge = isLogged ? '<span class="pill" style="margin-left:8px;border-color:rgba(53,208,127,.35);background:rgba(53,208,127,.10);color:#c8ffe2">logged</span>' : '';
+         tEl.innerHTML = `${cleanTitle} ${badge}`;
       }
+      updateActiveProgress();
     } else {
       row[field] = el.value;
-      saveLogsDebounced(); // Lazy save for typing
+      saveLogsDebounced();
     }
   };
 
+  window.handleCustomAdd = () => {
+    const session = state.sessionsById.get(state.activeSessionId);
+    const title = document.getElementById("customTitle")?.value||"";
+    const sets = parseInt(document.getElementById("customSets")?.value||"3",10);
+    const reps = document.getElementById("customReps")?.value||"";
+    if(!String(title).trim()) return alert("Enter exercise name.");
+    addCustomWorkout(session, title, sets, reps);
+    renderAll();
+  };
+
   // --- INIT ---
-  // Listeners
+  async function loadLogsAsync() {
+    try {
+      if (typeof idbKeyval === 'undefined') {
+        console.warn("IDB missing");
+        state.logs = JSON.parse(localStorage.getItem(LS_KEY)||"{}");
+      } else {
+        const dbLogs = await idbKeyval.get(LS_KEY);
+        if (dbLogs) state.logs = dbLogs;
+        else {
+           const local = localStorage.getItem(LS_KEY);
+           if(local) { state.logs = JSON.parse(local); await idbKeyval.set(LS_KEY, state.logs); }
+        }
+      }
+      renderAll();
+    } catch(e) {
+      console.error(e);
+      document.getElementById("content").innerHTML = "Error loading logs";
+    }
+  }
+
+  // --- EVENTS ---
   document.getElementById("programSelect").addEventListener("change", (e)=>{
     state.activeProgramId = e.target.value;
     const p = state.programById.get(state.activeProgramId);
-    state.activeSessionId = p?.sessions[0]?.id;
+    state.activeSessionId = p?.sessions[0]?.id || null;
     savePrefs(); renderAll();
   });
-  
   document.getElementById("sessionSelect").addEventListener("change", (e)=>{
     state.activeSessionId = e.target.value;
     savePrefs(); renderAll();
   });
-
   document.getElementById("search").addEventListener("input", renderSessionsList);
+  
+  document.getElementById("openSessions").addEventListener("click", () => {
+    const d = document.getElementById("drawer");
+    const dList = document.getElementById("sessionsDrawer");
+    // Clone list logic or simple copy? Simple copy is safer for styles
+    dList.innerHTML = document.getElementById("sessions").innerHTML;
+    // Rebind clicks in drawer
+    dList.querySelectorAll(".session-item").forEach(item => {
+       // extract ID from onclick attribute in string or data attribute if we added one?
+       // simpler: re-render drawer list from data
+       // Let's just re-render list into drawer
+    });
+    // Actually, let's just make the drawer visible and use the shared renderSessionsList logic?
+    // Simplified: Just copy the HTML and intercept clicks is hard.
+    // Better: Render directly to drawer in renderSessionsList?
+    // QUICK FIX: Copy HTML and add delegator to drawer container
+    dList.innerHTML = document.getElementById("sessions").innerHTML;
+    dList.onclick = (e) => {
+       const item = e.target.closest('.session-item');
+       if(item) {
+          // The onclick="pickSession..." is already in the HTML string!
+          // So it works automatically.
+       }
+    };
+    d.classList.add("open"); d.setAttribute("aria-hidden", "false");
+  });
+
+  document.getElementById("closeSessions").addEventListener("click", () => {
+    const d = document.getElementById("drawer");
+    d.classList.remove("open"); d.setAttribute("aria-hidden", "true");
+  });
 
   // Start
   if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+  
   loadAllPrograms();
   loadLogsAsync();
+  initAuth();
+
 </script>
 </body>
 </html>

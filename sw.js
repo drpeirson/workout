@@ -1,7 +1,7 @@
 /* MST Workout Tracker - Service Worker */
-const CACHE_NAME = "bolt-cache-v10"; // Version bumped to force update
+const CACHE_NAME = "bolt-cache-v11"; // Version bumped for immediate fix
 
-// App shell & External Libraries (Must cache these for offline to work)
+// App shell & External Libraries
 const CORE_ASSETS = [
   "./",
   "index.html",
@@ -59,7 +59,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // 2. Program JSON (Stale-while-revalidate)
+  // 2. Program JSON
   if (isProgramJson(url)) {
     event.respondWith(
       caches.match(req).then((cached) => {
@@ -74,14 +74,12 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // 3. External Libraries (CDN) & Local Assets
-  // We check if the URL is in our CORE_ASSETS list or is local
+  // 3. Assets & Libraries
   if (isSameOrigin(url) || CORE_ASSETS.includes(url)) {
     event.respondWith(
       caches.match(req).then((cached) => {
         if (cached) return cached;
         return fetch(req).then((res) => {
-          // Cache new requests dynamically if they are valid
           if(res.ok) {
              const copy = res.clone();
              caches.open(CACHE_NAME).then((c) => c.put(req, copy)).catch(() => {});

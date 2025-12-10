@@ -1,7 +1,7 @@
 /* MST Workout Tracker - Service Worker */
-const CACHE_NAME = "bolt-cache-v8"; // Version bumped to force update
+const CACHE_NAME = "bolt-cache-v9"; // Version bumped
 
-// App shell (keep this small)
+// App shell
 const CORE_ASSETS = [
   "./",
   "index.html",
@@ -39,10 +39,6 @@ function isProgramJson(url) {
   }
 }
 
-// Strategy:
-// - Navigations: network-first (fresh HTML), fallback to cache
-// - /data/*.json: stale-while-revalidate (fast + keeps updated)
-// - Everything else (same-origin GET): cache-first, then network
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
@@ -61,7 +57,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Program JSON
+  // Program JSON (Stale-while-revalidate)
   if (isProgramJson(url)) {
     event.respondWith(
       caches.match(req).then((cached) => {
@@ -76,7 +72,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Other same-origin assets
+  // Other assets (Cache first)
   if (isSameOrigin(url)) {
     event.respondWith(
       caches.match(req).then((cached) => {

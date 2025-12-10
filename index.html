@@ -8,8 +8,9 @@
   <link rel="apple-touch-icon" href="icon-192.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>BOLT</title>
+  <title>BOLT</title>
   <style>
+    /* CSS Styles */
     :root{
       --bg:#484838; --panel:#343427; --panel2:#2c2c21; --text:#f7f1df; --muted:#d2c79c;
       --line:#5f5a42; --accent:#f4c300; --good:#35d07f; --warn:#ffc857; --bad:#ff5c7a;
@@ -24,52 +25,28 @@
       radial-gradient(900px 500px at 100% 25%, rgba(244,195,0,.10) 0%, transparent 55%), var(--bg);
       color:var(--text);
     }
-    .app{display:grid; grid-template-columns: 390px 1fr; gap:14px; height:100dvh;
-  min-height:100vh; padding:14px;}
+    .app{display:grid; grid-template-columns: 390px 1fr; gap:14px; height:100dvh; min-height:100vh; padding:14px;}
     .card{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)); border:1px solid var(--line);
-      border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden;
-  display:flex;
-  flex-direction:column;
-  min-height:0;
-}
+      border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column; min-height:0;}
     header{padding:14px 16px; display:flex; gap:10px; align-items:center; justify-content:space-between;
-      border-bottom:1px solid var(--line);
-      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.01));}
+      border-bottom:1px solid var(--line); background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.01));}
     header .title{font-weight:800; letter-spacing:.2px; font-size:15px;}
     header .subtitle{color:var(--muted); font-size:12px; margin-top:2px;}
-    .stack{display:flex; flex-direction:column; gap:10px; padding:12px;
-  flex:1;
-  min-height:0;
-}
+    .stack{display:flex; flex-direction:column; gap:10px; padding:12px; flex:1; min-height:0;}
     .row{display:flex; gap:10px; align-items:center;}
     .row > *{flex:1}
-    .btn{appearance:none; border:1px solid var(--line); background:rgba(255,255,255,.03);
-      color:var(--text); padding:9px 10px; border-radius:12px; cursor:pointer; font-weight:650;}
+    .btn{appearance:none; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--text); padding:9px 10px; border-radius:12px; cursor:pointer; font-weight:650;}
     .btn:hover{border-color:#2d4364}
     .btn.primary{border-color:rgba(110,168,255,.35); background:rgba(110,168,255,.12)}
     .btn.danger{border-color:rgba(255,92,122,.35); background:rgba(255,92,122,.10)}
     .btn.small{padding:7px 9px; font-size:12px; border-radius:10px}
-    .pill{font-family:var(--mono); font-size:11px; color:var(--text); background:rgba(244,195,0,.12);
-      border:1px solid rgba(244,195,0,.28); padding:4px 8px; border-radius:999px; display:inline-flex; align-items:center; gap:6px;}
-    input[type="text"], input[type="number"], textarea, select{
-      width:100%; background:rgba(0,0,0,.25); border:1px solid var(--line); color:var(--text);
-      border-radius:12px; padding:9px 10px; outline:none;
-    }
+    .pill{font-family:var(--mono); font-size:11px; color:var(--text); background:rgba(244,195,0,.12); border:1px solid rgba(244,195,0,.28); padding:4px 8px; border-radius:999px; display:inline-flex; align-items:center; gap:6px;}
+    input[type="text"], input[type="number"], textarea, select{ width:100%; background:rgba(0,0,0,.25); border:1px solid var(--line); color:var(--text); border-radius:12px; padding:9px 10px; outline:none; }
     textarea{min-height:70px; resize:vertical}
     .muted{color:var(--muted)}
     .mono{font-family:var(--mono)}
     .divider{height:1px; background:var(--line); margin:10px 0}
-    .sessions{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  overflow:auto;
-  padding-right:6px;
-  padding-bottom:8px;
-
-  flex:1;
-  min-height:0;
-}
+    .sessions{ display:flex; flex-direction:column; gap:8px; overflow:auto; padding-right:6px; padding-bottom:8px; flex:1; min-height:0; }
     .session-item{border:1px solid var(--line); border-radius:14px; padding:10px 10px; cursor:pointer; background:rgba(0,0,0,.18);}
     .session-item:hover{border-color:#2d4364}
     .session-item.active{border-color:rgba(110,168,255,.55); background:rgba(110,168,255,.08)}
@@ -98,81 +75,43 @@
     .timer .time{font-family:var(--mono); font-size:18px; letter-spacing:.06em; min-width:92px; text-align:center;}
     .small-note{font-size:12px; color:var(--muted); line-height:1.35}
     .two-col{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
-
-.grid input[type="checkbox"]{ transform: scale(1.15); }
-
-    /* ---- Mobile session drawer ---- */
+    
     #mobileBrowseRow { display:none; }
     .drawer{ position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; z-index:9999; }
     .drawer.open{ display:block; }
-    .drawer .sheet{
-      position:absolute; left:0; right:0; bottom:0;
-      max-height:85vh;
-      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      border:1px solid var(--line);
-      border-radius: 18px 18px 0 0;
-      box-shadow:var(--shadow);
-      padding:12px;
-      display:flex; flex-direction:column; gap:10px;
-    }
-
-    /* Auth UI (top-right) */
+    .drawer .sheet{ position:absolute; left:0; right:0; bottom:0; max-height:85vh; background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border:1px solid var(--line); border-radius: 18px 18px 0 0; box-shadow:var(--shadow); padding:12px; display:flex; flex-direction:column; gap:10px; }
     #authAvatar{width:32px;height:32px;border-radius:999px;border:1px solid var(--line);display:none;object-fit:cover;}
     .authBar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
+    
+    #errorBox { display:none; position:fixed; top:0; left:0; right:0; background:rgba(255,0,0,0.9); color:white; padding:20px; z-index:99999; font-family:monospace; white-space:pre-wrap; }
+    
     @media (max-width: 980px){
       .app{grid-template-columns:1fr; height:auto;}
       .content{height:auto; max-height:none;}
       .sessions{max-height:none;}
       .two-col{grid-template-columns:1fr;}
-
-      /* Hide the big list in the sidebar; use the drawer instead */
       #mobileBrowseRow{ display:flex; }
       #sessions{ display:none; }
-
-      /* Keep inputs usable on mobile */
       .grid{display:grid; grid-template-columns: 52px 7ch 7ch 7ch 52px; gap:6px; align-items:center; min-width:0;}
       .grid input[type="text"], .grid input[type="number"]{width:100%; min-width:0; max-width:100%; font-family:var(--mono); font-size:16px; padding:9px 10px;}
       .grid input[type="checkbox"]{ transform: scale(1.15); justify-self:center; }
-      
-      /* Reduce clutter */
       #authStatus{display:none;}
       .authBar{gap:8px;}
     }
-
-    /* ---- Plan stats modal ---- */
-    .stats-grid{
-      display:grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap:10px;
-    }
-    .stat{
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:10px 12px;
-      background:rgba(0,0,0,.18);
-    }
-    .statv{
-      font-family:var(--mono);
-      font-size:20px;
-      font-weight:900;
-      margin-top:6px;
-      letter-spacing:.02em;
-    }
-    #planSessionChart{
-      width:100%;
-      height:260px;
-      display:block;
-    }
+    
+    .stats-grid{ display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px; }
+    .stat{ border:1px solid var(--line); border-radius:14px; padding:10px 12px; background:rgba(0,0,0,.18); }
+    .statv{ font-family:var(--mono); font-size:20px; font-weight:900; margin-top:6px; letter-spacing:.02em; }
+    #planSessionChart{ width:100%; height:260px; display:block; }
     .toplist{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
     .topitem{display:flex;justify-content:space-between;gap:10px;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:8px 10px;background:rgba(255,255,255,.02);}
     .topitem b{font-weight:900;}
-    @media (max-width: 980px){
-      .stats-grid{grid-template-columns: 1fr;}
-      #planSessionChart{height:220px;}
-    }
-</style>
+    @media (max-width: 980px){ .stats-grid{grid-template-columns: 1fr;} #planSessionChart{height:220px;} }
+  </style>
 </head>
 <body>
+  <div id="errorBox"></div>
+
   <div class="app">
     <div class="card">
       <header>
@@ -184,6 +123,8 @@
       </header>
 
       <div class="stack">
+        <button class="btn danger small" onclick="emergencyReset()" style="align-self:flex-start;">⚠️ Reset App</button>
+
         <div class="two-col">
           <div>
             <label class="muted" for="programSelect">Program</label>
@@ -230,7 +171,6 @@
         </div>
 
         <div class="divider"></div>
-
         <div class="sessions" id="sessions"></div>
 
         <div class="footer-actions">
@@ -238,7 +178,6 @@
           <button class="btn" id="importLogs">Import logs</button>
           <button class="btn" id="exportCSV">Export logs (CSV)</button>
         </div>
-
         <input id="importFile" type="file" accept=".json,application/json" style="display:none" />
       </div>
     </div>
@@ -271,7 +210,6 @@
         <button class="btn small" id="closeSessions" type="button" style="max-width:120px;">Close</button>
       </div>
       <div class="sessions" id="sessionsDrawer" style="max-height:70vh; overflow:auto;"></div>
-      <div class="small-note">Tip: use search + the Program/Session dropdowns for quick jumps.</div>
     </div>
   </div>
 
@@ -281,40 +219,18 @@
         <div style="font-weight:900;">Plan stats</div>
         <button class="btn small" id="closePlanStats" type="button" style="max-width:120px;">Close</button>
       </div>
-
       <div class="stats-grid">
-        <div class="stat">
-          <div class="muted">Total volume</div>
-          <div class="statv"><span id="planTotalVolume">0</span> <span class="muted">kg•reps</span></div>
-        </div>
-        <div class="stat">
-          <div class="muted">Logged sessions</div>
-          <div class="statv" id="planLoggedSessions">0</div>
-        </div>
-        <div class="stat">
-          <div class="muted">Logged sets</div>
-          <div class="statv" id="planLoggedSets">0</div>
-        </div>
-        <div class="stat">
-          <div class="muted">Unique exercises</div>
-          <div class="statv" id="planUniqueExercises">0</div>
-        </div>
+        <div class="stat"><div class="muted">Total volume</div><div class="statv"><span id="planTotalVolume">0</span> <span class="muted">kg•reps</span></div></div>
+        <div class="stat"><div class="muted">Logged sessions</div><div class="statv" id="planLoggedSessions">0</div></div>
+        <div class="stat"><div class="muted">Logged sets</div><div class="statv" id="planLoggedSets">0</div></div>
+        <div class="stat"><div class="muted">Unique exercises</div><div class="statv" id="planUniqueExercises">0</div></div>
       </div>
-
       <div class="divider"></div>
-
       <div class="small-note"><b>Volume by session (top)</b></div>
-      <canvas id="planSessionChart" width="900" height="260"
-        style="width:100%;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.18);"></canvas>
-
+      <canvas id="planSessionChart" width="900" height="260" style="width:100%;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.18);"></canvas>
       <div class="divider"></div>
-
       <div class="small-note"><b>Top exercises</b></div>
       <div class="toplist" id="planTopExercises"></div>
-
-      <div class="small-note" style="margin-top:8px;">
-        This is calculated from your logs (weight × reps). Plan JSON is read-only.
-      </div>
     </div>
   </div>
 
@@ -322,81 +238,57 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-  /**
-   * CONFIG
-   */
+  // --- EMERGENCY ERROR HANDLER ---
+  window.addEventListener('error', function(e) {
+    const box = document.getElementById('errorBox');
+    if(box) {
+      box.style.display = 'block';
+      box.textContent += `Error: ${e.message} at ${e.filename}:${e.lineno}\n\n`;
+    }
+  });
+
+  function emergencyReset() {
+    if(!confirm("Reset app? This clears cached code (fixes bugs). Your logs should be safe.")) return;
+    if('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for(let registration of registrations) { registration.unregister(); }
+        window.location.reload(true);
+      });
+    } else {
+      window.location.reload(true);
+    }
+  }
+
+  // --- CONFIG ---
   const PROGRAM_SOURCES = [
     { name: "Hypertrophy", url: "data/hypertrophy.json" },
     { name: "Starting Strongman", url: "data/starting_strongman.json" },
     { name: "Static Monster", url: "data/static_monster.json" },
   ];
 
-  // ---- CLOUD SYNC (Supabase) ----
   const SUPABASE_URL = "https://redxigdkdjyxaofmutlv.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlZHhpZ2RrZGp5eGFvZm11dGx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyMjI5MTQsImV4cCI6MjA4MDc5ODkxNH0.24RNF4dKYNcKkAESiYNbA4_3Fvt-zTCFe5jCjR4vdn0";
-  const supabase = (SUPABASE_URL.startsWith("http") && SUPABASE_ANON_KEY.length > 20)
-    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  const supabase = (typeof window.supabase !== 'undefined' && SUPABASE_URL.startsWith("http")) 
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) 
     : null;
-
-  // Debounced cloud save
-  let cloudSaveTimer = null;
-  const CLOUD_SAVE_DEBOUNCE_MS = 800;
 
   const LS_KEY = "mst_tracker_logs_v2";
   const PREFS_KEY = "mst_tracker_prefs_v1";
+  let cloudSaveTimer = null;
 
-  // ---------- State ----------
+  // --- STATE ---
   const state = {
     programs: [],
     programById: new Map(),
     sessionsById: new Map(),
     workoutsById: new Map(),
-
     activeProgramId: null,
     activeSessionId: null,
-
-    logs: {}, // Populated async
-
+    logs: {}, 
     timer: { total: 120, left: 120, running: false, t: null }
   };
 
-  // ---------- DOM Elements ----------
-  const elProgramSelect = document.getElementById("programSelect");
-  const elSessionSelect = document.getElementById("sessionSelect");
-  const elSearch = document.getElementById("search");
-  const elSessions = document.getElementById("sessions");
-  const elContent = document.getElementById("content");
-  const elActiveTitle = document.getElementById("activeTitle");
-  const elActiveMeta = document.getElementById("activeMeta");
-  const elActivePill = document.getElementById("activePill");
-  const elSessionCount = document.getElementById("sessionCount");
-  const elTimerDisplay = document.getElementById("timerDisplay");
-  const elImportFile = document.getElementById("importFile");
-  const elDrawer = document.getElementById("drawer");
-  const elSessionsDrawer = document.getElementById("sessionsDrawer");
-  const elActiveFunFact = document.getElementById("activeFunFact");
-  const elPlanStatsModal = document.getElementById("planStatsModal");
-  const elPlanTotalVolume = document.getElementById("planTotalVolume");
-  const elPlanLoggedSessions = document.getElementById("planLoggedSessions");
-  const elPlanLoggedSets = document.getElementById("planLoggedSets");
-  const elPlanUniqueExercises = document.getElementById("planUniqueExercises");
-  const elPlanTopExercises = document.getElementById("planTopExercises");
-  const elPlanSessionChart = document.getElementById("planSessionChart");
-
-  // ---------- Helpers ----------
-
-  function savePrefs() {
-    try {
-      const prefs = {
-        programId: state.activeProgramId,
-        sessionId: state.activeSessionId
-      };
-      localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
-    } catch (e) {
-      console.warn("Failed to save prefs", e);
-    }
-  }
-
+  // --- HELPERS ---
   function resolveReps(repsStr, setIndex) {
     if (!repsStr) return "";
     const s = String(repsStr);
@@ -417,23 +309,14 @@
   }
 
   function escapeHtml(s){
-    return String(s)
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
+    return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
   }
-
-  function escapeRegExp(s){
-    return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  }
-
+  
   function cleanWorkoutTitle(title, programName){
     let t = String(title || "").trim();
     if (!t) return t;
     if (programName){
-      const progRe = new RegExp("\\s*-\\s*" + escapeRegExp(programName) + "\\b.*$", "i");
+      const progRe = new RegExp("\\s*-\\s*" + String(programName).replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b.*$", "i");
       if (progRe.test(t)) t = t.replace(progRe, "").trim();
     }
     t = t.replace(/\s*-\s*WEEK\s*\d+\b.*$/i, "").trim();
@@ -456,47 +339,34 @@
     return `${m}:${s}`;
   }
 
-  // --- ASYNC STORAGE LOGIC ---
+  // --- STORAGE ---
   async function loadLogsAsync() {
     try {
-      // 1. Check if library loaded. If not, fallback to localStorage immediately.
-      // This prevents the "Loading..." freeze if CDN fails.
       if (typeof idbKeyval === 'undefined') {
-        console.warn("IndexedDB library not loaded. Falling back to localStorage.");
-        state.logs = loadLogs(); // Fallback sync load
+        console.warn("IDB library missing, using localStorage");
+        state.logs = JSON.parse(localStorage.getItem(LS_KEY) || "{}");
         renderAll();
         return;
       }
-
-      // 2. Try DB Load
+      
       const dbLogs = await idbKeyval.get(LS_KEY);
       if (dbLogs) {
         state.logs = dbLogs;
-        console.log("Loaded logs from IndexedDB");
       } else {
-        // 3. Migration logic
         const local = localStorage.getItem(LS_KEY);
         if (local) {
           state.logs = JSON.parse(local);
           await idbKeyval.set(LS_KEY, state.logs);
-          console.log("Migrated logs from localStorage");
         }
       }
+      renderAll();
     } catch (e) {
-      console.warn("Async load failed, using fallback:", e);
-      state.logs = loadLogs();
-    } finally {
-      renderAll(); // ALWAYS render, never leave user on "Loading..."
+      console.error("Load failed", e);
+      state.logs = {}; 
+      renderAll();
     }
   }
 
-  function loadLogs(){
-    // Legacy sync load - fallback only
-    try { return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); }
-    catch { return {}; }
-  }
-
-  // Debounce helper
   function debounce(func, wait) {
     let timeout;
     return function(...args) {
@@ -507,413 +377,39 @@
 
   const saveLogsDebounced = debounce(async () => {
     try {
-      if (typeof idbKeyval !== 'undefined') {
-        await idbKeyval.set(LS_KEY, state.logs);
-      } else {
-        localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
+      if (typeof idbKeyval !== 'undefined') await idbKeyval.set(LS_KEY, state.logs);
+      else localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
+      
+      if(supabase && state._user) {
+        const payload = { user_id: state._user.id, logs: state.logs, updated_at: new Date().toISOString() };
+        supabase.from("user_logs").upsert(payload, {onConflict:"user_id"}).then(({error}) => {
+           if(error) console.error("Cloud save error", error);
+        });
       }
-      scheduleCloudSave();
-      if (elPlanStatsModal?.classList?.contains("open")) renderPlanStats();
     } catch (e) { console.error("Save failed", e); }
-  }, 500); // 500ms delay
+  }, 500);
 
   async function saveLogs() {
-    try {
-      if (typeof idbKeyval !== 'undefined') {
-        await idbKeyval.set(LS_KEY, state.logs);
-      } else {
-        localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
-      }
-      scheduleCloudSave();
-      if (elPlanStatsModal?.classList?.contains("open")) renderPlanStats();
-    } catch (e) { console.error("Immediate save failed", e); }
+    saveLogsDebounced(); // Use debounce even for immediate calls to route logic safely, or call logic directly
+    // Force immediate IDB write for safety
+    if (typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, state.logs).catch(()=>{});
   }
 
-  // --- Custom Exercises ---
-  function sessionKey(session){ return `${session.programName}|||${session.title}`; }
-  function ensureCustomStore(){
-    if (typeof state.logs !== "object" || state.logs === null) state.logs = {};
-    if (!state.logs.__custom_sessions) state.logs.__custom_sessions = {};
-  }
-  function getCustomWorkouts(session){
-    ensureCustomStore();
-    const key = sessionKey(session);
-    return state.logs.__custom_sessions[key] || [];
-  }
-  function addCustomWorkout(session, title, setCount, reps){
-    ensureCustomStore();
-    const key = sessionKey(session);
-    const arr = getCustomWorkouts(session);
-    arr.push({
-      title: String(title||"").trim(),
-      sets: Number(setCount)||3,
-      reps: String(reps||"").trim(),
-      notes: [],
-      created_at: new Date().toISOString()
-    });
-    state.logs.__custom_sessions[key] = arr;
-    saveLogs();
-  }
-
-  // --- Calculation ---
-  function numFloat(v){ const n=parseFloat(String(v).trim()); return Number.isFinite(n)?n:null; }
-  function numInt(v){ const n=parseInt(String(v).trim(),10); return Number.isFinite(n)?n:null; }
-  function fmtInt(n){ try{return new Intl.NumberFormat().format(Math.round(n));}catch{return String(Math.round(n));} }
-  function hashInt(str){
-    let h=2166136261;
-    for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); }
-    return (h>>>0);
-  }
-
-  function getAllWorkoutsForSession(session){
-    const base = Array.isArray(session?.workouts) ? session.workouts : [];
-    const custom = getCustomWorkouts(session).map((cw, i) => ({
-      id: uid(`${session.programName}::${session.title}::custom::${i}::${cw.title}`),
-      title: cw.title,
-      index: base.length + i,
-      setsStr: String(cw.sets),
-      repsStr: String(cw.reps || ""),
-      setCount: Number(cw.sets) || 3,
-      targetReps: String(cw.reps || "").trim(),
-      notes: Array.isArray(cw.notes) ? cw.notes : [],
-      _isCustom: true
-    }));
-    return [...base, ...custom];
-  }
-
-  function sessionLogPrefix(session){ return `${session.programName}|||${session.title}|||`; }
-
-  function computeSessionVolumeKg(session){
-    if (!session) return 0;
-    const prefix = sessionLogPrefix(session);
-    let total = 0;
-    for (const k of Object.keys(state.logs || {})){
-      if (k.startsWith("__") || !k.startsWith(prefix)) continue;
-      const wlog = state.logs[k];
-      const sets = Array.isArray(wlog?.sets) ? wlog.sets : [];
-      for (const s of sets){
-        const w = numFloat(s?.weight);
-        const r = numInt(s?.reps);
-        if (w != null && r != null) total += (w * r);
-      }
-    }
-    return total;
-  }
-
-  function updateSessionFunFact(){
-    const session = state.sessionsById.get(state.activeSessionId);
-    if (!elActiveFunFact || !session) {
-      if (elActiveFunFact) elActiveFunFact.textContent = "";
-      return;
-    }
-    const kg = computeSessionVolumeKg(session);
-    if (!kg || kg <= 0){ elActiveFunFact.textContent = ""; return; }
-    
-    const picks = [
-      { label: '3.5" floppy disks', unitKg: 0.02 },
-      { label: 'Raspberry Pi boards', unitKg: 0.045 },
-      { label: '2.5" hard drives', unitKg: 0.10 },
-      { label: '3.5" hard drives', unitKg: 0.60 },
-      { label: '1U rack servers', unitKg: 12.0 },
-      { label: 'Cisco switches', unitKg: 4.5 },
-      { label: 'desktop PCs', unitKg: 8.0 },
-    ];
-    const h = hashInt(`${session.programName}::${session.title}`);
-    const pick = picks[h % picks.length];
-    const count = Math.max(1, Math.round(kg / pick.unitKg));
-    elActiveFunFact.textContent = `You lifted ${fmtInt(kg)}kg today — about the same weight as ${fmtInt(count)} ${pick.label}.`;
-  }
-
-  function computePlanStats(){
-    const perSession = new Map();
-    const perExercise = new Map();
-    let totalVolume = 0, loggedSets = 0;
-
-    for (const k of Object.keys(state.logs || {})){
-      if (k.startsWith("__")) continue;
-      const wlog = state.logs[k];
-      if (!wlog) continue;
-      
-      const prog = String(wlog.program||"").trim();
-      const sess = String(wlog.session||"").trim();
-      const wname = cleanWorkoutTitle(String(wlog.workout||"").trim(), prog);
-      
-      const sets = Array.isArray(wlog.sets) ? wlog.sets : [];
-      for (const s of sets){
-        const w = numFloat(s?.weight);
-        const r = numInt(s?.reps);
-        if (w==null || r==null) continue;
-        const v = w*r;
-        totalVolume += v;
-        loggedSets += 1;
-        const skey = `${prog} • ${sess}`;
-        perSession.set(skey, (perSession.get(skey)||0)+v);
-        if (wname) perExercise.set(wname, (perExercise.get(wname)||0)+v);
-      }
-    }
-    const loggedSessions = Array.from(perSession.values()).filter(v => v>0).length;
-    const uniqueExercises = perExercise.size;
-    const topSessions = Array.from(perSession.entries()).sort((a,b)=>b[1]-a[1]).slice(0,10);
-    const topExercises = Array.from(perExercise.entries()).sort((a,b)=>b[1]-a[1]).slice(0,8);
-    return { totalVolume, loggedSessions, loggedSets, uniqueExercises, topSessions, topExercises };
-  }
-
-  function drawBarChart(canvas, items){
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    const dpr = window.devicePixelRatio||1;
-    const cssW = canvas.clientWidth||900;
-    const cssH = canvas.clientHeight||260;
-    canvas.width = Math.floor(cssW*dpr);
-    canvas.height = Math.floor(cssH*dpr);
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    ctx.clearRect(0,0,cssW,cssH);
-    const padL=10, padR=10, padT=10, padB=34;
-    const W=cssW-padL-padR, H=cssH-padT-padB;
-    const maxV = Math.max(1, ...items.map(i=>i[1]));
-    const barGap=8;
-    const barW=Math.max(10,(W-barGap*(items.length-1))/Math.max(1,items.length));
-    
-    ctx.strokeStyle="rgba(255,255,255,.12)"; ctx.beginPath();
-    ctx.moveTo(padL,padT+H+0.5); ctx.lineTo(padL+W,padT+H+0.5); ctx.stroke();
-    
-    ctx.fillStyle="rgba(244,195,0,.85)";
-    items.forEach((it,i)=>{
-      const v=it[1]; const h=(v/maxV)*(H-6);
-      const x=padL+i*(barW+barGap); const y=padT+(H-h);
-      ctx.fillRect(x,y,barW,h);
-    });
-    ctx.fillStyle="rgba(247,241,223,.85)";
-    ctx.font="11px "+getComputedStyle(document.body).fontFamily;
-    items.forEach((it,i)=>{
-      const label=it[0];
-      const x=padL+i*(barW+barGap)+barW/2; const y=padT+H+18;
-      ctx.save(); ctx.translate(x,y); ctx.rotate(-0.55); ctx.textAlign="right";
-      ctx.fillText(label.length>28?(label.slice(0,28)+"…"):label,0,0); ctx.restore();
-    });
-  }
-
-  function renderPlanStats(){
-    if (!elPlanStatsModal) return;
-    const s = computePlanStats();
-    if (elPlanTotalVolume) elPlanTotalVolume.textContent = fmtInt(s.totalVolume);
-    if (elPlanLoggedSessions) elPlanLoggedSessions.textContent = fmtInt(s.loggedSessions);
-    if (elPlanLoggedSets) elPlanLoggedSets.textContent = fmtInt(s.loggedSets);
-    if (elPlanUniqueExercises) elPlanUniqueExercises.textContent = fmtInt(s.uniqueExercises);
-    if (elPlanTopExercises){
-      elPlanTopExercises.innerHTML = s.topExercises.length
-        ? s.topExercises.map(([name,vol])=>`<div class="topitem"><b>${escapeHtml(name)}</b><span class="mono">${fmtInt(vol)} kg•reps</span></div>`).join("")
-        : `<div class="muted">No logged sets yet.</div>`;
-    }
-    if (elPlanSessionChart){
-      drawBarChart(elPlanSessionChart, s.topSessions.length?s.topSessions:[["No data",1]]);
-    }
-  }
-
-  function scheduleCloudSave(){
-    if(!supabase || !state._user) return;
-    if(cloudSaveTimer) clearTimeout(cloudSaveTimer);
-    cloudSaveTimer = setTimeout(()=>cloudSaveNow().catch(console.error), CLOUD_SAVE_DEBOUNCE_MS);
-  }
-  async function cloudSaveNow(){
-    if(!supabase || !state._user) return;
-    const payload = { user_id: state._user.id, logs: state.logs, updated_at: new Date().toISOString() };
-    const {error} = await supabase.from("user_logs").upsert(payload, {onConflict:"user_id"});
-    if(error) throw error;
-  }
-  async function cloudLoad(){
-    if(!supabase || !state._user) return;
-    const {data, error} = await supabase.from("user_logs").select("logs").eq("user_id", state._user.id).maybeSingle();
-    if(error){ console.warn("cloudLoad error", error); return; }
-    const cloudLogs = data?.logs||{};
-    if(typeof cloudLogs!=="object" || cloudLogs===null) return;
-    state.logs = {...state.logs, ...cloudLogs};
-    await saveLogs(); // Save merged logs to local DB
-  }
-
-  // --- Auth ---
-  function setAuthUI(signedIn, email){
-    const elStatus = document.getElementById("authStatus");
-    const elIn = document.getElementById("signInGoogle");
-    const elOut = document.getElementById("signOut");
-    const elAv = document.getElementById("authAvatar");
-    if (!elStatus) return;
-    const meta = state._user?.user_metadata || {};
-    const avatar = meta.avatar_url || meta.picture || "";
-    if (signedIn){
-      elStatus.textContent = email ? email : "Signed in";
-      elIn.style.display="none"; elOut.style.display="inline-flex";
-      if(elAv && avatar){ elAv.src=avatar; elAv.style.display="inline-block"; }
-      else if(elAv) elAv.style.display="none";
-    } else {
-      elStatus.textContent = "Not signed in";
-      elIn.style.display="inline-flex"; elOut.style.display="none";
-      if(elAv) elAv.style.display="none";
-    }
-  }
-  async function initAuth(){
-    if(!supabase){ setAuthUI(false); return; }
-    const {data:sessData} = await supabase.auth.getSession();
-    state._user = sessData?.session?.user || null;
-    setAuthUI(!!state._user, state._user?.email);
-    if(state._user){ await cloudLoad(); renderAll(); }
-    supabase.auth.onAuthStateChange(async (_event, session)=>{
-      state._user = session?.user || null;
-      setAuthUI(!!state._user, state._user?.email);
-      if(state._user){ await cloudLoad(); renderAll(); scheduleCloudSave(); }
-    });
-    document.getElementById("signInGoogle")?.addEventListener("click", async()=>{
-      const redirectTo = new URL(".", window.location.href).toString();
-      const {error} = await supabase.auth.signInWithOAuth({provider:"google", options:{redirectTo}});
-      if(error) alert("Sign-in failed: "+error.message);
-    });
-    document.getElementById("signOut")?.addEventListener("click", async()=>{
-      await supabase.auth.signOut();
-      state._user = null;
-      setAuthUI(false);
-    });
-  }
-
-  function fetchJson(url){
-    return fetch(url, {cache:"no-store"}).then(res=>{
-      if(!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-      return res.json();
-    });
-  }
-
-  function normalizeProgram(raw, fallbackName){
-    const programName = raw.program || fallbackName || "Program";
-    const pid = uid(`program::${programName}`);
-    const sessions = (raw.sessions||[]).map((s, si) => {
-      const sessionTitle = s.session || `Session ${si+1}`;
-      const sid = uid(`${programName}::session::${sessionTitle}::${si}`);
-      const workouts = (s.workouts||[]).map((w, wi) => {
-        const title = w.title || `Workout ${wi+1}`;
-        const wid = uid(`${programName}::${sessionTitle}::${wi}::${title}`);
-        const setsStr = w.sets ?? "";
-        const repsStr = w.reps ?? "";
-        const setCount = toIntMaybe(setsStr) ?? 3;
-        
-        // --- FIX: Allow commas and text for reps ---
-        let targetReps = String(repsStr || "").trim();
-        const baseTitle = cleanWorkoutTitle(title, programName).toLowerCase();
-        if (targetReps && targetReps.toLowerCase() === baseTitle) targetReps = "";
-        
-        return {
-          id: wid, title, index: wi,
-          setsStr: String(setsStr||""), repsStr: String(repsStr||""),
-          setCount, targetReps, notes: Array.isArray(w.notes)?w.notes:[],
-          _programName: programName, _sessionTitle: sessionTitle,
-        };
-      });
-      return { id: sid, title: sessionTitle, index: si, programId: pid, programName, workouts };
-    });
-    return { id: pid, name: programName, sessions };
-  }
-
-  async function loadAllPrograms(){
-    state.programs=[]; state.programById.clear(); state.sessionsById.clear(); state.workoutsById.clear();
-    for(const src of PROGRAM_SOURCES){
-      try{
-        const raw = await fetchJson(src.url);
-        const prog = normalizeProgram(raw, src.name);
-        state.programs.push(prog);
-      }catch(e){console.error("Failed to load program", src, e);}
-    }
-    for(const p of state.programs){
-      state.programById.set(p.id, p);
-      for(const s of p.sessions){
-        state.sessionsById.set(s.id, s);
-        for(const w of s.workouts) state.workoutsById.set(w.id, w);
-      }
-    }
-    
-    // Preferences
-    let prefs={}; try{prefs=JSON.parse(localStorage.getItem(PREFS_KEY)||"{}");}catch{}
-    if(prefs.programId && state.programById.has(prefs.programId)) state.activeProgramId = prefs.programId;
-    else state.activeProgramId = state.programs[0]?.id || null;
-    
-    const activeProgram = state.programById.get(state.activeProgramId);
-    const sessionExists = activeProgram?.sessions.some(s => s.id === prefs.sessionId);
-    state.activeSessionId = sessionExists ? prefs.sessionId : (activeProgram?.sessions[0]?.id || null);
-    
-    renderAll();
-  }
-
-  // --- RENDERING ---
-  function renderProgramSelect(){
-    elProgramSelect.innerHTML = state.programs.map(p =>
-      `<option value="${p.id}" ${p.id===state.activeProgramId?"selected":""}>${escapeHtml(p.name)}</option>`
-    ).join("");
-  }
-  function renderSessionSelect(){
-    const p = state.programById.get(state.activeProgramId);
-    const sessions = p?.sessions || [];
-    elSessionSelect.innerHTML = sessions.map(s =>
-      `<option value="${s.id}" ${s.id===state.activeSessionId?"selected":""}>${escapeHtml(s.title)}</option>`
-    ).join("");
-  }
-  function countWorkoutLogged(programName, sessionTitle, workout, workoutIndex){
-    const k = logKey(programName, sessionTitle, workout.title, workoutIndex);
-    const wlog = state.logs[k];
-    if(!wlog || !Array.isArray(wlog.sets)) return false;
-    return wlog.sets.some(r => (r.weight || r.reps || r.done));
-  }
-  function countLoggedInSession(session){
-    let done = 0;
-    getAllWorkoutsForSession(session).forEach((w,idx)=>{
-      if(countWorkoutLogged(session.programName, session.title, w, idx)) done++;
-    });
-    return done;
-  }
-  
-  function renderSessionsList(){
-    const p = state.programById.get(state.activeProgramId);
-    const q = elSearch.value.trim().toLowerCase();
-    const sessions = (p?.sessions || []).filter(s => {
-      if (!q) return true;
-      if (s.title.toLowerCase().includes(q)) return true;
-      return s.workouts.some(w => w.title.toLowerCase().includes(q));
-    });
-    elSessionCount.textContent = `${(p?.sessions||[]).length} sessions`;
-    elSessions.innerHTML = sessions.map(s => {
-      const total = s.workouts.length;
-      const done = countLoggedInSession(s);
-      const active = s.id === state.activeSessionId ? "active" : "";
-      return `
-        <div class="session-item ${active}" data-sid="${s.id}">
-          <div class="name">${escapeHtml(s.title)}</div>
-          <div class="meta"><span class="badge">${total} workouts</span><span class="badge">${done}/${total} logged</span></div>
-        </div>
-      `;
-    }).join("");
-    elSessions.querySelectorAll(".session-item").forEach(item => {
-      item.addEventListener("click", () => {
-        state.activeSessionId = item.dataset.sid;
-        elSessionSelect.value = state.activeSessionId;
-        savePrefs();
-        renderAll();
-      });
-    });
-  }
-
+  // --- LOGIC ---
   function ensureWorkoutLog(session, workout, workoutIndex){
-    const k = logKey(session.programName, session.title, workout.title, workoutIndex);
+    const k = `${session.programName}|||${session.title}|||${workoutIndex}|||${workout.title}`;
     let wlog = state.logs[k];
     if(!wlog){
       wlog = {
         program: session.programName, session: session.title, workout: workout.title, workoutIndex,
         requiredSets: workout.setCount, requiredReps: workout.targetReps,
         sets: Array.from({length: workout.setCount}, (_,i) => ({
-          set: i+1,
-          targetReps: resolveReps(workout.targetReps, i),
+          set: i+1, targetReps: resolveReps(workout.targetReps, i),
           weight:"", reps:"", done:false, note:""
         })),
         workoutNote:""
       };
       state.logs[k] = wlog;
-      saveLogs();
     } else {
       if(!Array.isArray(wlog.sets)) wlog.sets=[];
       while(wlog.sets.length < workout.setCount){
@@ -923,330 +419,236 @@
           weight:"", reps:"", done:false, note:""
         });
       }
-      wlog.sets.forEach((r,i)=>r.set=i+1);
     }
     return wlog;
   }
 
-  function renderSetRow(session, workout, workoutIndex, row){
-    const doneClass = row.done ? "done" : "";
-    const smartTarget = resolveReps(workout.targetReps, row.set - 1);
-    let displayValue = row.targetReps;
-    if (!displayValue || displayValue === workout.targetReps || displayValue.includes(",")) {
-      displayValue = smartTarget;
-    }
+  async function loadAllPrograms(){
+    try {
+      state.programs=[];
+      for(const src of PROGRAM_SOURCES){
+        const res = await fetch(src.url, {cache:"no-store"});
+        if(!res.ok) throw new Error(res.statusText);
+        const raw = await res.json();
+        
+        const prog = { 
+          id: uid(`program::${raw.program}`), 
+          name: raw.program, 
+          sessions: (raw.sessions||[]).map((s,si)=>{
+             const sTitle = s.session || `Session ${si+1}`;
+             return {
+               id: uid(`program::${raw.program}::session::${sTitle}::${si}`),
+               title: sTitle,
+               programName: raw.program,
+               workouts: (s.workouts||[]).map((w,wi)=>{
+                 const wTitle = w.title || `Workout ${wi+1}`;
+                 const sStr = w.sets??""; const rStr=w.reps??"";
+                 
+                 // Smart Rep Logic
+                 let tReps = String(rStr).trim();
+                 if (tReps.toLowerCase() === cleanWorkoutTitle(wTitle, raw.program).toLowerCase()) tReps = "";
 
-    return `
-      <div class="set-row ${doneClass}">
-        <div class="grid">
-          <div class="mono">#${row.set}</div>
-          <input type="text" placeholder="${escapeHtml(smartTarget)}" value="${escapeHtml(displayValue)}" data-act="set_target" data-wi="${workoutIndex}" data-set="${row.set}" />
-          <input type="text" inputmode="decimal" placeholder="kg" value="${escapeHtml(row.weight||"")}" data-act="set_weight" data-wi="${workoutIndex}" data-set="${row.set}" />
-          <input type="text" inputmode="numeric" placeholder="reps" value="${escapeHtml(row.reps||"")}" data-act="set_reps" data-wi="${workoutIndex}" data-set="${row.set}" />
-          <input type="checkbox" ${row.done?"checked":""} data-act="set_done" data-wi="${workoutIndex}" data-set="${row.set}" />
-        </div>
-        <div style="margin-top:8px">
-          <input type="text" placeholder="Set note (optional)" value="${escapeHtml(row.note||"")}" data-act="set_note" data-wi="${workoutIndex}" data-set="${row.set}" />
-        </div>
-      </div>
-    `;
+                 return {
+                   id: uid(`w::${sTitle}::${wi}::${wTitle}`),
+                   title: wTitle,
+                   setCount: toIntMaybe(sStr) ?? 3,
+                   targetReps: tReps,
+                   setsStr: String(sStr), repsStr: String(rStr),
+                   notes: Array.isArray(w.notes)?w.notes:[]
+                 };
+               })
+             };
+          })
+        };
+        state.programs.push(prog);
+      }
+      
+      // Indexing
+      state.programById.clear(); state.sessionsById.clear();
+      for(const p of state.programs){
+        state.programById.set(p.id, p);
+        for(const s of p.sessions) state.sessionsById.set(s.id, s);
+      }
+
+      // Prefs
+      let prefs = {};
+      try{ prefs = JSON.parse(localStorage.getItem(PREFS_KEY)||"{}"); }catch{}
+      
+      if(prefs.programId && state.programById.has(prefs.programId)) state.activeProgramId = prefs.programId;
+      else state.activeProgramId = state.programs[0]?.id || null;
+
+      const actProg = state.programById.get(state.activeProgramId);
+      if(actProg){
+         const sessExists = actProg.sessions.some(s=>s.id===prefs.sessionId);
+         state.activeSessionId = sessExists ? prefs.sessionId : actProg.sessions[0]?.id;
+      }
+
+      renderAll();
+    } catch(e) {
+      console.error("Program Load Error", e);
+      document.getElementById("content").innerHTML = `<div class="muted">Error loading programs: ${e.message}</div>`;
+    }
   }
 
-  // --- MAIN RENDER (Delegated Events) ---
-  function renderActiveSession(){
-    const session = state.sessionsById.get(state.activeSessionId);
-    if (!session){
-      elActiveTitle.textContent = "No session loaded";
-      elActiveMeta.textContent = "Check PROGRAM_SOURCES";
-      elActivePill.textContent = "—";
-      elContent.innerHTML = `<div class="muted">Nothing selected.</div>`;
-      return;
-    }
-    elActiveTitle.textContent = `${session.programName} • ${session.title}`;
-    updateActiveProgress();
-    updateSessionFunFact();
+  // --- RENDER ---
+  function renderAll(){
+    const elProg = document.getElementById("programSelect");
+    const elSess = document.getElementById("sessionSelect");
+    const elList = document.getElementById("sessions");
+    const elMain = document.getElementById("content");
+    const elHead = document.getElementById("activeTitle");
 
-    const allWorkouts = getAllWorkoutsForSession(session);
-    const workoutsHtml = allWorkouts.map((w, idx) => {
-      const wlog = ensureWorkoutLog(session, w, idx);
-      const logged = countWorkoutLogged(session.programName, session.title, w, idx);
-      const requiredLabel = `Required: Sets ${escapeHtml(w.setsStr||String(w.setCount))} • Reps ${escapeHtml(w.repsStr||w.targetReps||"")}`;
-      return `
-        <div class="workout ${idx===0 ? "open" : ""}" data-wi="${idx}">
-          <div class="workout-head">
-            <div>
-              <div class="workout-title" id="title_${idx}">${escapeHtml(cleanWorkoutTitle(w.title, session.programName))} ${logged?'<span class="pill" style="margin-left:8px;border-color:rgba(53,208,127,.35);background:rgba(53,208,127,.10);color:#c8ffe2">logged</span>':''}</div>
-              <div class="workout-sub">${requiredLabel}</div>
-            </div>
-            <button class="btn small" type="button">Toggle</button>
-          </div>
-          <div class="workout-body">
-            ${w.notes?.length ? `<div class="small-note"><b>Plan notes</b><br>${w.notes.map(n=>escapeHtml(n)).join("<br>")}</div><div class="divider"></div>` : ""}
-            <div class="grid"><div class="h">Set</div><div class="h">Target reps</div><div class="h">Weight (kg)</div><div class="h">Reps</div><div class="h">Done</div></div>
-            <div id="sets_${idx}">${wlog.sets.map(r=>renderSetRow(session,w,idx,r)).join("")}</div>
-            <div class="footer-actions">
-              <button class="btn small" data-act="addSet" data-wi="${idx}">+ Add set</button>
-              <button class="btn small danger" data-act="removeSet" data-wi="${idx}">− Remove set</button>
-              <button class="btn small" data-act="startRest" data-sec="120">Start 120s rest</button>
-              <button class="btn small" data-act="startRest" data-sec="90">Start 90s rest</button>
-              <button class="btn small" data-act="startRest" data-sec="60">Start 60s rest</button>
-            </div>
-            <div class="divider"></div>
-            <label class="muted">Workout notes</label>
-            <textarea data-act="workoutNote" data-wi="${idx}" placeholder="Notes...">${escapeHtml(wlog.workoutNote||"")}</textarea>
-          </div>
-        </div>
-      `;
+    // 1. Dropdowns
+    elProg.innerHTML = state.programs.map(p=>`<option value="${p.id}" ${p.id===state.activeProgramId?"selected":""}>${escapeHtml(p.name)}</option>`).join("");
+    
+    const activeProg = state.programById.get(state.activeProgramId);
+    const sessions = activeProg?.sessions || [];
+    elSess.innerHTML = sessions.map(s=>`<option value="${s.id}" ${s.id===state.activeSessionId?"selected":""}>${escapeHtml(s.title)}</option>`).join("");
+
+    // 2. Sidebar List
+    const q = document.getElementById("search").value.toLowerCase();
+    const filtered = sessions.filter(s => !q || s.title.toLowerCase().includes(q));
+    document.getElementById("sessionCount").textContent = `${sessions.length} sessions`;
+    
+    elList.innerHTML = filtered.map(s => {
+      const active = s.id===state.activeSessionId ? "active" : "";
+      return `<div class="session-item ${active}" onclick="pickSession('${s.id}')">
+        <div class="name">${escapeHtml(s.title)}</div>
+      </div>`;
     }).join("");
 
-    const addBoxHtml = `
-      <div class="workout">
-        <div class="workout-head">
-          <div><div class="workout-title">Add exercise</div><div class="workout-sub">Custom exercise</div></div>
-          <button class="btn small" type="button">Toggle</button>
-        </div>
-        <div class="workout-body">
-          <div class="grid" style="grid-template-columns: 1fr 90px 120px;">
-            <div class="h">Exercise</div><div class="h">Sets</div><div class="h">Target reps</div>
-            <input id="customTitle" type="text" placeholder="e.g. Arnold press" />
-            <input id="customSets" type="number" min="1" step="1" value="3" />
-            <input id="customReps" type="text" placeholder="e.g. 8-12" />
-          </div>
-          <div class="footer-actions"><button class="btn small primary" id="customAddBtn" type="button">Add</button></div>
-        </div>
-      </div>
-    `;
-    elContent.innerHTML = workoutsHtml + addBoxHtml;
-
-    // --- DELEGATED EVENTS ---
-    elContent.querySelectorAll(".workout-head").forEach(h => {
-      h.addEventListener("click", (e) => {
-        if(e.target.tagName==="BUTTON") return;
-        h.closest(".workout").classList.toggle("open");
-      });
-    });
-    
-    document.getElementById("customAddBtn")?.addEventListener("click", () => {
-      const title = document.getElementById("customTitle")?.value||"";
-      const sets = parseInt(document.getElementById("customSets")?.value||"3",10);
-      const reps = document.getElementById("customReps")?.value||"";
-      if(!String(title).trim()) return alert("Enter exercise name.");
-      addCustomWorkout(session, title, sets, reps);
-      renderAll();
-    });
-
-    elContent.querySelectorAll("[data-act]").forEach(el => {
-      const act = el.dataset.act;
-      if (act==="addSet"||act==="removeSet"||act==="startRest"){
-        el.addEventListener("click", () => handleAction(el));
-      } else {
-        // Bind both input (debounce save) and change (instant save)
-        el.addEventListener("input", (e) => handleAction(el, e));
-        el.addEventListener("change", (e) => handleAction(el, e));
-      }
-    });
-  }
-
-  function handleAction(el, event){
+    // 3. Main View
     const session = state.sessionsById.get(state.activeSessionId);
-    if (!session) return;
-    const act = el.dataset.act;
-
-    if (act==="startRest"){
-      const sec = parseInt(el.dataset.sec, 10);
-      setTimer(sec); startTimer(); return;
-    }
-
-    const workoutIndex = parseInt(el.dataset.wi, 10);
-    const allWorkouts = getAllWorkoutsForSession(session);
-    const workout = allWorkouts[workoutIndex];
-    if (!workout) return;
-    const wlog = ensureWorkoutLog(session, workout, workoutIndex);
-
-    if (act==="addSet"){
-      wlog.sets.push({
-        set: wlog.sets.length+1, targetReps: resolveReps(workout.targetReps, wlog.sets.length),
-        weight:"", reps:"", done:false, note:""
-      });
-      saveLogs(); renderActiveSession(); return;
-    }
-    if (act==="removeSet"){
-      if(wlog.sets.length>1){
-        wlog.sets.pop(); wlog.sets.forEach((r,i)=>r.set=i+1);
-        saveLogs(); renderActiveSession();
-      }
+    if(!session) {
+      elHead.textContent = "No Session";
+      elMain.innerHTML = "";
       return;
     }
+    
+    elHead.textContent = `${session.programName} • ${session.title}`;
+    
+    // Render Workouts
+    elMain.innerHTML = session.workouts.map((w, idx) => {
+      const wlog = ensureWorkoutLog(session, w, idx);
+      const isLogged = wlog.sets.some(s=>s.done || s.weight || s.reps);
+      const badge = isLogged ? '<span class="pill" style="margin-left:8px;border-color:#35d07f;color:#c8ffe2">logged</span>' : '';
+      
+      const setsHtml = wlog.sets.map(r => {
+        const smartTarget = resolveReps(w.targetReps, r.set-1);
+        let displayVal = r.targetReps;
+        // Fix old bad data or defaults
+        if(!displayVal || displayVal===w.targetReps || displayVal.includes(",")) displayVal = smartTarget;
 
-    // Inputs
-    if (act==="workoutNote") wlog.workoutNote = el.value;
-    const setNum = parseInt(el.dataset.set, 10);
-    const row = wlog.sets.find(r=>r.set===setNum);
-    if (row) {
-      if (act==="set_target") row.targetReps = el.value.slice(0, 8);
-      if (act==="set_weight") row.weight = el.value;
-      if (act==="set_reps") row.reps = el.value;
-      if (act==="set_note") row.note = el.value;
-      if (act==="set_done") {
-        row.done = !!el.checked;
-        el.closest(".set-row")?.classList.toggle("done", row.done);
+        return `
+        <div class="set-row ${r.done?'done':''}">
+          <div class="grid">
+            <div class="mono">#${r.set}</div>
+            <input type="text" placeholder="${smartTarget}" value="${escapeHtml(displayVal)}" oninput="updateSet(this, ${idx}, ${r.set}, 'targetReps')">
+            <input type="text" inputmode="decimal" placeholder="kg" value="${escapeHtml(r.weight)}" oninput="updateSet(this, ${idx}, ${r.set}, 'weight')">
+            <input type="text" inputmode="numeric" placeholder="reps" value="${escapeHtml(r.reps)}" oninput="updateSet(this, ${idx}, ${r.set}, 'reps')">
+            <input type="checkbox" ${r.done?'checked':''} onchange="updateSet(this, ${idx}, ${r.set}, 'done')">
+          </div>
+          <div style="margin-top:8px">
+             <input type="text" placeholder="Notes..." value="${escapeHtml(r.note)}" oninput="updateSet(this, ${idx}, ${r.set}, 'note')">
+          </div>
+        </div>`;
+      }).join("");
+
+      return `
+      <div class="workout ${idx===0?'open':''}">
+        <div class="workout-head" onclick="toggleWorkout(this)">
+          <div>
+            <div class="workout-title" id="t_${idx}">${escapeHtml(cleanWorkoutTitle(w.title))} ${badge}</div>
+            <div class="workout-sub">Sets ${w.setCount} • Reps ${w.targetReps}</div>
+          </div>
+          <button class="btn small">Toggle</button>
+        </div>
+        <div class="workout-body">
+          ${w.notes.length ? `<div class="small-note">${w.notes.join("<br>")}</div><div class="divider"></div>` : ""}
+          <div class="grid"><div class="h">Set</div><div class="h">Target</div><div class="h">Kg</div><div class="h">Reps</div><div class="h">Done</div></div>
+          ${setsHtml}
+          <div class="footer-actions">
+             <button class="btn small" onclick="modSet(${idx}, 1)">+ Set</button>
+             <button class="btn small danger" onclick="modSet(${idx}, -1)">- Set</button>
+          </div>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  // --- ACTIONS (Global Scope for onclick) ---
+  window.pickSession = (sid) => {
+    state.activeSessionId = sid;
+    savePrefs();
+    renderAll();
+  };
+
+  window.toggleWorkout = (el) => {
+    el.closest('.workout').classList.toggle('open');
+  };
+
+  window.modSet = (wIdx, delta) => {
+    const session = state.sessionsById.get(state.activeSessionId);
+    const w = session.workouts[wIdx];
+    const wlog = ensureWorkoutLog(session, w, wIdx);
+    
+    if(delta > 0) {
+      wlog.sets.push({
+        set: wlog.sets.length+1, 
+        targetReps: resolveReps(w.targetReps, wlog.sets.length),
+        weight:"", reps:"", done:false, note:""
+      });
+    } else if (wlog.sets.length > 1) {
+      wlog.sets.pop();
+    }
+    saveLogs();
+    renderAll(); // Re-render to show/hide rows
+  };
+
+  window.updateSet = (el, wIdx, setNum, field) => {
+    const session = state.sessionsById.get(state.activeSessionId);
+    const w = session.workouts[wIdx];
+    const wlog = ensureWorkoutLog(session, w, wIdx);
+    const row = wlog.sets.find(r => r.set === setNum);
+    if(!row) return;
+
+    if(field === 'done') {
+      row.done = el.checked;
+      el.closest('.set-row').classList.toggle('done', row.done);
+      saveLogs(); // Instant save for checkboxes
+      
+      // Live badge update
+      const isLogged = wlog.sets.some(s=>s.done||s.weight||s.reps);
+      const tEl = document.getElementById(`t_${wIdx}`);
+      if(tEl && isLogged && !tEl.innerHTML.includes("logged")) {
+         tEl.innerHTML += ' <span class="pill" style="margin-left:8px;border-color:#35d07f;color:#c8ffe2">logged</span>';
       }
-    }
-
-    // --- Live UI Updates ---
-    const isLogged = countWorkoutLogged(session.programName, session.title, workout, workoutIndex);
-    const titleEl = document.getElementById(`title_${workoutIndex}`);
-    if (titleEl) {
-      const cleanTitle = escapeHtml(cleanWorkoutTitle(workout.title, session.programName));
-      const badgeHtml = isLogged ? '<span class="pill" style="margin-left:8px;border-color:rgba(53,208,127,.35);background:rgba(53,208,127,.10);color:#c8ffe2">logged</span>' : '';
-      titleEl.innerHTML = `${cleanTitle} ${badgeHtml}`;
-    }
-    updateActiveProgress();
-
-    // --- Smart Save ---
-    // If it's a "Change" event (blur/enter/checkbox), save immediately.
-    // If it's typing, debounce.
-    if (event && event.type === 'change') {
-      saveLogs(); 
     } else {
-      saveLogsDebounced();
+      row[field] = el.value;
+      saveLogsDebounced(); // Lazy save for typing
     }
-  }
+  };
 
-  function renderAll(){
-    renderProgramSelect(); renderSessionSelect(); renderSessionsList();
-    renderActiveSession(); updateActiveProgress();
-  }
-
-  openSessionsDrawer(); // Binds listeners
-
-  // --- EVENTS ---
-  elProgramSelect.addEventListener("change", () => {
-    state.activeProgramId = elProgramSelect.value;
+  // --- INIT ---
+  // Listeners
+  document.getElementById("programSelect").addEventListener("change", (e)=>{
+    state.activeProgramId = e.target.value;
     const p = state.programById.get(state.activeProgramId);
-    state.activeSessionId = p?.sessions[0]?.id || null;
+    state.activeSessionId = p?.sessions[0]?.id;
     savePrefs(); renderAll();
   });
-  elSessionSelect.addEventListener("change", () => {
-    state.activeSessionId = elSessionSelect.value;
-    savePrefs(); renderAll();
-  });
-  elSearch.addEventListener("input", () => renderSessionsList());
   
-  document.getElementById("openSessions")?.addEventListener("click", () => openSessionsDrawer());
-  document.getElementById("closeSessions")?.addEventListener("click", () => {
-    elDrawer?.classList.remove("open"); elDrawer?.setAttribute("aria-hidden", "true");
-  });
-  elDrawer?.addEventListener("click", (e) => {
-    if (e.target === elDrawer){ elDrawer.classList.remove("open"); elDrawer.setAttribute("aria-hidden", "true"); }
+  document.getElementById("sessionSelect").addEventListener("change", (e)=>{
+    state.activeSessionId = e.target.value;
+    savePrefs(); renderAll();
   });
 
-  document.getElementById("openPlanStats")?.addEventListener("click", () => {
-    if (!elPlanStatsModal) return;
-    renderPlanStats();
-    elPlanStatsModal.classList.add("open"); elPlanStatsModal.setAttribute("aria-hidden", "false");
-  });
-  document.getElementById("closePlanStats")?.addEventListener("click", () => {
-    elPlanStatsModal?.classList.remove("open"); elPlanStatsModal?.setAttribute("aria-hidden", "true");
-  });
-  elPlanStatsModal?.addEventListener("click", (e) => {
-    if (e.target === elPlanStatsModal){ elPlanStatsModal.classList.remove("open"); elPlanStatsModal.setAttribute("aria-hidden", "true"); }
-  });
+  document.getElementById("search").addEventListener("input", renderSessionsList);
 
-  document.getElementById("reloadBtn").addEventListener("click", () => loadAllPrograms());
-  document.getElementById("clearBtn").addEventListener("click", () => {
-    if (!confirm("This clears ONLY your recorded logs from this browser. Continue?")) return;
-    state.logs = {}; saveLogs(); renderAll();
-  });
-  document.getElementById("exportLogs").addEventListener("click", () => {
-    const blob = new Blob([JSON.stringify(state.logs, null, 2)], {type:"application/json"});
-    downloadBlob(blob, "mst_logs.json");
-  });
-  document.getElementById("importLogs").addEventListener("click", () => { elImportFile.value=""; elImportFile.click(); });
-  elImportFile.addEventListener("change", async () => {
-    const file = elImportFile.files?.[0]; if (!file) return;
-    try{
-      const txt = await file.text(); const obj = JSON.parse(txt);
-      if (typeof obj!=="object" || obj===null) throw new Error("Not an object");
-      state.logs = {...state.logs, ...obj};
-      saveLogs(); renderAll(); alert("Logs imported.");
-    }catch(e){ alert("Import failed: "+e.message); }
-  });
-  document.getElementById("exportCSV").addEventListener("click", () => {
-    const rows = [];
-    rows.push(["program","session","workout","workoutIndex","set","targetReps","weight","reps","done","setNote","workoutNote"].join(","));
-    for(const k of Object.keys(state.logs)){
-      if(k.startsWith("__")) continue;
-      const wlog = state.logs[k];
-      const prog = (wlog.program||"").replaceAll('"','""');
-      const sess = (wlog.session||"").replaceAll('"','""');
-      const work = (wlog.workout||"").replaceAll('"','""');
-      const wi = (wlog.workoutIndex??"");
-      const wnote = (wlog.workoutNote||"").replaceAll('"','""');
-      (wlog.sets||[]).forEach(s => {
-        rows.push([
-          `"${prog}"`,`"${sess}"`,`"${work}"`,wi,s.set,
-          `"${(s.targetReps||"").replaceAll('"','""')}"`,
-          `"${(s.weight||"").replaceAll('"','""')}"`,
-          `"${(s.reps||"").replaceAll('"','""')}"`,
-          s.done?"1":"0",
-          `"${(s.note||"").replaceAll('"','""')}"`,
-          `"${wnote}"`,
-        ].join(","));
-      });
-    }
-    const blob = new Blob([rows.join("\n")], {type:"text/csv"});
-    downloadBlob(blob, "mst_logs.csv");
-  });
-  function downloadBlob(blob, filename){
-    const url = URL.createObjectURL(blob); const a = document.createElement("a");
-    a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-  }
-
-  // --- NEW UPDATE NOTIFICATION ---
-  let newWorker;
-  function showUpdateBar() {
-    let bar = document.getElementById('updateBar');
-    if (!bar) {
-      bar = document.createElement('div');
-      bar.id = 'updateBar';
-      bar.style.cssText = "position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:12px 24px; border-radius:30px; box-shadow:0 10px 30px rgba(0,0,0,0.5); z-index:10000; cursor:pointer; font-weight:bold; display:flex; align-items:center; gap:10px;";
-      bar.innerHTML = '<span>New version available!</span> <button style="background:#f4c300; color:#000; border:none; padding:6px 12px; border-radius:12px; font-weight:bold; cursor:pointer;">Reload</button>';
-      bar.addEventListener('click', () => { if (newWorker) newWorker.postMessage({ action: 'skipWaiting' }); });
-      document.body.appendChild(bar);
-    }
-  }
-
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("sw.js").then(reg => {
-        if (reg.waiting) { newWorker = reg.waiting; showUpdateBar(); }
-        reg.addEventListener('updatefound', () => {
-          newWorker = reg.installing;
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) showUpdateBar();
-          });
-        });
-      });
-      let refreshing;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (refreshing) return;
-        window.location.reload(); refreshing = true;
-      });
-    });
-  }
-
-  // --- SAFETY: Force save when leaving ---
-  window.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") {
-      if (typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, state.logs).catch(console.error);
-    }
-  });
-
-  setTimer(120);
+  // Start
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
   loadAllPrograms();
-  loadLogsAsync(); // Async load
-  initAuth();
+  loadLogsAsync();
 </script>
 </body>
 </html>

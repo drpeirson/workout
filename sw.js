@@ -1,5 +1,5 @@
 /* MST Workout Tracker - Service Worker */
-const CACHE_NAME = "bolt-cache-v13"; // Bumped for Timer Fix
+const CACHE_NAME = "bolt-cache-v14"; // Bumped for Remove Button
 
 // App shell & External Libraries
 const CORE_ASSETS = [

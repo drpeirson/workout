@@ -577,6 +577,11 @@
       const logged = countWorkoutLogged(session.programName, session.title, w, idx);
       const badge = logged ? '<span class="pill" style="margin-left:8px;border-color:rgba(53,208,127,.35);background:rgba(53,208,127,.10);color:#c8ffe2">logged</span>' : '';
       const requiredLabel = `Required: Sets ${escapeHtml(w.setsStr||String(w.setCount))} • Reps ${escapeHtml(w.repsStr||w.targetReps||"")}`;
+      
+      // Remove Button for custom exercises
+      const deleteBtn = w._isCustom 
+        ? `<button class="btn danger small" onclick="removeCustomWorkout(${w._customIndex}); event.stopPropagation();" style="margin-right:8px;">Remove</button>`
+        : '';
 
       return `
         <div class="workout" data-wi="${idx}">
@@ -585,7 +590,10 @@
               <div class="workout-title" id="title_${idx}">${escapeHtml(cleanWorkoutTitle(w.title, session.programName))} ${badge}</div>
               <div class="workout-sub">${requiredLabel}</div>
             </div>
-            <button class="btn small">Toggle</button>
+            <div style="display:flex;align-items:center;">
+              ${deleteBtn}
+              <button class="btn small">Toggle</button>
+            </div>
           </div>
           <div class="workout-body">
             ${w.notes?.length ? `<div class="small-note"><b>Plan notes</b><br>${w.notes.map(n=>escapeHtml(n)).join("<br>")}</div><div class="divider"></div>` : ""}
@@ -646,7 +654,7 @@
     renderActiveSession();
   }
 
-  // --- ACTIONS ---
+  // --- ACTIONS (Global Window Scope) ---
   window.pickSession = (sid) => {
     state.activeSessionId = sid;
     savePrefs();
@@ -721,6 +729,19 @@
     if(!String(title).trim()) return alert("Enter exercise name.");
     addCustomWorkout(session, title, sets, reps);
     renderAll();
+  };
+
+  // Custom Workout Deletion
+  window.removeCustomWorkout = (index) => {
+    if(!confirm("Remove this custom exercise?")) return;
+    const session = state.sessionsById.get(state.activeSessionId);
+    const key = sessionKey(session);
+    const arr = state.logs.__custom_sessions[key];
+    if(arr && arr[index]) {
+      arr.splice(index, 1);
+      saveLogs();
+      renderAll();
+    }
   };
 
   async function loadAllPrograms(){
@@ -882,7 +903,8 @@
       setCount: Number(cw.sets) || 3,
       targetReps: String(cw.reps || "").trim(),
       notes: Array.isArray(cw.notes) ? cw.notes : [],
-      _isCustom: true
+      _isCustom: true,
+      _customIndex: i
     }));
     return [...base, ...custom];
   }

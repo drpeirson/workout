@@ -1,4 +1,4 @@
-/* MST Workout Tracker - Service Worker */
+/* BOLT Workout Tracker - Service Worker */
 const CACHE_NAME = "bolt-cache-v18"; // Bumped for Function Fix
 
 const CORE_ASSETS = [

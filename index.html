@@ -6,35 +6,21 @@
   <meta name="theme-color" content="#484838" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon-192.png" />
-  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>BOLT</title>
   <style>
     /* CSS Styles */
-    :root{
-      --bg:#484838; --panel:#343427; --panel2:#2c2c21; --text:#f7f1df; --muted:#d2c79c;
-      --line:#5f5a42; --accent:#f4c300; --good:#35d07f; --warn:#ffc857; --bad:#ff5c7a;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --r: 14px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-    }
+    :root{ --bg:#484838; --panel:#343427; --panel2:#2c2c21; --text:#f7f1df; --muted:#d2c79c; --line:#5f5a42; --accent:#f4c300; --good:#35d07f; --warn:#ffc857; --bad:#ff5c7a; --shadow: 0 10px 30px rgba(0,0,0,.35); --r: 14px; --mono: ui-monospace, SFMono-Regular, Menlo, monospace; --sans: system-ui, -apple-system, sans-serif; }
     *{box-sizing:border-box}
-    body{
-      margin:0; font-family:var(--sans); background:radial-gradient(1200px 600px at 15% 0%, rgba(244,195,0,.14) 0%, transparent 60%),
-      radial-gradient(900px 500px at 100% 25%, rgba(244,195,0,.10) 0%, transparent 55%), var(--bg);
-      color:var(--text);
-    }
+    body{ margin:0; font-family:var(--sans); background:radial-gradient(1200px 600px at 15% 0%, rgba(244,195,0,.14) 0%, transparent 60%), radial-gradient(900px 500px at 100% 25%, rgba(244,195,0,.10) 0%, transparent 55%), var(--bg); color:var(--text); }
     .app{display:grid; grid-template-columns: 390px 1fr; gap:14px; height:100dvh; min-height:100vh; padding:14px;}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)); border:1px solid var(--line);
-      border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column; min-height:0;}
-    header{padding:14px 16px; display:flex; gap:10px; align-items:center; justify-content:space-between;
-      border-bottom:1px solid var(--line); background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.01));}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column; min-height:0;}
+    header{padding:14px 16px; display:flex; gap:10px; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.01));}
     header .title{font-weight:800; letter-spacing:.2px; font-size:15px;}
     header .subtitle{color:var(--muted); font-size:12px; margin-top:2px;}
     .stack{display:flex; flex-direction:column; gap:10px; padding:12px; flex:1; min-height:0;}
-    .row{display:flex; gap:10px; align-items:center;}
-    .row > *{flex:1}
+    .row{display:flex; gap:10px; align-items:center;} .row > *{flex:1}
     .btn{appearance:none; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--text); padding:9px 10px; border-radius:12px; cursor:pointer; font-weight:650;}
     .btn:hover{border-color:#2d4364}
     .btn.primary{border-color:rgba(110,168,255,.35); background:rgba(110,168,255,.12)}
@@ -43,9 +29,7 @@
     .pill{font-family:var(--mono); font-size:11px; color:var(--text); background:rgba(244,195,0,.12); border:1px solid rgba(244,195,0,.28); padding:4px 8px; border-radius:999px; display:inline-flex; align-items:center; gap:6px;}
     input[type="text"], input[type="number"], textarea, select{ width:100%; background:rgba(0,0,0,.25); border:1px solid var(--line); color:var(--text); border-radius:12px; padding:9px 10px; outline:none; }
     textarea{min-height:70px; resize:vertical}
-    .muted{color:var(--muted)}
-    .mono{font-family:var(--mono)}
-    .divider{height:1px; background:var(--line); margin:10px 0}
+    .muted{color:var(--muted)} .mono{font-family:var(--mono)} .divider{height:1px; background:var(--line); margin:10px 0}
     .sessions{ display:flex; flex-direction:column; gap:8px; overflow:auto; padding-right:6px; padding-bottom:8px; flex:1; min-height:0; }
     .session-item{border:1px solid var(--line); border-radius:14px; padding:10px 10px; cursor:pointer; background:rgba(0,0,0,.18);}
     .session-item:hover{border-color:#2d4364}
@@ -425,7 +409,7 @@
     if (document.visibilityState === "visible") tickTimer();
   });
 
-  // --- STORAGE (DIRECT SYNC MODE) ---
+  // --- STORAGE ---
   function debounce(func, wait) {
     let timeout;
     return function(...args) {
@@ -464,17 +448,29 @@
     } catch (e) { console.error("Save failed", e); }
   }
 
+  // DEBOUNCED version for Restore (prevents spamming on restore)
+  const saveLogsDebounced = debounce(() => {
+     // No-op here, mainly for older references. All inputs now use Instant.
+  }, 500);
+
   // --- EVENT LISTENERS FOR SYNC ---
   // When resuming, force reload from disk to ensure memory matches reality
-  window.addEventListener("focus", () => {
-     loadLogsAsync(); 
-  });
+  let reloadTimer = null;
+  function safeReload() {
+    if (reloadTimer) clearTimeout(reloadTimer);
+    reloadTimer = setTimeout(() => {
+      console.log("Safe Reload triggered");
+      loadLogsAsync();
+    }, 200); // 200ms grace period for browser to wake up
+  }
+
+  window.addEventListener("focus", safeReload);
   
   // Backup on freeze
   window.addEventListener("pagehide", saveLogsInstant);
   window.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") saveLogsInstant();
-    if (document.visibilityState === "visible") loadLogsAsync(); // Reload on wake
+    if (document.visibilityState === "visible") safeReload(); 
   });
 
   // --- CUSTOM EXERCISES ---
@@ -504,7 +500,7 @@
     });
     state.logs.__custom_sessions[key] = arr;
     saveLogsInstant();
-    renderAll();
+    try { renderAll(); } catch(e){ console.error("Render fail", e); }
   }
 
   function getAllWorkoutsForSession(session){
@@ -591,7 +587,7 @@
     if(cloudTs > localTs) {
        state.logs = cloudLogs;
        saveLogsInstant();
-       renderAll(); 
+       try { renderAll(); } catch(e){} 
     }
   }
   function setAuthUI(signedIn, email){
@@ -618,11 +614,11 @@
     const {data:sessData} = await supabase.auth.getSession();
     state._user = sessData?.session?.user || null;
     setAuthUI(!!state._user, state._user?.email);
-    if(state._user){ await cloudLoad(); renderAll(); }
+    if(state._user){ await cloudLoad(); try{renderAll();}catch(e){} }
     supabase.auth.onAuthStateChange(async (_event, session)=>{
       state._user = session?.user || null;
       setAuthUI(!!state._user, state._user?.email);
-      if(state._user){ await cloudLoad(); renderAll(); scheduleCloudSave(); }
+      if(state._user){ await cloudLoad(); try{renderAll();}catch(e){} scheduleCloudSave(); }
     });
     document.getElementById("signInGoogle")?.addEventListener("click", async()=>{
       const redirectTo = new URL(".", window.location.href).toString();
@@ -636,7 +632,7 @@
       state.logs = {};
       if (typeof idbKeyval !== 'undefined') await idbKeyval.del(LS_KEY);
       localStorage.removeItem(LS_KEY);
-      renderAll();
+      try{renderAll();}catch(e){}
       alert("Signed out.");
     });
   }
@@ -710,82 +706,88 @@
   }
 
   function renderActiveSession(){
-    const elMain = document.getElementById("content");
-    const elHead = document.getElementById("activeTitle");
-    const session = state.sessionsById.get(state.activeSessionId);
-    
-    if (!session){
-      elHead.textContent = "No session loaded";
-      document.getElementById("activeMeta").textContent = "Check sources";
-      document.getElementById("activePill").textContent = "—";
-      elMain.innerHTML = `<div class="muted">Nothing selected.</div>`;
-      return;
-    }
-
-    elHead.textContent = `${session.programName} • ${session.title}`;
-    updateActiveProgress();
-    updateSessionFunFact();
-
-    const allWorkouts = getAllWorkoutsForSession(session);
-    const workoutsHtml = allWorkouts.map((w, idx) => {
-      const wlog = ensureWorkoutLog(session, w, idx);
-      const logged = countWorkoutLogged(session.programName, session.title, w, idx);
-      const badge = logged ? '<span class="pill" style="margin-left:8px;border-color:rgba(53,208,127,.35);background:rgba(53,208,127,.10);color:#c8ffe2">logged</span>' : '';
-      const requiredLabel = `Required: Sets ${escapeHtml(w.setsStr||String(w.setCount))} • Reps ${escapeHtml(w.repsStr||w.targetReps||"")}`;
+    try {
+      const elMain = document.getElementById("content");
+      const elHead = document.getElementById("activeTitle");
+      const session = state.sessionsById.get(state.activeSessionId);
       
-      const deleteBtn = w._isCustom 
-        ? `<button class="btn danger small" onclick="removeCustomWorkout(${w._customIndex}); event.stopPropagation();" style="margin-right:8px;">Remove</button>`
-        : '';
+      if (!session){
+        elHead.textContent = "No session loaded";
+        document.getElementById("activeMeta").textContent = "Check sources";
+        document.getElementById("activePill").textContent = "—";
+        elMain.innerHTML = `<div class="muted">Nothing selected.</div>`;
+        return;
+      }
 
-      return `
-        <div class="workout" data-wi="${idx}">
-          <div class="workout-head" onclick="toggleWorkout(this)">
-            <div>
-              <div class="workout-title" id="title_${idx}">${escapeHtml(cleanWorkoutTitle(w.title, session.programName))} ${badge}</div>
-              <div class="workout-sub">${requiredLabel}</div>
+      elHead.textContent = `${session.programName} • ${session.title}`;
+      updateActiveProgress();
+      
+      try { updateSessionFunFact(); } catch(e){ console.warn("FunFact error", e); }
+
+      const allWorkouts = getAllWorkoutsForSession(session);
+      const workoutsHtml = allWorkouts.map((w, idx) => {
+        const wlog = ensureWorkoutLog(session, w, idx);
+        const logged = countWorkoutLogged(session.programName, session.title, w, idx);
+        const badge = logged ? '<span class="pill" style="margin-left:8px;border-color:rgba(53,208,127,.35);background:rgba(53,208,127,.10);color:#c8ffe2">logged</span>' : '';
+        const requiredLabel = `Required: Sets ${escapeHtml(w.setsStr||String(w.setCount))} • Reps ${escapeHtml(w.repsStr||w.targetReps||"")}`;
+        
+        const deleteBtn = w._isCustom 
+          ? `<button class="btn danger small" onclick="removeCustomWorkout(${w._customIndex}); event.stopPropagation();" style="margin-right:8px;">Remove</button>`
+          : '';
+
+        return `
+          <div class="workout" data-wi="${idx}">
+            <div class="workout-head" onclick="toggleWorkout(this)">
+              <div>
+                <div class="workout-title" id="title_${idx}">${escapeHtml(cleanWorkoutTitle(w.title, session.programName))} ${badge}</div>
+                <div class="workout-sub">${requiredLabel}</div>
+              </div>
+              <div style="display:flex;align-items:center;">
+                ${deleteBtn}
+                <button class="btn small">Toggle</button>
+              </div>
             </div>
-            <div style="display:flex;align-items:center;">
-              ${deleteBtn}
-              <button class="btn small">Toggle</button>
+            <div class="workout-body">
+              ${w.notes?.length ? `<div class="small-note"><b>Plan notes</b><br>${w.notes.map(n=>escapeHtml(n)).join("<br>")}</div><div class="divider"></div>` : ""}
+              <div class="grid"><div class="h">Set</div><div class="h">Target</div><div class="h">Kg</div><div class="h">Reps</div><div class="h">Done</div></div>
+              <div id="sets_${idx}">${wlog.sets.map(r=>renderSetRow(session,w,idx,r)).join("")}</div>
+              <div class="footer-actions">
+                <button class="btn small" onclick="modSet(${idx}, 1)">+ Set</button>
+                <button class="btn small danger" onclick="modSet(${idx}, -1)">− Set</button>
+                <button class="btn small" onclick="startRest(120)">Start 120s rest</button>
+                <button class="btn small" onclick="startRest(90)">Start 90s rest</button>
+                <button class="btn small" onclick="startRest(60)">Start 60s rest</button>
+              </div>
+              <div class="divider"></div>
+              <label class="muted">Workout notes</label>
+              <textarea oninput="updateWorkoutNote(this, ${idx})" placeholder="Notes...">${escapeHtml(wlog.workoutNote||"")}</textarea>
             </div>
           </div>
+        `;
+      }).join("");
+
+      const addBoxHtml = `
+        <div class="workout">
+          <div class="workout-head" onclick="toggleWorkout(this)">
+            <div><div class="workout-title">Add exercise</div><div class="workout-sub">Custom exercise</div></div>
+            <button class="btn small">Toggle</button>
+          </div>
           <div class="workout-body">
-            ${w.notes?.length ? `<div class="small-note"><b>Plan notes</b><br>${w.notes.map(n=>escapeHtml(n)).join("<br>")}</div><div class="divider"></div>` : ""}
-            <div class="grid"><div class="h">Set</div><div class="h">Target</div><div class="h">Kg</div><div class="h">Reps</div><div class="h">Done</div></div>
-            <div id="sets_${idx}">${wlog.sets.map(r=>renderSetRow(session,w,idx,r)).join("")}</div>
-            <div class="footer-actions">
-              <button class="btn small" onclick="modSet(${idx}, 1)">+ Set</button>
-              <button class="btn small danger" onclick="modSet(${idx}, -1)">− Set</button>
-              <button class="btn small" onclick="startRest(120)">Start 120s rest</button>
-              <button class="btn small" onclick="startRest(90)">Start 90s rest</button>
-              <button class="btn small" onclick="startRest(60)">Start 60s rest</button>
+            <div class="grid" style="grid-template-columns: 1fr 90px 120px;">
+              <div class="h">Exercise</div><div class="h">Sets</div><div class="h">Target reps</div>
+              <input id="customTitle" type="text" placeholder="e.g. Arnold press" />
+              <input id="customSets" type="number" min="1" step="1" value="3" />
+              <input id="customReps" type="text" placeholder="e.g. 8-12" />
             </div>
-            <div class="divider"></div>
-            <label class="muted">Workout notes</label>
-            <textarea oninput="updateWorkoutNote(this, ${idx})" placeholder="Notes...">${escapeHtml(wlog.workoutNote||"")}</textarea>
+            <div class="footer-actions"><button class="btn small primary" onclick="handleCustomAdd()">Add</button></div>
           </div>
         </div>
       `;
-    }).join("");
-
-    const addBoxHtml = `
-      <div class="workout">
-        <div class="workout-head" onclick="toggleWorkout(this)">
-          <div><div class="workout-title">Add exercise</div><div class="workout-sub">Custom exercise</div></div>
-          <button class="btn small">Toggle</button>
-        </div>
-        <div class="workout-body">
-          <div class="grid" style="grid-template-columns: 1fr 90px 120px;">
-            <div class="h">Exercise</div><div class="h">Sets</div><div class="h">Target reps</div>
-            <input id="customTitle" type="text" placeholder="e.g. Arnold press" />
-            <input id="customSets" type="number" min="1" step="1" value="3" />
-            <input id="customReps" type="text" placeholder="e.g. 8-12" />
-          </div>
-          <div class="footer-actions"><button class="btn small primary" onclick="handleCustomAdd()">Add</button></div>
-        </div>
-      </div>
-    `;
-    elMain.innerHTML = workoutsHtml + addBoxHtml;
+      elMain.innerHTML = workoutsHtml + addBoxHtml;
+    } catch(e) {
+      console.error("Render Error:", e);
+      document.getElementById("content").innerHTML = `<div class="small-note" style="color:red">Error rendering session: ${e.message}</div>`;
+    }
   }
 
   function updateActiveProgress(){
@@ -802,10 +804,12 @@
   }
 
   function renderAll(){
-    renderProgramSelect();
-    renderSessionSelect();
-    renderSessionsList();
-    renderActiveSession();
+    try {
+      renderProgramSelect();
+      renderSessionSelect();
+      renderSessionsList();
+      renderActiveSession();
+    } catch(e){ console.error("Critical Render Failure", e); }
   }
 
   // --- ACTIONS (Global Window Scope) ---
@@ -847,7 +851,7 @@
     const w = getAllWorkoutsForSession(session)[wIdx];
     const wlog = ensureWorkoutLog(session, w, wIdx);
     wlog.workoutNote = el.value;
-    saveLogsDebounced(); // Notes are fine with debounce
+    saveLogsInstant(); 
   };
 
   window.updateSet = (el, wIdx, setNum, field) => {
@@ -870,10 +874,8 @@
       }
       updateActiveProgress();
     } else {
-      // INSTANT TIMESTAMP UPDATE
       state.logs._updatedAt = Date.now();
       row[field] = el.value;
-      // KEY FIX: No more debounce for data. Instant save.
       saveLogsInstant();
     }
   };
@@ -1071,6 +1073,14 @@
   loadLogsAsync();
   loadFunFacts(); 
   initAuth();     
+
+  // --- SAFETY NET ---
+  // Ensure data persists even if browser freezes mid-save
+  window.addEventListener("pagehide", saveLogsInstant);
+  window.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") saveLogsInstant();
+    if (document.visibilityState === "visible") safeReload(); // Reload on wake
+  });
 
 </script>
 </body>

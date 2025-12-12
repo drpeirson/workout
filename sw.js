@@ -1,5 +1,5 @@
 /* MST Workout Tracker - Service Worker */
-const CACHE_NAME = "bolt-cache-v32"; // Bumped for UI Fixes
+const CACHE_NAME = "bolt-cache-v33"; // Bumped for Sanity Check
 
 const CORE_ASSETS = [
   "./",
@@ -7,7 +7,7 @@ const CORE_ASSETS = [
   "manifest.json",
   "icon-192.png",
   "icon-512.png",
-  // "fun_facts.json", // Optional
+  // "fun_facts.json", // Optional, handled dynamically
   "https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/index-min.js",
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
 ];
@@ -16,7 +16,8 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        cache.add("fun_facts.json").catch(() => {});
+        // Try to cache fun_facts, but don't fail if missing
+        cache.add("fun_facts.json").catch(() => {}); 
         return cache.addAll(CORE_ASSETS);
       })
       .then(() => self.skipWaiting())
@@ -31,61 +32,27 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-function isSameOrigin(url) {
-  try { return new URL(url).origin === self.location.origin; } catch { return false; }
-}
-
-function isProgramJson(url) {
-  try {
-    const u = new URL(url);
-    return u.origin === self.location.origin && u.pathname.includes("/data/") && u.pathname.endsWith(".json");
-  } catch {
-    return false;
-  }
-}
-
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
-  const url = req.url;
-
+  
+  // 1. Navigation
   if (req.mode === "navigate") {
     event.respondWith(
-      fetch(req).then((res) => {
+      fetch(req).catch(() => caches.match("./"))
+    );
+    return;
+  }
+
+  // 2. Program Data & Assets (Stale-While-Revalidate)
+  event.respondWith(
+    caches.match(req).then((cached) => {
+      const fetchPromise = fetch(req).then((res) => {
         const copy = res.clone();
-        caches.open(CACHE_NAME).then((c) => c.put("./", copy)).catch(() => {});
+        caches.open(CACHE_NAME).then((c) => c.put(req, copy)).catch(()=>{});
         return res;
-      }).catch(() => caches.match("./"))
-    );
-    return;
-  }
-
-  if (isProgramJson(url)) {
-    event.respondWith(
-      caches.match(req).then((cached) => {
-        const fetchPromise = fetch(req).then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then((c) => c.put(req, copy)).catch(() => {});
-          return res;
-        }).catch(() => cached);
-        return cached || fetchPromise;
-      })
-    );
-    return;
-  }
-
-  if (isSameOrigin(url) || CORE_ASSETS.includes(url)) {
-    event.respondWith(
-      caches.match(req).then((cached) => {
-        if (cached) return cached;
-        return fetch(req).then((res) => {
-          if(res.ok) {
-             const copy = res.clone();
-             caches.open(CACHE_NAME).then((c) => c.put(req, copy)).catch(() => {});
-          }
-          return res;
-        });
-      })
-    );
-  }
+      }).catch(() => cached); // If offline, return cached
+      return cached || fetchPromise;
+    })
+  );
 });

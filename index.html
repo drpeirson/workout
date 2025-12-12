@@ -72,7 +72,7 @@
     #saveStatus.saving { opacity:1; background:rgba(255,200,0,0.8); color:black; }
     #saveStatus.saved { opacity:0; transition:opacity 1s; background:rgba(53,208,127,0.8); color:black; }
     
-    #errorBox { display:none; position:fixed; top:0; left:0; right:0; background:rgba(255,0,0,0.95); color:white; padding:20px; z-index:99999; font-family:monospace; white-space:pre-wrap; }
+    #errorBox { display:none; position:fixed; top:0; left:0; right:0; background:rgba(255,0,0,0.95); color:white; padding:20px; z-index:99999; font-family:monospace; white-space:pre-wrap; pointer-events:none; }
     
     @media (max-width: 980px){
       .app{grid-template-columns:1fr; height:auto;}
@@ -87,15 +87,6 @@
       #authStatus{display:none;}
       .authBar{gap:8px;}
     }
-    
-    .stats-grid{ display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px; }
-    .stat{ border:1px solid var(--line); border-radius:14px; padding:10px 12px; background:rgba(0,0,0,.18); }
-    .statv{ font-family:var(--mono); font-size:20px; font-weight:900; margin-top:6px; letter-spacing:.02em; }
-    #planSessionChart{ width:100%; height:260px; display:block; }
-    .toplist{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
-    .topitem{display:flex;justify-content:space-between;gap:10px;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:8px 10px;background:rgba(255,255,255,.02);}
-    .topitem b{font-weight:900;}
-    @media (max-width: 980px){ .stats-grid{grid-template-columns: 1fr;} #planSessionChart{height:220px;} }
   </style>
 </head>
 <body>
@@ -114,27 +105,16 @@
 
       <div class="stack">
         <button class="btn danger small" onclick="emergencyReset()" style="align-self:flex-start;">⚠️ Reset App</button>
-
         <div class="two-col">
-          <div>
-            <label class="muted" for="programSelect">Program</label>
-            <select id="programSelect"></select>
-          </div>
-          <div>
-            <label class="muted" for="sessionSelect">Session</label>
-            <select id="sessionSelect"></select>
-          </div>
+          <div><label class="muted" for="programSelect">Program</label><select id="programSelect"></select></div>
+          <div><label class="muted" for="sessionSelect">Session</label><select id="sessionSelect"></select></div>
         </div>
-        <div class="row">
-          <input id="search" type="text" placeholder="Search sessions/workouts…" />
-        </div>
-
+        <div class="row"><input id="search" type="text" placeholder="Search sessions/workouts…" /></div>
         <div class="row">
           <button class="btn primary" id="reloadBtn">Reload plan</button>
           <button class="btn" id="openPlanStats" type="button">Plan stats</button>
           <button class="btn danger" id="clearBtn">Clear logs</button>
         </div>
-
         <div class="timer-box">
           <div class="timer">
             <div class="time" id="timerDisplay">00:00</div>
@@ -151,18 +131,10 @@
           <input id="customSeconds" type="number" min="5" step="5" placeholder="Custom seconds" />
           <button class="btn small" id="setCustom">Set</button>
         </div>
-
-        <div class="small-note" id="planHint">
-          Put your combined program JSON files in <span class="mono">/data</span>, then edit <span class="mono">PROGRAM_SOURCES</span> in this file.
-        </div>
-
-        <div class="row" id="mobileBrowseRow">
-          <button class="btn primary" id="openSessions" type="button">Browse sessions</button>
-        </div>
-
+        <div class="small-note" id="planHint">Put your combined program JSON files in <span class="mono">/data</span>.</div>
+        <div class="row" id="mobileBrowseRow"><button class="btn primary" id="openSessions" type="button">Browse sessions</button></div>
         <div class="divider"></div>
         <div class="sessions" id="sessions"></div>
-
         <div class="footer-actions">
           <button class="btn" id="exportLogs">Export logs (JSON)</button>
           <button class="btn" id="importLogs">Import logs</button>
@@ -203,71 +175,36 @@
     </div>
   </div>
 
-  <div class="drawer" id="planStatsModal" aria-hidden="true">
-    <div class="sheet" style="max-height:88vh;">
-      <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;">
-        <div style="font-weight:900;">Plan stats</div>
-        <button class="btn small" id="closePlanStats" type="button" style="max-width:120px;">Close</button>
-      </div>
-      <div class="stats-grid">
-        <div class="stat"><div class="muted">Total volume</div><div class="statv"><span id="planTotalVolume">0</span> <span class="muted">kg•reps</span></div></div>
-        <div class="stat"><div class="muted">Logged sessions</div><div class="statv" id="planLoggedSessions">0</div></div>
-        <div class="stat"><div class="muted">Logged sets</div><div class="statv" id="planLoggedSets">0</div></div>
-        <div class="stat"><div class="muted">Unique exercises</div><div class="statv" id="planUniqueExercises">0</div></div>
-      </div>
-      <div class="divider"></div>
-      <div class="small-note"><b>Volume by session (top)</b></div>
-      <canvas id="planSessionChart" width="900" height="260" style="width:100%;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.18);"></canvas>
-      <div class="divider"></div>
-      <div class="small-note"><b>Top exercises</b></div>
-      <div class="toplist" id="planTopExercises"></div>
-    </div>
-  </div>
-
 <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/index-min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-  // --- EMERGENCY ERROR HANDLER ---
-  window.addEventListener('error', function(e) {
+  // --- 1. GLOBAL ERROR TRAP (MUST BE FIRST) ---
+  window.onerror = function(msg, url, line, col, error) {
     const box = document.getElementById('errorBox');
     if(box) {
       box.style.display = 'block';
-      box.textContent += `Error: ${e.message}\n`;
+      box.textContent += `Error: ${msg} (Line ${line})\n`;
     }
-  });
+    console.error(error);
+  };
 
-  function emergencyReset() {
-    if(!confirm("Reset app? This clears cached code. Your logs are safe.")) return;
-    if('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for(let registration of registrations) { registration.unregister(); }
-        window.location.reload(true);
-      });
-    } else {
-      window.location.reload(true);
-    }
-  }
-
-  // --- CONFIG ---
+  // --- 2. CONFIG & STATE ---
   const PROGRAM_SOURCES = [
     { name: "Hypertrophy", url: "data/hypertrophy.json" },
     { name: "Starting Strongman", url: "data/starting_strongman.json" },
     { name: "Static Monster", url: "data/static_monster.json" },
   ];
-
   const SUPABASE_URL = "https://redxigdkdjyxaofmutlv.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlZHhpZ2RrZGp5eGFvZm11dGx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyMjI5MTQsImV4cCI6MjA4MDc5ODkxNH0.24RNF4dKYNcKkAESiYNbA4_3Fvt-zTCFe5jCjR4vdn0";
   const supabase = (typeof window.supabase !== 'undefined' && SUPABASE_ANON_KEY.length > 20) 
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) 
     : null;
-
   const LS_KEY = "mst_tracker_logs_v2";
   const PREFS_KEY = "mst_tracker_prefs_v1";
   let cloudSaveTimer = null;
   const CLOUD_SAVE_DEBOUNCE_MS = 800;
 
-  // --- STATE ---
   const state = {
     programs: [],
     programById: new Map(),
@@ -280,7 +217,7 @@
     funFacts: []
   };
 
-  // --- HELPERS ---
+  // --- 3. HELPERS ---
   function resolveReps(repsStr, setIndex) {
     if (!repsStr) return "";
     const s = String(repsStr);
@@ -290,219 +227,43 @@
     }
     return s;
   }
-
   function uid(str){
     let h = 2166136261;
-    for (let i=0; i<str.length; i++){
-      h ^= str.charCodeAt(i);
-      h = Math.imul(h, 16777619);
-    }
+    for (let i=0; i<str.length; i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
     return "id_" + (h >>> 0).toString(16);
   }
-
-  function escapeHtml(s){
-    return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+  function escapeHtml(s){ return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
+  function cleanWorkoutTitle(t, pName){
+    if (!t) return "";
+    let s = String(t).trim();
+    if(pName) s = s.replace(new RegExp("\\s*-\\s*"+pName+"\\b.*$","i"),"");
+    return s.replace(/\s*-\s*WEEK\s*\d+\b.*$/i,"").replace(/\s*-\s*SESSION\s*\d+\b.*$/i,"").trim();
   }
-  
-  function cleanWorkoutTitle(title, programName){
-    let t = String(title || "").trim();
-    if (!t) return t;
-    if (programName){
-      const progRe = new RegExp("\\s*-\\s*" + String(programName).replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b.*$", "i");
-      if (progRe.test(t)) t = t.replace(progRe, "").trim();
-    }
-    t = t.replace(/\s*-\s*WEEK\s*\d+\b.*$/i, "").trim();
-    t = t.replace(/\s*-\s*Week\s*\d+\b.*$/i, "").trim();
-    t = t.replace(/\s*-\s*SESSION\s*\d+\b.*$/i, "").trim();
-    return t;
-  }
-
-  function toIntMaybe(v){
-    if (v == null) return null;
-    const s = String(v).trim();
-    const n = parseInt(s, 10);
-    return Number.isFinite(n) ? n : null;
-  }
-
+  function toIntMaybe(v){ const n=parseInt(String(v).trim(),10); return Number.isFinite(n)?n:null; }
   function fmtTime(sec){
     sec = Math.max(0, Math.floor(sec));
-    const m = String(Math.floor(sec/60)).padStart(2,"0");
-    const s = String(sec%60).padStart(2,"0");
-    return `${m}:${s}`;
+    return String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0");
+  }
+  function numFloat(v){ const n=parseFloat(String(v).trim()); return Number.isFinite(n)?n:null; }
+  function numInt(v){ const n=parseInt(String(v).trim(),10); return Number.isFinite(n)?n:null; }
+  function fmtInt(n){ try{return new Intl.NumberFormat().format(Math.round(n));}catch{return String(Math.round(n));} }
+  function hashInt(str){
+    let h=2166136261;
+    for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); }
+    return (h>>>0);
   }
 
-  // --- TIMER LOGIC ---
-  function setTimer(sec){
-    state.timer.total = sec;
-    state.timer.left = sec;
-    state.timer.running = false;
-    state.timer.endAt = null;
-    stopTimerLoop();
-    renderTimer();
-  }
-
-  function renderTimer(){
-    if (state.timer.running && state.timer.endAt){
-      const now = Date.now();
-      state.timer.left = Math.max(0, Math.ceil((state.timer.endAt - now) / 1000));
-    }
-    const elDisplay = document.getElementById("timerDisplay");
-    if(elDisplay) elDisplay.textContent = fmtTime(state.timer.left);
-  }
-
-  function stopTimerLoop(){
-    if (state.timer.t){
-      clearInterval(state.timer.t);
-      state.timer.t = null;
-    }
-  }
-
-  function beep(){
-    try{
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.connect(g); g.connect(ctx.destination);
-      o.frequency.value = 880;
-      g.gain.value = 0.05;
-      o.start();
-      setTimeout(()=>{ o.stop(); ctx.close(); }, 250);
-    }catch{}
-  }
-
-  function tickTimer(){
-    if (!state.timer.running) return;
-    const now = Date.now();
-    const left = Math.max(0, Math.ceil((state.timer.endAt - now) / 1000));
-    state.timer.left = left;
-    renderTimer();
-
-    if (left <= 0){
-      state.timer.running = false;
-      state.timer.endAt = null;
-      stopTimerLoop();
-      beep();
-    }
-  }
-
-  function startTimer(){
-    if (state.timer.left <= 0) state.timer.left = state.timer.total;
-    state.timer.endAt = Date.now() + state.timer.left * 1000;
-    state.timer.running = true;
-    if (!state.timer.t) state.timer.t = setInterval(tickTimer, 250);
-    tickTimer();
-  }
-
-  function pauseTimer(){
-    if (!state.timer.running) return;
-    renderTimer();
-    state.timer.running = false;
-    state.timer.endAt = null;
-    stopTimerLoop();
-  }
-
-  function resetTimer(){
-    setTimer(state.timer.total);
-  }
-
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") tickTimer();
-  });
-
-  // --- STORAGE ---
-  function debounce(func, wait) {
-    let timeout;
-    return function(...args) {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => func.apply(this, args), wait);
-    };
-  }
-
-  function touchLogs() {
-    if (state.logs) state.logs._updatedAt = Date.now();
-  }
-
-  function showSaveIndicator(){
-    const el = document.getElementById("saveStatus");
-    if(el) {
-      el.textContent = "Saved";
-      el.classList.add("saved");
-      el.classList.remove("saving");
-      setTimeout(()=> {
-        el.classList.remove("saved");
-      }, 1000);
-    }
-  }
-
-  // KEY FIX: Direct write to LocalStorage (Sync) + IDB (Async) on every change
-  function saveLogsInstant() {
-    try {
-      touchLogs();
-      // 1. Sync Save (Blocks browser from freezing)
-      localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
-      showSaveIndicator();
-      
-      // 2. Async backups
-      if (typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, state.logs).catch(()=>{});
-      scheduleCloudSave();
-    } catch (e) { console.error("Save failed", e); }
-  }
-
-  // DEBOUNCED version for Restore (prevents spamming on restore)
-  const saveLogsDebounced = debounce(() => {
-     // No-op here, mainly for older references. All inputs now use Instant.
-  }, 500);
-
-  // --- EVENT LISTENERS FOR SYNC ---
-  // When resuming, force reload from disk to ensure memory matches reality
-  let reloadTimer = null;
-  function safeReload() {
-    if (reloadTimer) clearTimeout(reloadTimer);
-    reloadTimer = setTimeout(() => {
-      console.log("Safe Reload triggered");
-      loadLogsAsync();
-    }, 200); // 200ms grace period for browser to wake up
-  }
-
-  window.addEventListener("focus", safeReload);
-  
-  // Backup on freeze
-  window.addEventListener("pagehide", saveLogsInstant);
-  window.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") saveLogsInstant();
-    if (document.visibilityState === "visible") safeReload(); 
-  });
-
-  // --- CUSTOM EXERCISES ---
+  // --- 4. CORE LOGIC ---
   function sessionKey(session){ return `${session.programName}|||${session.title}`; }
-  
   function ensureCustomStore(){
-    if (typeof state.logs !== "object" || state.logs === null) state.logs = {};
+    if (!state.logs) state.logs = {};
     if (!state.logs.__custom_sessions) state.logs.__custom_sessions = {};
   }
-  
   function getCustomWorkouts(session){
     ensureCustomStore();
     const key = sessionKey(session);
     return state.logs.__custom_sessions[key] || [];
   }
-  
-  function addCustomWorkout(session, title, setCount, reps){
-    ensureCustomStore();
-    const key = sessionKey(session);
-    const arr = getCustomWorkouts(session);
-    arr.push({
-      title: String(title||"").trim(),
-      sets: Number(setCount)||3,
-      reps: String(reps||"").trim(),
-      notes: [],
-      created_at: new Date().toISOString()
-    });
-    state.logs.__custom_sessions[key] = arr;
-    saveLogsInstant();
-    try { renderAll(); } catch(e){ console.error("Render fail", e); }
-  }
-
   function getAllWorkoutsForSession(session){
     const base = Array.isArray(session?.workouts) ? session.workouts : [];
     const custom = getCustomWorkouts(session).map((cw, i) => ({
@@ -513,13 +274,12 @@
       repsStr: String(cw.reps || ""),
       setCount: Number(cw.sets) || 3,
       targetReps: String(cw.reps || "").trim(),
-      notes: Array.isArray(cw.notes) ? cw.notes : [],
+      notes: [],
       _isCustom: true,
       _customIndex: i
     }));
     return [...base, ...custom];
   }
-
   function ensureWorkoutLog(session, workout, workoutIndex){
     const k = `${session.programName}|||${session.title}|||${workoutIndex}|||${workout.title}`;
     let wlog = state.logs[k];
@@ -535,6 +295,7 @@
       };
       state.logs[k] = wlog;
     } else {
+      // Repair if sets missing
       if(!Array.isArray(wlog.sets)) wlog.sets=[];
       while(wlog.sets.length < workout.setCount){
         const i = wlog.sets.length;
@@ -546,23 +307,45 @@
     }
     return wlog;
   }
-
-  function countWorkoutLogged(programName, sessionTitle, workout, workoutIndex){
-    const k = `${programName}|||${sessionTitle}|||${workoutIndex}|||${workout.title}`;
+  function countWorkoutLogged(session, workout, workoutIndex){
+    const k = `${session.programName}|||${session.title}|||${workoutIndex}|||${workout.title}`;
     const wlog = state.logs[k];
     if(!wlog || !Array.isArray(wlog.sets)) return false;
     return wlog.sets.some(r => (r.weight || r.reps || r.done));
   }
-
   function countLoggedInSession(session){
     let done = 0;
     getAllWorkoutsForSession(session).forEach((w,idx)=>{
-      if(countWorkoutLogged(session.programName, session.title, w, idx)) done++;
+      if(countWorkoutLogged(session, w, idx)) done++;
     });
     return done;
   }
 
-  // --- AUTH & CLOUD ---
+  // --- 5. STORAGE & SYNC (NUCLEAR) ---
+  function touchLogs() { if (state.logs) state.logs._updatedAt = Date.now(); }
+  
+  function showSaveIndicator(){
+    const el = document.getElementById("saveStatus");
+    if(el) {
+      el.textContent = "Saved";
+      el.classList.add("saved");
+      el.classList.remove("saving");
+      setTimeout(()=> { el.classList.remove("saved"); }, 1000);
+    }
+  }
+
+  function saveLogsInstant() {
+    try {
+      touchLogs();
+      // Sync Save
+      localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
+      showSaveIndicator();
+      // Async Save
+      if (typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, state.logs).catch(()=>{});
+      scheduleCloudSave();
+    } catch (e) { console.error("Save failed", e); }
+  }
+
   function scheduleCloudSave(){
     if(!supabase || !state._user) return;
     if(cloudSaveTimer) clearTimeout(cloudSaveTimer);
@@ -571,116 +354,38 @@
   async function cloudSaveNow(){
     if(!supabase || !state._user) return;
     const payload = { user_id: state._user.id, logs: state.logs, updated_at: new Date().toISOString() };
-    const {error} = await supabase.from("user_logs").upsert(payload, {onConflict:"user_id"});
-    if(error) throw error;
-  }
-  async function cloudLoad(){
-    if(!supabase || !state._user) return;
-    const {data, error} = await supabase.from("user_logs").select("logs").eq("user_id", state._user.id).maybeSingle();
-    if(error){ console.warn("cloudLoad error", error); return; }
-    const cloudLogs = data?.logs||{};
-    if(typeof cloudLogs!=="object" || cloudLogs===null) return;
-    
-    // Cloud Merge strategy
-    const localTs = state.logs._updatedAt || 0;
-    const cloudTs = cloudLogs._updatedAt || 0;
-    if(cloudTs > localTs) {
-       state.logs = cloudLogs;
-       saveLogsInstant();
-       try { renderAll(); } catch(e){} 
-    }
-  }
-  function setAuthUI(signedIn, email){
-    const elStatus = document.getElementById("authStatus");
-    const elIn = document.getElementById("signInGoogle");
-    const elOut = document.getElementById("signOut");
-    const elAv = document.getElementById("authAvatar");
-    if (!elStatus) return;
-    const meta = state._user?.user_metadata || {};
-    const avatar = meta.avatar_url || meta.picture || "";
-    if (signedIn){
-      elStatus.textContent = email ? email : "Signed in";
-      elIn.style.display="none"; elOut.style.display="inline-flex";
-      if(elAv && avatar){ elAv.src=avatar; elAv.style.display="inline-block"; }
-      else if(elAv) elAv.style.display="none";
-    } else {
-      elStatus.textContent = "Not signed in";
-      elIn.style.display="inline-flex"; elOut.style.display="none";
-      if(elAv) elAv.style.display="none";
-    }
-  }
-  async function initAuth(){
-    if(!supabase){ setAuthUI(false); return; }
-    const {data:sessData} = await supabase.auth.getSession();
-    state._user = sessData?.session?.user || null;
-    setAuthUI(!!state._user, state._user?.email);
-    if(state._user){ await cloudLoad(); try{renderAll();}catch(e){} }
-    supabase.auth.onAuthStateChange(async (_event, session)=>{
-      state._user = session?.user || null;
-      setAuthUI(!!state._user, state._user?.email);
-      if(state._user){ await cloudLoad(); try{renderAll();}catch(e){} scheduleCloudSave(); }
-    });
-    document.getElementById("signInGoogle")?.addEventListener("click", async()=>{
-      const redirectTo = new URL(".", window.location.href).toString();
-      const {error} = await supabase.auth.signInWithOAuth({provider:"google", options:{redirectTo}});
-      if(error) alert("Sign-in failed: "+error.message);
-    });
-    document.getElementById("signOut")?.addEventListener("click", async()=>{
-      await supabase.auth.signOut();
-      state._user = null;
-      setAuthUI(false);
-      state.logs = {};
-      if (typeof idbKeyval !== 'undefined') await idbKeyval.del(LS_KEY);
-      localStorage.removeItem(LS_KEY);
-      try{renderAll();}catch(e){}
-      alert("Signed out.");
-    });
+    await supabase.from("user_logs").upsert(payload, {onConflict:"user_id"});
   }
 
-  // --- RENDERING ---
+  // --- 6. RENDER FUNCTIONS ---
   function renderProgramSelect(){
     const elProg = document.getElementById("programSelect");
     elProg.innerHTML = state.programs.map(p =>
       `<option value="${p.id}" ${p.id===state.activeProgramId?"selected":""}>${escapeHtml(p.name)}</option>`
     ).join("");
   }
-
   function renderSessionSelect(){
     const elSess = document.getElementById("sessionSelect");
     const p = state.programById.get(state.activeProgramId);
     const sessions = p?.sessions || [];
-    
-    // UI FIX: Only re-render if the program changed (prevents uncoupling)
-    const currentHtml = elSess.innerHTML;
-    const newHtml = sessions.map(s =>
+    elSess.innerHTML = sessions.map(s =>
       `<option value="${s.id}" ${s.id===state.activeSessionId?"selected":""}>${escapeHtml(s.title)}</option>`
     ).join("");
-    
-    // Only update DOM if options actually changed (avoids resetting visual selection)
-    if (currentHtml !== newHtml && newHtml.length > 0) {
-        elSess.innerHTML = newHtml;
-    } else {
-        // Just ensure value is correct
-        if(elSess.value !== state.activeSessionId) elSess.value = state.activeSessionId;
-    }
+    elSess.value = state.activeSessionId;
   }
-
   function renderSessionsList(){
     const elList = document.getElementById("sessions");
     const elCount = document.getElementById("sessionCount");
     const p = state.programById.get(state.activeProgramId);
     const q = document.getElementById("search").value.trim().toLowerCase();
-    
     const sessions = (p?.sessions || []).filter(s => {
       if (!q) return true;
       if (s.title.toLowerCase().includes(q)) return true;
       return s.workouts.some(w => w.title.toLowerCase().includes(q));
     });
-
     elCount.textContent = `${(p?.sessions||[]).length} sessions`;
-    
     elList.innerHTML = sessions.map(s => {
-      const total = s.workouts.length;
+      const total = getAllWorkoutsForSession(s).length;
       const done = countLoggedInSession(s);
       const active = s.id === state.activeSessionId ? "active" : "";
       return `
@@ -691,7 +396,6 @@
       `;
     }).join("");
   }
-
   function renderSetRow(session, workout, workoutIndex, row){
     const doneClass = row.done ? "done" : "";
     const smartTarget = resolveReps(workout.targetReps, row.set - 1);
@@ -699,7 +403,6 @@
     if (!displayValue || displayValue === workout.targetReps || displayValue.includes(",")) {
       displayValue = smartTarget;
     }
-
     return `
       <div class="set-row ${doneClass}">
         <div class="grid">
@@ -715,228 +418,14 @@
       </div>
     `;
   }
-
-  function renderActiveSession(){
-    try {
-      const elMain = document.getElementById("content");
-      const elHead = document.getElementById("activeTitle");
-      const session = state.sessionsById.get(state.activeSessionId);
-      
-      if (!session){
-        elHead.textContent = "No session loaded";
-        document.getElementById("activeMeta").textContent = "Check sources";
-        document.getElementById("activePill").textContent = "—";
-        elMain.innerHTML = `<div class="muted">Nothing selected.</div>`;
-        return;
-      }
-
-      elHead.textContent = `${session.programName} • ${session.title}`;
-      updateActiveProgress();
-      
-      try { updateSessionFunFact(); } catch(e){ console.warn("FunFact error", e); }
-
-      const allWorkouts = getAllWorkoutsForSession(session);
-      const workoutsHtml = allWorkouts.map((w, idx) => {
-        const wlog = ensureWorkoutLog(session, w, idx);
-        const logged = countWorkoutLogged(session.programName, session.title, w, idx);
-        const badge = logged ? '<span class="pill" style="margin-left:8px;border-color:rgba(53,208,127,.35);background:rgba(53,208,127,.10);color:#c8ffe2">logged</span>' : '';
-        const requiredLabel = `Required: Sets ${escapeHtml(w.setsStr||String(w.setCount))} • Reps ${escapeHtml(w.repsStr||w.targetReps||"")}`;
-        
-        const deleteBtn = w._isCustom 
-          ? `<button class="btn danger small" onclick="removeCustomWorkout(${w._customIndex}); event.stopPropagation();" style="margin-right:8px;">Remove</button>`
-          : '';
-
-        return `
-          <div class="workout" data-wi="${idx}">
-            <div class="workout-head" onclick="toggleWorkout(this)">
-              <div>
-                <div class="workout-title" id="title_${idx}">${escapeHtml(cleanWorkoutTitle(w.title, session.programName))} ${badge}</div>
-                <div class="workout-sub">${requiredLabel}</div>
-              </div>
-              <div style="display:flex;align-items:center;">
-                ${deleteBtn}
-                <button class="btn small">Toggle</button>
-              </div>
-            </div>
-            <div class="workout-body">
-              ${w.notes?.length ? `<div class="small-note"><b>Plan notes</b><br>${w.notes.map(n=>escapeHtml(n)).join("<br>")}</div><div class="divider"></div>` : ""}
-              <div class="grid"><div class="h">Set</div><div class="h">Target</div><div class="h">Kg</div><div class="h">Reps</div><div class="h">Done</div></div>
-              <div id="sets_${idx}">${wlog.sets.map(r=>renderSetRow(session,w,idx,r)).join("")}</div>
-              <div class="footer-actions">
-                <button class="btn small" onclick="modSet(${idx}, 1)">+ Set</button>
-                <button class="btn small danger" onclick="modSet(${idx}, -1)">− Set</button>
-                <button class="btn small" onclick="startRest(120)">Start 120s rest</button>
-                <button class="btn small" onclick="startRest(90)">Start 90s rest</button>
-                <button class="btn small" onclick="startRest(60)">Start 60s rest</button>
-              </div>
-              <div class="divider"></div>
-              <label class="muted">Workout notes</label>
-              <textarea oninput="updateWorkoutNote(this, ${idx})" placeholder="Notes...">${escapeHtml(wlog.workoutNote||"")}</textarea>
-            </div>
-          </div>
-        `;
-      }).join("");
-
-      const addBoxHtml = `
-        <div class="workout">
-          <div class="workout-head" onclick="toggleWorkout(this)">
-            <div><div class="workout-title">Add exercise</div><div class="workout-sub">Custom exercise</div></div>
-            <button class="btn small">Toggle</button>
-          </div>
-          <div class="workout-body">
-            <div class="grid" style="grid-template-columns: 1fr 90px 120px;">
-              <div class="h">Exercise</div><div class="h">Sets</div><div class="h">Target reps</div>
-              <input id="customTitle" type="text" placeholder="e.g. Arnold press" />
-              <input id="customSets" type="number" min="1" step="1" value="3" />
-              <input id="customReps" type="text" placeholder="e.g. 8-12" />
-            </div>
-            <div class="footer-actions"><button class="btn small primary" onclick="handleCustomAdd()">Add</button></div>
-          </div>
-        </div>
-      `;
-      elMain.innerHTML = workoutsHtml + addBoxHtml;
-    } catch(e) {
-      console.error("Render Error:", e);
-      document.getElementById("content").innerHTML = `<div class="small-note" style="color:red">Error rendering session: ${e.message}</div>`;
-    }
-  }
-
-  function updateActiveProgress(){
+  function updateSessionFunFact(){
     const session = state.sessionsById.get(state.activeSessionId);
-    if (!session) return;
-    const all = getAllWorkoutsForSession(session);
-    const total = all.length;
-    let done = 0;
-    all.forEach((w, idx) => {
-      if (countWorkoutLogged(session.programName, session.title, w, idx)) done++;
-    });
-    document.getElementById("activeMeta").textContent = `Workouts: ${total} • Logged: ${done}/${total}`;
-    document.getElementById("activePill").textContent = `${done}/${total}`;
-  }
-
-  function renderAll(){
-    try {
-      renderProgramSelect();
-      renderSessionSelect(); // Now smarter
-      renderSessionsList();
-      renderActiveSession();
-    } catch(e){ console.error("Critical Render Failure", e); }
-  }
-
-  // --- ACTIONS (Global Window Scope) ---
-  window.pickSession = (sid) => {
-    state.activeSessionId = sid;
-    savePrefs();
-    renderAll();
-    const drawer = document.getElementById("drawer");
-    if(drawer.classList.contains("open")){
-       drawer.classList.remove("open"); drawer.setAttribute("aria-hidden", "true");
-    }
-    document.getElementById("content")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
-  window.toggleWorkout = (el) => {
-    if(event.target.tagName !== "BUTTON") el.closest('.workout').classList.toggle('open');
-  };
-
-  window.modSet = (wIdx, delta) => {
-    const session = state.sessionsById.get(state.activeSessionId);
-    const w = getAllWorkoutsForSession(session)[wIdx];
-    const wlog = ensureWorkoutLog(session, w, wIdx);
-    if(delta > 0) {
-      wlog.sets.push({
-        set: wlog.sets.length+1, targetReps: resolveReps(w.targetReps, wlog.sets.length),
-        weight:"", reps:"", done:false, note:""
-      });
-    } else if (wlog.sets.length > 1) {
-      wlog.sets.pop();
-    }
-    saveLogsInstant();
-    renderActiveSession();
-  };
-
-  window.startRest = (sec) => { setTimer(sec); startTimer(); };
-
-  window.updateWorkoutNote = (el, wIdx) => {
-    const session = state.sessionsById.get(state.activeSessionId);
-    const w = getAllWorkoutsForSession(session)[wIdx];
-    const wlog = ensureWorkoutLog(session, w, wIdx);
-    wlog.workoutNote = el.value;
-    saveLogsInstant(); 
-  };
-
-  window.updateSet = (el, wIdx, setNum, field) => {
-    const session = state.sessionsById.get(state.activeSessionId);
-    const w = getAllWorkoutsForSession(session)[wIdx];
-    const wlog = ensureWorkoutLog(session, w, wIdx);
-    const row = wlog.sets.find(r => r.set === setNum);
-    if(!row) return;
-
-    if(field === 'done') {
-      row.done = el.checked;
-      el.closest('.set-row').classList.toggle('done', row.done);
-      saveLogsInstant();
-      const isLogged = wlog.sets.some(s=>s.done||s.weight||s.reps);
-      const tEl = document.getElementById(`title_${wIdx}`);
-      if(tEl) {
-         const cleanTitle = escapeHtml(cleanWorkoutTitle(w.title, session.programName));
-         const badge = isLogged ? '<span class="pill" style="margin-left:8px;border-color:rgba(53,208,127,.35);background:rgba(53,208,127,.10);color:#c8ffe2">logged</span>' : '';
-         tEl.innerHTML = `${cleanTitle} ${badge}`;
-      }
-      updateActiveProgress();
-    } else {
-      state.logs._updatedAt = Date.now();
-      row[field] = el.value;
-      // KEY FIX: No more debounce for data. Instant save.
-      saveLogsInstant();
-    }
-  };
-
-  window.handleCustomAdd = () => {
-    const session = state.sessionsById.get(state.activeSessionId);
-    const title = document.getElementById("customTitle")?.value||"";
-    const sets = parseInt(document.getElementById("customSets")?.value||"3",10);
-    const reps = document.getElementById("customReps")?.value||"";
-    if(!String(title).trim()) return alert("Enter exercise name.");
-    addCustomWorkout(session, title, sets, reps);
-    renderAll();
-  };
-
-  window.removeCustomWorkout = (index) => {
-    if(!confirm("Remove this custom exercise?")) return;
-    const session = state.sessionsById.get(state.activeSessionId);
-    const key = sessionKey(session);
-    const arr = state.logs.__custom_sessions[key];
-    if(arr && arr[index]) {
-      arr.splice(index, 1);
-      saveLogsInstant();
-      renderAll();
-    }
-  };
-
-  // --- FUN FACTS LOGIC ---
-  async function loadFunFacts() {
-    try {
-      const res = await fetch("fun_facts.json");
-      if(res.ok) state.funFacts = await res.json();
-    } catch(e) { console.warn("Failed to load fun facts", e); }
-  }
-
-  function numFloat(v){ const n=parseFloat(String(v).trim()); return Number.isFinite(n)?n:null; }
-  function numInt(v){ const n=parseInt(String(v).trim(),10); return Number.isFinite(n)?n:null; }
-  function fmtInt(n){ try{return new Intl.NumberFormat().format(Math.round(n));}catch{return String(Math.round(n));} }
-  function hashInt(str){
-    let h=2166136261;
-    for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); }
-    return (h>>>0);
-  }
-
-  function sessionLogPrefix(session){ return `${session.programName}|||${session.title}|||`; }
-
-  function computeSessionVolumeKg(session){
-    if (!session) return 0;
-    const prefix = sessionLogPrefix(session);
+    const elFact = document.getElementById("activeFunFact");
+    if (!elFact || !session) { if(elFact) elFact.textContent = ""; return; }
+    
+    // Calculate total KG
     let total = 0;
+    const prefix = `${session.programName}|||${session.title}|||`;
     for (const k of Object.keys(state.logs || {})){
       if (k.startsWith("__") || !k.startsWith(prefix)) continue;
       const wlog = state.logs[k];
@@ -947,153 +436,299 @@
         if (w != null && r != null) total += (w * r);
       }
     }
-    return total;
-  }
+    if(total <= 0){ elFact.textContent = ""; return; }
 
-  function updateSessionFunFact(){
-    const session = state.sessionsById.get(state.activeSessionId);
-    const elFact = document.getElementById("activeFunFact");
-    if (!elFact || !session) {
-      if(elFact) elFact.textContent = "";
-      return;
-    }
-    const kg = computeSessionVolumeKg(session);
-    if (!kg || kg <= 0){ elFact.textContent = ""; return; }
-    
-    // Default picks if file fails
-    let picks = [
-      { label: '3.5" floppy disks', unitKg: 0.02 },
-      { label: 'Raspberry Pi boards', unitKg: 0.045 },
-      { label: 'desktop PCs', unitKg: 8.0 }
-    ];
+    let picks = [{ label: '3.5" floppy disks', unitKg: 0.02 }, { label: 'Raspberry Pi boards', unitKg: 0.045 }, { label: 'desktop PCs', unitKg: 8.0 }];
     if (state.funFacts && state.funFacts.length > 0) picks = state.funFacts;
-
     const h = hashInt(`${session.programName}::${session.title}`);
     const pick = picks[h % picks.length];
-    const count = Math.max(1, Math.round(kg / pick.unitKg));
-    elFact.textContent = `You lifted ${fmtInt(kg)}kg today — about the same weight as ${fmtInt(count)} ${pick.label}.`;
+    const count = Math.max(1, Math.round(total / pick.unitKg));
+    elFact.textContent = `You lifted ${fmtInt(total)}kg today — about the same weight as ${fmtInt(count)} ${pick.label}.`;
   }
-
-  function savePrefs() {
+  function renderActiveSession(){
     try {
-      const prefs = {
-        programId: state.activeProgramId,
-        sessionId: state.activeSessionId
-      };
-      localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
-    } catch (e) {
-      console.warn("Failed to save prefs", e);
-    }
+      const elMain = document.getElementById("content");
+      const elHead = document.getElementById("activeTitle");
+      const session = state.sessionsById.get(state.activeSessionId);
+      if (!session){
+        elHead.textContent = "No session loaded";
+        elMain.innerHTML = `<div class="muted">Nothing selected.</div>`;
+        return;
+      }
+      elHead.textContent = `${session.programName} • ${session.title}`;
+      updateActiveProgress();
+      try { updateSessionFunFact(); } catch(e){}
+
+      const allWorkouts = getAllWorkoutsForSession(session);
+      const workoutsHtml = allWorkouts.map((w, idx) => {
+        const wlog = ensureWorkoutLog(session, w, idx);
+        const logged = countWorkoutLogged(session, w, idx);
+        const badge = logged ? '<span class="pill" style="margin-left:8px;border-color:rgba(53,208,127,.35);background:rgba(53,208,127,.10);color:#c8ffe2">logged</span>' : '';
+        const requiredLabel = `Required: Sets ${escapeHtml(w.setsStr||String(w.setCount))} • Reps ${escapeHtml(w.repsStr||w.targetReps||"")}`;
+        const deleteBtn = w._isCustom ? `<button class="btn danger small" onclick="removeCustomWorkout(${w._customIndex}); event.stopPropagation();" style="margin-right:8px;">Remove</button>` : '';
+        return `
+          <div class="workout" data-wi="${idx}">
+            <div class="workout-head" onclick="toggleWorkout(this)">
+              <div><div class="workout-title">${escapeHtml(cleanWorkoutTitle(w.title, session.programName))} ${badge}</div><div class="workout-sub">${requiredLabel}</div></div>
+              <div style="display:flex;align-items:center;">${deleteBtn}<button class="btn small">Toggle</button></div>
+            </div>
+            <div class="workout-body">
+              ${w.notes?.length ? `<div class="small-note"><b>Plan notes</b><br>${w.notes.map(n=>escapeHtml(n)).join("<br>")}</div><div class="divider"></div>` : ""}
+              <div class="grid"><div class="h">Set</div><div class="h">Target</div><div class="h">Kg</div><div class="h">Reps</div><div class="h">Done</div></div>
+              <div id="sets_${idx}">${wlog.sets.map(r=>renderSetRow(session,w,idx,r)).join("")}</div>
+              <div class="footer-actions">
+                <button class="btn small" onclick="modSet(${idx}, 1)">+ Set</button>
+                <button class="btn small danger" onclick="modSet(${idx}, -1)">− Set</button>
+                <button class="btn small" onclick="startRest(120)">Start 120s rest</button>
+              </div>
+              <div class="divider"></div>
+              <label class="muted">Workout notes</label>
+              <textarea oninput="updateWorkoutNote(this, ${idx})" placeholder="Notes...">${escapeHtml(wlog.workoutNote||"")}</textarea>
+            </div>
+          </div>
+        `;
+      }).join("");
+      const addBoxHtml = `
+        <div class="workout"><div class="workout-head" onclick="toggleWorkout(this)"><div><div class="workout-title">Add exercise</div></div><button class="btn small">Toggle</button></div>
+        <div class="workout-body">
+          <div class="grid" style="grid-template-columns: 1fr 90px 120px;"><div class="h">Exercise</div><div class="h">Sets</div><div class="h">Target reps</div>
+          <input id="customTitle" type="text" placeholder="e.g. Arnold press" /><input id="customSets" type="number" min="1" step="1" value="3" /><input id="customReps" type="text" placeholder="e.g. 8-12" /></div>
+          <div class="footer-actions"><button class="btn small primary" onclick="handleCustomAdd()">Add</button></div>
+        </div></div>`;
+      elMain.innerHTML = workoutsHtml + addBoxHtml;
+    } catch(e) { console.error("Render Error:", e); }
+  }
+  function updateActiveProgress(){
+    const session = state.sessionsById.get(state.activeSessionId);
+    if (!session) return;
+    const all = getAllWorkoutsForSession(session);
+    const total = all.length;
+    let done = 0;
+    all.forEach((w, idx) => { if (countWorkoutLogged(session, w, idx)) done++; });
+    document.getElementById("activeMeta").textContent = `Workouts: ${total} • Logged: ${done}/${total}`;
+    document.getElementById("activePill").textContent = `${done}/${total}`;
+  }
+  function renderAll(){
+    try {
+      renderProgramSelect();
+      renderSessionSelect();
+      renderSessionsList();
+      renderActiveSession();
+    } catch(e){ console.error("Critical Render Failure", e); }
   }
 
+  // --- 7. ACTIONS ---
+  window.pickSession = (sid) => {
+    state.activeSessionId = sid;
+    try { localStorage.setItem(PREFS_KEY, JSON.stringify({ programId: state.activeProgramId, sessionId: sid })); } catch(e){}
+    renderAll();
+    const drawer = document.getElementById("drawer");
+    if(drawer.classList.contains("open")){ drawer.classList.remove("open"); drawer.setAttribute("aria-hidden", "true"); }
+    document.getElementById("content")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+  window.toggleWorkout = (el) => { if(event.target.tagName !== "BUTTON") el.closest('.workout').classList.toggle('open'); };
+  window.modSet = (wIdx, delta) => {
+    const session = state.sessionsById.get(state.activeSessionId);
+    const w = getAllWorkoutsForSession(session)[wIdx];
+    const wlog = ensureWorkoutLog(session, w, wIdx);
+    if(delta > 0) wlog.sets.push({set: wlog.sets.length+1, targetReps: resolveReps(w.targetReps, wlog.sets.length), weight:"", reps:"", done:false, note:""});
+    else if (wlog.sets.length > 1) wlog.sets.pop();
+    saveLogsInstant(); renderActiveSession();
+  };
+  window.updateWorkoutNote = (el, wIdx) => {
+    const session = state.sessionsById.get(state.activeSessionId);
+    const w = getAllWorkoutsForSession(session)[wIdx];
+    const wlog = ensureWorkoutLog(session, w, wIdx);
+    wlog.workoutNote = el.value;
+    saveLogsInstant();
+  };
+  window.updateSet = (el, wIdx, setNum, field) => {
+    const session = state.sessionsById.get(state.activeSessionId);
+    const w = getAllWorkoutsForSession(session)[wIdx];
+    const wlog = ensureWorkoutLog(session, w, wIdx);
+    const row = wlog.sets.find(r => r.set === setNum);
+    if(!row) return;
+    if(field === 'done') { row.done = el.checked; el.closest('.set-row').classList.toggle('done', row.done); saveLogsInstant(); updateActiveProgress(); }
+    else { row[field] = el.value; saveLogsInstant(); }
+  };
+  window.handleCustomAdd = () => {
+    const session = state.sessionsById.get(state.activeSessionId);
+    const title = document.getElementById("customTitle")?.value||"";
+    const sets = parseInt(document.getElementById("customSets")?.value||"3",10);
+    const reps = document.getElementById("customReps")?.value||"";
+    if(!String(title).trim()) return alert("Enter exercise name.");
+    addCustomWorkout(session, title, sets, reps);
+  };
+  window.removeCustomWorkout = (index) => {
+    if(!confirm("Remove this custom exercise?")) return;
+    const session = state.sessionsById.get(state.activeSessionId);
+    const key = sessionKey(session);
+    const arr = state.logs.__custom_sessions[key];
+    if(arr && arr[index]) { arr.splice(index, 1); saveLogsInstant(); renderAll(); }
+  };
+  window.startRest = (sec) => { setTimer(sec); startTimer(); };
+
+  // --- 8. TIMER ---
+  function setTimer(sec){ state.timer.total = sec; state.timer.left = sec; state.timer.running = false; renderTimer(); }
+  function renderTimer(){ 
+    const el = document.getElementById("timerDisplay");
+    if(el) el.textContent = fmtTime(state.timer.left); 
+  }
+  function startTimer(){ 
+    if(state.timer.left <= 0) state.timer.left = state.timer.total;
+    state.timer.endAt = Date.now() + state.timer.left*1000;
+    state.timer.running = true;
+    if(!state.timer.t) state.timer.t = setInterval(tickTimer, 250);
+  }
+  function tickTimer(){
+    if(!state.timer.running) return;
+    const now = Date.now();
+    const left = Math.max(0, Math.ceil((state.timer.endAt - now) / 1000));
+    state.timer.left = left;
+    renderTimer();
+    if(left <= 0){ state.timer.running=false; beep(); }
+  }
+  function pauseTimer(){ state.timer.running = false; renderTimer(); }
+  function resetTimer(){ setTimer(state.timer.total); }
+  
+  // --- 9. BOOTSTRAP ---
+  document.addEventListener("DOMContentLoaded", () => {
+    // Bind global events
+    document.getElementById("timerStart").onclick = startTimer;
+    document.getElementById("timerPause").onclick = pauseTimer;
+    document.getElementById("timerReset").onclick = resetTimer;
+    document.getElementById("setCustom").onclick = () => { const v=parseInt(document.getElementById("customSeconds").value,10); if(v) setTimer(v); };
+    document.getElementById("preset").onchange = (e) => setTimer(parseInt(e.target.value, 10));
+    
+    // Boot
+    loadAllPrograms();
+    loadLogsAsync();
+    loadFunFacts();
+    initAuth();
+  });
+
+  // Safety Backup
+  window.addEventListener("pagehide", saveLogsInstant);
+  window.addEventListener("visibilitychange", () => { if(document.visibilityState === "hidden") saveLogsInstant(); });
+
+  // Fun Facts Loader
+  async function loadFunFacts(){
+    try {
+       const res = await fetch("fun_facts.json");
+       if(res.ok) state.funFacts = await res.json();
+    } catch(e){}
+  }
+  
+  // Programs Loader
   async function loadAllPrograms(){
     try {
       state.programs=[];
       for(const src of PROGRAM_SOURCES){
         const res = await fetch(src.url, {cache:"no-store"});
-        if(!res.ok) throw new Error(res.statusText);
-        const raw = await res.json();
-        
-        const prog = { 
-          id: uid(`program::${raw.program}`), 
-          name: raw.program, 
-          sessions: (raw.sessions||[]).map((s,si)=>{
-             const sTitle = s.session || `Session ${si+1}`;
-             return {
-               id: uid(`program::${raw.program}::session::${sTitle}::${si}`),
-               title: sTitle,
-               programName: raw.program,
-               workouts: (s.workouts||[]).map((w,wi)=>{
-                 const wTitle = w.title || `Workout ${wi+1}`;
-                 const sStr = w.sets??""; const rStr=w.reps??"";
-                 let tReps = String(rStr).trim();
-                 if (tReps.toLowerCase() === cleanWorkoutTitle(wTitle, raw.program).toLowerCase()) tReps = "";
-                 return {
-                   id: uid(`w::${sTitle}::${wi}::${wTitle}`),
-                   title: wTitle,
-                   setCount: toIntMaybe(sStr) ?? 3,
-                   targetReps: tReps,
-                   setsStr: String(sStr), repsStr: String(rStr),
-                   notes: Array.isArray(w.notes)?w.notes:[]
-                 };
-               })
-             };
-          })
-        };
-        state.programs.push(prog);
+        if(res.ok) {
+           const raw = await res.json();
+           const prog = { 
+             id: uid(`program::${raw.program}`), 
+             name: raw.program, 
+             sessions: (raw.sessions||[]).map((s,si)=>{
+                const sTitle = s.session || `Session ${si+1}`;
+                return {
+                  id: uid(`program::${raw.program}::session::${sTitle}::${si}`),
+                  title: sTitle,
+                  programName: raw.program,
+                  workouts: (s.workouts||[]).map((w,wi)=>{
+                    return {
+                      id: uid(`w::${sTitle}::${wi}::${w.title}`),
+                      title: w.title||`Workout ${wi}`,
+                      setCount: toIntMaybe(w.sets) ?? 3,
+                      targetReps: String(w.reps||"").trim(),
+                      setsStr: String(w.sets||""), repsStr: String(w.reps||""),
+                      notes: Array.isArray(w.notes)?w.notes:[]
+                    };
+                  })
+                };
+             })
+           };
+           state.programs.push(prog);
+        }
       }
+      // Populate Maps
       state.programById.clear(); state.sessionsById.clear();
       for(const p of state.programs){
         state.programById.set(p.id, p);
         for(const s of p.sessions) state.sessionsById.set(s.id, s);
       }
-      let prefs = {};
-      try{ prefs = JSON.parse(localStorage.getItem(PREFS_KEY)||"{}"); }catch{}
-      if(prefs.programId && state.programById.has(prefs.programId)) state.activeProgramId = prefs.programId;
-      else state.activeProgramId = state.programs[0]?.id || null;
-      const actProg = state.programById.get(state.activeProgramId);
-      if(actProg){
-         const sessExists = actProg.sessions.some(s=>s.id===prefs.sessionId);
-         state.activeSessionId = sessExists ? prefs.sessionId : actProg.sessions[0]?.id;
-      }
+      // Restore Prefs
+      try{ 
+        const prefs = JSON.parse(localStorage.getItem(PREFS_KEY)||"{}"); 
+        if(prefs.programId && state.programById.has(prefs.programId)) state.activeProgramId = prefs.programId;
+        else state.activeProgramId = state.programs[0]?.id;
+        
+        const actProg = state.programById.get(state.activeProgramId);
+        if(actProg){
+            const sExists = actProg.sessions.some(s=>s.id===prefs.sessionId);
+            state.activeSessionId = sExists ? prefs.sessionId : actProg.sessions[0]?.id;
+        }
+      }catch{}
+      
       renderAll();
-    } catch(e) {
-      console.error("Program Load Error", e);
-      document.getElementById("content").innerHTML = `<div class="muted">Error loading programs: ${e.message}</div>`;
+    } catch(e) { console.error("Prog Load Fail", e); }
+  }
+
+  // Logs Loader (Sync + Async)
+  async function loadLogsAsync(){
+    // 1. Sync
+    try { 
+      const local = JSON.parse(localStorage.getItem(LS_KEY)); 
+      if(local) state.logs = local;
+    } catch{}
+    
+    // 2. Async Merge
+    if(typeof idbKeyval !== 'undefined'){
+      try {
+         const db = await idbKeyval.get(LS_KEY);
+         if(db) {
+            // If DB is newer or we have nothing, use DB
+            if(!state.logs || (db._updatedAt || 0) > (state.logs._updatedAt || 0)) {
+               state.logs = db;
+            }
+         }
+      } catch(e){}
+    }
+    renderAll();
+  }
+
+  // Auth Init
+  async function initAuth(){
+    if(!supabase) return;
+    const {data} = await supabase.auth.getSession();
+    state._user = data?.session?.user;
+    // Set UI
+    const elStatus = document.getElementById("authStatus");
+    const elIn = document.getElementById("signInGoogle");
+    const elOut = document.getElementById("signOut");
+    if(state._user){
+       if(elStatus) elStatus.textContent = state._user.email;
+       if(elIn) elIn.style.display="none";
+       if(elOut) elOut.style.display="inline-flex";
+       cloudLoad();
     }
   }
 
-  // --- INIT & ROBUST SYNC LOAD ---
-  async function loadLogsAsync() {
-    try {
-      // 1. Always load sync localStorage first (Fastest & most likely to have emergency save)
-      let localLogs = null;
-      try { localLogs = JSON.parse(localStorage.getItem(LS_KEY)); } catch {}
-
-      // 2. Load DB
-      let dbLogs = null;
-      if (typeof idbKeyval !== 'undefined') {
-        try { dbLogs = await idbKeyval.get(LS_KEY); } catch {}
-      }
-
-      // 3. Compare & Win
-      const localTs = localLogs?._updatedAt || 0;
-      const dbTs = dbLogs?._updatedAt || 0;
-
-      if (localLogs && localTs > dbTs) {
-        console.log("Recovered from LocalStorage backup");
-        state.logs = localLogs;
-        // Repair DB in background
-        if(typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, state.logs);
-      } else if (dbLogs) {
-        state.logs = dbLogs;
-      } else {
-        state.logs = localLogs || {};
-      }
-
-      renderAll();
-    } catch(e) {
-      console.error("Load Error", e);
-      try { state.logs = JSON.parse(localStorage.getItem(LS_KEY)||"{}"); } catch{}
-      renderAll();
+  async function cloudLoad(){
+    if(!supabase || !state._user) return;
+    const {data} = await supabase.from("user_logs").select("logs").eq("user_id", state._user.id).maybeSingle();
+    if(data?.logs) {
+       // Merge Logic
+       const cloudTs = data.logs._updatedAt || 0;
+       const localTs = state.logs._updatedAt || 0;
+       if(cloudTs > localTs) {
+          state.logs = data.logs;
+          saveLogsInstant();
+          renderAll();
+       }
     }
   }
-
-  // Start
-  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
-  
-  loadAllPrograms();
-  loadLogsAsync();
-  loadFunFacts(); 
-  initAuth();     
-
-  // --- SAFETY NET ---
-  // Ensure data persists even if browser freezes mid-save
-  window.addEventListener("pagehide", saveLogsInstant);
-  window.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") saveLogsInstant();
-    if (document.visibilityState === "visible") safeReload(); // Reload on wake
-  });
 
 </script>
 </body>

@@ -10,7 +10,6 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>BOLT</title>
   <style>
-    /* CSS Styles */
     :root{ --bg:#484838; --panel:#343427; --panel2:#2c2c21; --text:#f7f1df; --muted:#d2c79c; --line:#5f5a42; --accent:#f4c300; --good:#35d07f; --warn:#ffc857; --bad:#ff5c7a; --shadow: 0 10px 30px rgba(0,0,0,.35); --r: 14px; --mono: ui-monospace, SFMono-Regular, Menlo, monospace; --sans: system-ui, -apple-system, sans-serif; }
     *{box-sizing:border-box}
     body{ margin:0; font-family:var(--sans); background:radial-gradient(1200px 600px at 15% 0%, rgba(244,195,0,.14) 0%, transparent 60%), radial-gradient(900px 500px at 100% 25%, rgba(244,195,0,.10) 0%, transparent 55%), var(--bg); color:var(--text); padding-bottom:50px; }
@@ -72,7 +71,6 @@
     #saveStatus.saved { opacity:0; transition:opacity 1s; background:rgba(53,208,127,0.8); color:black; }
     
     #errorBox { display:none; position:fixed; top:0; left:0; right:0; background:rgba(255,0,0,0.95); color:white; padding:20px; z-index:99999; font-family:monospace; white-space:pre-wrap; pointer-events:all; }
-    #debugLog { position:fixed; bottom:0; left:0; right:0; height:30px; background:rgba(0,0,0,0.8); color:#0f0; font-family:monospace; font-size:10px; overflow:hidden; z-index:9998; padding:4px; pointer-events:none; display:none; }
     
     @media (max-width: 980px){
       .app{grid-template-columns:1fr; height:auto;}
@@ -92,7 +90,6 @@
 <body>
   <div id="errorBox"></div>
   <div id="saveStatus">Saved</div>
-  <div id="debugLog"></div>
 
   <div class="app">
     <div class="card">
@@ -105,40 +102,40 @@
       </header>
 
       <div class="stack">
-        <button class="btn danger small" onclick="window.emergencyReset()" style="align-self:flex-start;">⚠️ Reset App</button>
+        <button class="btn danger small" onclick="emergencyReset()" style="align-self:flex-start;">⚠️ Reset App</button>
         <div class="two-col">
-          <div><label class="muted" for="programSelect">Program</label><select id="programSelect" onchange="window.handleProgramChange(this)"></select></div>
-          <div><label class="muted" for="sessionSelect">Session</label><select id="sessionSelect" onchange="window.handleSessionChange(this)"></select></div>
+          <div><label class="muted" for="programSelect">Program</label><select id="programSelect" onchange="handleProgramChange(this)"></select></div>
+          <div><label class="muted" for="sessionSelect">Session</label><select id="sessionSelect" onchange="handleSessionChange(this)"></select></div>
         </div>
-        <div class="row"><input id="search" type="text" placeholder="Search sessions/workouts…" oninput="window.renderSessionsList()" /></div>
+        <div class="row"><input id="search" type="text" placeholder="Search sessions/workouts…" oninput="renderSessionsList()" /></div>
         <div class="row">
-          <button class="btn primary" onclick="window.loadAllPrograms()">Reload plan</button>
-          <button class="btn" onclick="window.openPlanStats()">Plan stats</button>
-          <button class="btn danger" onclick="window.clearLogs()">Clear logs</button>
+          <button class="btn primary" onclick="loadAllPrograms()">Reload plan</button>
+          <button class="btn" onclick="openPlanStats()">Plan stats</button>
+          <button class="btn danger" onclick="clearLogs()">Clear logs</button>
         </div>
         <div class="timer-box">
           <div class="timer">
             <div class="time" id="timerDisplay">00:00</div>
-            <button class="btn small" onclick="window.startTimer()">Start</button>
-            <button class="btn small" onclick="window.pauseTimer()">Pause</button>
-            <button class="btn small" onclick="window.resetTimer()">Reset</button>
+            <button class="btn small" onclick="startTimer()">Start</button>
+            <button class="btn small" onclick="pauseTimer()">Pause</button>
+            <button class="btn small" onclick="resetTimer()">Reset</button>
           </div>
-          <select id="preset" onchange="window.setTimer(parseInt(this.value,10))">
+          <select id="preset" onchange="setTimer(parseInt(this.value,10))">
             <option value="60">Rest 60s</option><option value="90">Rest 90s</option><option value="120" selected>Rest 120s</option><option value="180">Rest 180s</option>
           </select>
           <input id="customSeconds" type="number" min="5" step="5" placeholder="Custom seconds" />
-          <button class="btn small" onclick="window.setCustomTimer()">Set</button>
+          <button class="btn small" onclick="setCustomTimer()">Set</button>
         </div>
         <div class="small-note" id="planHint">Put your combined program JSON files in <span class="mono">/data</span>.</div>
-        <div class="row" id="mobileBrowseRow"><button class="btn primary" onclick="window.openSessionsDrawer()">Browse sessions</button></div>
+        <div class="row" id="mobileBrowseRow"><button class="btn primary" onclick="openSessionsDrawer()">Browse sessions</button></div>
         <div class="divider"></div>
         <div class="sessions" id="sessions"></div>
         <div class="footer-actions">
-          <button class="btn" onclick="window.exportLogs()">Export logs (JSON)</button>
+          <button class="btn" onclick="exportLogs()">Export logs (JSON)</button>
           <button class="btn" onclick="document.getElementById('importFile').click()">Import logs</button>
-          <button class="btn" onclick="window.exportCSV()">Export logs (CSV)</button>
+          <button class="btn" onclick="exportCSV()">Export logs (CSV)</button>
         </div>
-        <input id="importFile" type="file" accept=".json,application/json" style="display:none" onchange="window.importLogs(this)" />
+        <input id="importFile" type="file" accept=".json,application/json" style="display:none" onchange="importLogs(this)" />
       </div>
     </div>
     <div class="main">
@@ -153,8 +150,8 @@
             <div class="pill" id="activePill">—</div>
             <img id="authAvatar" alt="profile" />
             <span class="pill" id="authStatus" style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Not signed in</span>
-            <button class="btn small primary" onclick="window.handleSignIn()" id="signInGoogle">Sign in</button>
-            <button class="btn small" onclick="window.handleSignOut()" id="signOut" style="display:none">Sign out</button>
+            <button class="btn small primary" onclick="handleSignIn()" id="signInGoogle">Sign in</button>
+            <button class="btn small" onclick="handleSignOut()" id="signOut" style="display:none">Sign out</button>
           </div>
         </header>
         <div class="content" id="content"></div>
@@ -166,7 +163,7 @@
     <div class="sheet">
       <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;">
         <div style="font-weight:900;">Select a session</div>
-        <button class="btn small" onclick="window.closeSessionsDrawer()">Close</button>
+        <button class="btn small" onclick="closeSessionsDrawer()">Close</button>
       </div>
       <div class="sessions" id="sessionsDrawer" style="max-height:70vh; overflow:auto;"></div>
     </div>
@@ -176,7 +173,7 @@
     <div class="sheet" style="max-height:88vh;">
       <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;">
         <div style="font-weight:900;">Plan stats</div>
-        <button class="btn small" onclick="window.closePlanStats()">Close</button>
+        <button class="btn small" onclick="closePlanStats()">Close</button>
       </div>
       <div class="stats-grid">
         <div class="stat"><div class="muted">Total volume</div><div class="statv"><span id="planTotalVolume">0</span> <span class="muted">kg•reps</span></div></div>
@@ -198,11 +195,16 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-  // 1. UTILS
-  function log(msg){ const d=document.getElementById("debugLog"); if(d){ d.innerText=msg; d.style.display="block"; } console.log(msg); }
-  window.onerror = function(msg, url, line){ const box=document.getElementById('errorBox'); if(box){ box.style.display='block'; box.textContent+=`Err: ${msg} (L${line})\n`; } log(`CRASH: ${msg}`); };
+  // --- GLOBAL ERROR TRAP ---
+  window.onerror = function(msg, url, line){ 
+    const box = document.getElementById('errorBox');
+    if(box) {
+       box.style.display = 'block';
+       box.textContent += `Error: ${msg} (Line ${line})\n`;
+    }
+  };
 
-  // 2. CONFIG
+  // --- CONFIG ---
   const PROGRAM_SOURCES = [
     { name: "Hypertrophy", url: "data/hypertrophy.json" },
     { name: "Starting Strongman", url: "data/starting_strongman.json" },
@@ -212,8 +214,10 @@
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlZHhpZ2RrZGp5eGFvZm11dGx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyMjI5MTQsImV4cCI6MjA4MDc5ODkxNH0.24RNF4dKYNcKkAESiYNbA4_3Fvt-zTCFe5jCjR4vdn0";
   const LS_KEY = "mst_tracker_logs_v2";
   const PREFS_KEY = "mst_tracker_prefs_v1";
+  let cloudSaveTimer = null;
+  const CLOUD_SAVE_DEBOUNCE_MS = 800;
 
-  // 3. STATE
+  // --- STATE ---
   const state = {
     programs: [], programById: new Map(), sessionsById: new Map(),
     activeProgramId: null, activeSessionId: null,
@@ -221,12 +225,13 @@
     timer: { total: 120, left: 120, running: false, t: null },
     funFacts: []
   };
+  
   let supabase = null;
   if(typeof window.supabase !== 'undefined') {
      try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch(e){ console.error("Supabase Init Fail", e); }
   }
 
-  // 4. HELPERS
+  // --- GLOBAL HELPERS (MUST BE FIRST) ---
   function uid(str){ let h=2166136261; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); } return "id_"+(h>>>0).toString(16); }
   function escapeHtml(s){ return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;"); }
   function cleanWorkoutTitle(t,p){ return String(t).replace(new RegExp(`\\s*-\\s*${p}.*`,"i"),"").trim(); }
@@ -237,14 +242,13 @@
   function fmtInt(n){ return n.toLocaleString(); }
   function hashInt(s){ let h=0; for(let i=0;i<s.length;i++) h=Math.imul(31,h)+s.charCodeAt(i)|0; return Math.abs(h); }
 
-  // 5. CORE LOGIC (MISSING IN v34/v35)
+  // --- GLOBAL LOGIC ---
   function sessionKey(session){ return `${session.programName}|||${session.title}`; }
   
-  // This was the missing function causing the crash
   function getAllWorkoutsForSession(session){
-    const base = Array.isArray(session?.workouts) ? session.workouts : [];
+    if(!session) return [];
+    const base = Array.isArray(session.workouts) ? session.workouts : [];
     const key = sessionKey(session);
-    // Safety check for logs
     if(!state.logs) state.logs = {};
     if(!state.logs.__custom_sessions) state.logs.__custom_sessions = {};
     
@@ -267,7 +271,6 @@
   function ensureWorkoutLog(session, w, idx){
      const k = `${session.programName}|||${session.title}|||${idx}|||${w.title}`;
      if(!state.logs[k]) state.logs[k] = { sets: Array.from({length: w.setCount}, (_,i)=>({set:i+1, targetReps:resolveReps(w.targetReps,i), weight:"", reps:"", done:false})) };
-     // Repair
      if(!Array.isArray(state.logs[k].sets)) state.logs[k].sets = [];
      while(state.logs[k].sets.length < w.setCount){
         const i = state.logs[k].sets.length;
@@ -286,9 +289,7 @@
      return t;
   }
 
-  // 6. STORAGE & SYNC
-  function savePrefs(){ try{localStorage.setItem(PREFS_KEY,JSON.stringify({programId:state.activeProgramId, sessionId:state.activeSessionId}));}catch{} }
-  
+  // --- STORAGE ---
   function showSaveIndicator(){
     const el=document.getElementById("saveStatus");
     if(el){ el.style.opacity="1"; setTimeout(()=>el.style.opacity="0",1000); }
@@ -305,14 +306,50 @@
       }
     } catch(e) { console.error("Save Fail", e); }
   }
+  
+  function savePrefs(){ try{localStorage.setItem(PREFS_KEY,JSON.stringify({programId:state.activeProgramId, sessionId:state.activeSessionId}));}catch{} }
 
-  // 7. RENDER
+  // --- ACTIONS (GLOBAL) ---
+  function emergencyReset(){
+    if(confirm("Reset app?")) {
+      if('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(r=>r.forEach(i=>i.unregister()));
+      localStorage.clear();
+      window.location.reload();
+    }
+  }
+  function handleProgramChange(el){
+    state.activeProgramId = el.value;
+    const p = state.programById.get(state.activeProgramId);
+    state.activeSessionId = p?.sessions[0]?.id || null;
+    savePrefs(); renderAll();
+  }
+  function handleSessionChange(el){
+    state.activeSessionId = el.value;
+    savePrefs(); renderAll();
+  }
+  function pickSession(sid){
+    state.activeSessionId = sid;
+    savePrefs(); renderAll();
+    closeSessionsDrawer();
+    document.getElementById("content")?.scrollIntoView({behavior:"smooth", block:"start"});
+  }
+  
+  function handleSignIn(){
+    if(!supabase) return alert("Auth not loaded");
+    supabase.auth.signInWithOAuth({provider:"google", options:{redirectTo:location.href}}).then(({error})=>{ if(error) alert(error.message); });
+  }
+  function handleSignOut(){
+    if(!supabase) return;
+    supabase.auth.signOut().then(() => location.reload());
+  }
+
+  // --- RENDER ---
   function renderAll(){
     if(!state.activeProgramId) return;
     try {
         renderProgramSelect();
         renderSessionSelect();
-        window.renderSessionsList();
+        renderSessionsList();
         renderActiveSession();
     } catch(e) { console.error("Render Fail", e); }
   }
@@ -328,6 +365,20 @@
     const newHtml = sessions.map(s=>`<option value="${s.id}" ${s.id===state.activeSessionId?"selected":""}>${escapeHtml(s.title)}</option>`).join("");
     if(el.innerHTML !== newHtml) el.innerHTML = newHtml;
     el.value = state.activeSessionId;
+  }
+
+  function renderSessionsList(){
+    const elList = document.getElementById("sessions");
+    const p = state.programById.get(state.activeProgramId);
+    const q = document.getElementById("search").value.toLowerCase();
+    const sessions = (p?.sessions||[]).filter(s => !q || s.title.toLowerCase().includes(q));
+    document.getElementById("sessionCount").textContent = `${sessions.length} sessions`;
+    elList.innerHTML = sessions.map(s => {
+      const active = s.id === state.activeSessionId ? "active" : "";
+      const total = getAllWorkoutsForSession(s).length;
+      const done = countLoggedInSession(s);
+      return `<div class="session-item ${active}" onclick="pickSession('${s.id}')"><div class="name">${escapeHtml(s.title)}</div><div class="meta"><span class="badge">${total} workouts</span><span class="badge">${done}/${total} logged</span></div></div>`;
+    }).join("");
   }
 
   function renderActiveSession(){
@@ -354,7 +405,7 @@
        const logged = wlog.sets.some(s=>s.done||s.weight||s.reps);
        const badge = logged ? `<span class="pill" style="color:#8affc1;border-color:#35d07f33;background:#35d07f1a">logged</span>` : "";
        return `<div class="workout" data-wi="${idx}">
-         <div class="workout-head" onclick="window.toggleWorkout(this)">
+         <div class="workout-head" onclick="toggleWorkout(this)">
            <div><div class="workout-title">${escapeHtml(cleanWorkoutTitle(w.title, session.programName))} ${badge}</div>
            <div class="workout-sub">Sets ${w.setsStr} • Reps ${w.repsStr}</div></div>
            <button class="btn small">Toggle</button>
@@ -364,17 +415,17 @@
            <div class="grid"><div class="h">Set</div><div class="h">Target</div><div class="h">Kg</div><div class="h">Reps</div><div class="h">Done</div></div>
            ${wlog.sets.map(r=>renderSetRow(idx, r)).join("")}
            <div class="footer-actions">
-             <button class="btn small" onclick="window.modSet(${idx},1)">+ Set</button>
-             <button class="btn small danger" onclick="window.modSet(${idx},-1)">- Set</button>
-             <button class="btn small" onclick="window.startRest(120)">Start 120s rest</button>
+             <button class="btn small" onclick="modSet(${idx},1)">+ Set</button>
+             <button class="btn small danger" onclick="modSet(${idx},-1)">- Set</button>
+             <button class="btn small" onclick="startRest(120)">Start 120s rest</button>
            </div>
            <div class="divider"></div>
            <label class="muted">Notes</label>
-           <textarea oninput="window.updateNote(this, ${idx})">${escapeHtml(wlog.workoutNote||"")}</textarea>
+           <textarea oninput="updateNote(this, ${idx})">${escapeHtml(wlog.workoutNote||"")}</textarea>
          </div>
        </div>`;
     }).join("");
-    el.innerHTML += `<div class="workout"><div class="workout-head" onclick="window.toggleWorkout(this)"><div><div class="workout-title">Add exercise</div></div><button class="btn small">Toggle</button></div><div class="workout-body"><div class="grid" style="grid-template-columns: 1fr 90px 120px;"><div class="h">Exercise</div><div class="h">Sets</div><div class="h">Target reps</div><input id="customTitle" type="text" placeholder="e.g. Arnold press" /><input id="customSets" type="number" min="1" step="1" value="3" /><input id="customReps" type="text" placeholder="e.g. 8-12" /></div><div class="footer-actions"><button class="btn small primary" onclick="window.handleCustomAdd()">Add</button></div></div></div>`;
+    el.innerHTML += `<div class="workout"><div class="workout-head" onclick="toggleWorkout(this)"><div><div class="workout-title">Add exercise</div></div><button class="btn small">Toggle</button></div><div class="workout-body"><div class="grid" style="grid-template-columns: 1fr 90px 120px;"><div class="h">Exercise</div><div class="h">Sets</div><div class="h">Target reps</div><input id="customTitle" type="text" placeholder="e.g. Arnold press" /><input id="customSets" type="number" min="1" step="1" value="3" /><input id="customReps" type="text" placeholder="e.g. 8-12" /></div><div class="footer-actions"><button class="btn small primary" onclick="handleCustomAdd()">Add</button></div></div></div>`;
     
     // UPDATE HEADER STATS
     const all = getAllWorkoutsForSession(session);
@@ -389,32 +440,16 @@
     return `<div class="set-row ${row.done?"done":""}">
       <div class="grid">
         <div class="mono">#${row.set}</div>
-        <input type="text" value="${escapeHtml(row.targetReps)}" oninput="window.updateRow(this, ${wIdx}, ${row.set}, 'targetReps')">
-        <input type="text" inputmode="decimal" placeholder="kg" value="${escapeHtml(row.weight)}" oninput="window.updateRow(this, ${wIdx}, ${row.set}, 'weight')">
-        <input type="text" inputmode="numeric" placeholder="reps" value="${escapeHtml(row.reps)}" oninput="window.updateRow(this, ${wIdx}, ${row.set}, 'reps')">
-        <input type="checkbox" ${row.done?"checked":""} onchange="window.updateRow(this, ${wIdx}, ${row.set}, 'done')">
+        <input type="text" value="${escapeHtml(row.targetReps)}" oninput="updateRow(this, ${wIdx}, ${row.set}, 'targetReps')">
+        <input type="text" inputmode="decimal" placeholder="kg" value="${escapeHtml(row.weight)}" oninput="updateRow(this, ${wIdx}, ${row.set}, 'weight')">
+        <input type="text" inputmode="numeric" placeholder="reps" value="${escapeHtml(row.reps)}" oninput="updateRow(this, ${wIdx}, ${row.set}, 'reps')">
+        <input type="checkbox" ${row.done?"checked":""} onchange="updateRow(this, ${wIdx}, ${row.set}, 'done')">
       </div>
     </div>`;
   }
 
-  // 8. GLOBAL ACTIONS (WINDOW)
-  window.handleProgramChange = (el) => { state.activeProgramId = el.value; const p = state.programById.get(state.activeProgramId); state.activeSessionId = p?.sessions[0]?.id; savePrefs(); renderAll(); };
-  window.handleSessionChange = (el) => { state.activeSessionId = el.value; savePrefs(); renderAll(); };
-  window.pickSession = (sid) => { state.activeSessionId = sid; savePrefs(); renderAll(); window.closeSessionsDrawer(); document.getElementById("content")?.scrollIntoView({behavior:"smooth", block:"start"}); };
-  window.renderSessionsList = () => {
-    const elList = document.getElementById("sessions");
-    const p = state.programById.get(state.activeProgramId);
-    const q = document.getElementById("search").value.toLowerCase();
-    const sessions = (p?.sessions||[]).filter(s => !q || s.title.toLowerCase().includes(q));
-    document.getElementById("sessionCount").textContent = `${sessions.length} sessions`;
-    elList.innerHTML = sessions.map(s => {
-      const active = s.id === state.activeSessionId ? "active" : "";
-      const total = getAllWorkoutsForSession(s).length;
-      const done = countLoggedInSession(s);
-      return `<div class="session-item ${active}" onclick="window.pickSession('${s.id}')"><div class="name">${escapeHtml(s.title)}</div><div class="meta"><span class="badge">${total} workouts</span><span class="badge">${done}/${total} logged</span></div></div>`;
-    }).join("");
-  };
-  window.updateRow = (el, wIdx, setNum, field) => {
+  // --- LOGIC HELPERS ---
+  function updateRow(el, wIdx, setNum, field){
     const session = state.sessionsById.get(state.activeSessionId);
     const w = getAllWorkoutsForSession(session)[wIdx];
     const wlog = ensureWorkoutLog(session, w, wIdx);
@@ -425,24 +460,24 @@
       saveLogsInstant();
       if(field==='done') renderActiveSession();
     }
-  };
-  window.updateNote = (el, wIdx) => {
+  }
+  function updateNote(el, wIdx){
     const session = state.sessionsById.get(state.activeSessionId);
     const w = getAllWorkoutsForSession(session)[wIdx];
     const wlog = ensureWorkoutLog(session, w, wIdx);
     wlog.workoutNote = el.value;
     saveLogsInstant();
-  };
-  window.toggleWorkout = (el) => { if(event.target.tagName !== "BUTTON") el.closest('.workout').classList.toggle('open'); };
-  window.modSet = (wIdx, d) => {
+  }
+  function toggleWorkout(el){ if(event.target.tagName !== "BUTTON") el.closest('.workout').classList.toggle('open'); }
+  function modSet(wIdx, d){
      const session = state.sessionsById.get(state.activeSessionId);
      const w = getAllWorkoutsForSession(session)[wIdx];
      const wlog = ensureWorkoutLog(session, w, wIdx);
      if(d>0) wlog.sets.push({set:wlog.sets.length+1, targetReps:"", weight:"", reps:"", done:false});
      else if(wlog.sets.length>1) wlog.sets.pop();
      saveLogsInstant(); renderActiveSession();
-  };
-  window.handleCustomAdd = () => {
+  }
+  function handleCustomAdd(){
     const t = document.getElementById("customTitle").value;
     const s = parseInt(document.getElementById("customSets").value)||3;
     const r = document.getElementById("customReps").value;
@@ -453,8 +488,8 @@
     if(!state.logs.__custom_sessions[key]) state.logs.__custom_sessions[key]=[];
     state.logs.__custom_sessions[key].push({ title: t, sets: s, reps: r });
     saveLogsInstant(); renderActiveSession();
-  };
-  window.removeCustomWorkout = (idx) => {
+  }
+  function removeCustomWorkout(idx){
     if(!confirm("Remove?")) return;
     const session = state.sessionsById.get(state.activeSessionId);
     const key = sessionKey(session);
@@ -462,29 +497,19 @@
        state.logs.__custom_sessions[key].splice(idx, 1);
        saveLogsInstant(); renderActiveSession();
     }
-  };
-  window.startRest = (sec) => { setTimer(sec); startTimer(); };
-  window.handleSignIn = async () => {
-    if(!supabase) return alert("Auth not loaded");
-    const {error} = await supabase.auth.signInWithOAuth({provider:"google", options:{redirectTo:location.href}});
-    if(error) alert(error.message);
-  };
-  window.handleSignOut = async () => {
-    if(!supabase) return;
-    await supabase.auth.signOut();
-    location.reload();
-  };
-  // TIMER
-  window.startTimer = () => {
+  }
+  
+  // --- TIMER ---
+  function startTimer(){
     if(state.timer.left <= 0) state.timer.left = state.timer.total;
     state.timer.endAt = Date.now() + state.timer.left*1000;
     state.timer.running = true;
     if(!state.timer.t) state.timer.t = setInterval(tickTimer, 250);
-  };
-  window.pauseTimer = () => { state.timer.running = false; renderTimer(); };
-  window.resetTimer = () => { state.timer.total = state.timer.total; state.timer.left = state.timer.total; state.timer.running = false; renderTimer(); };
-  window.setTimer = (sec) => { state.timer.total = sec; state.timer.left = sec; state.timer.running = false; renderTimer(); };
-  window.setCustomTimer = () => { const v = parseInt(document.getElementById("customSeconds").value, 10); if(v) window.setTimer(v); };
+  }
+  function pauseTimer(){ state.timer.running = false; renderTimer(); }
+  function resetTimer(){ state.timer.total = state.timer.total; state.timer.left = state.timer.total; state.timer.running = false; renderTimer(); }
+  function setTimer(sec){ state.timer.total = sec; state.timer.left = sec; state.timer.running = false; renderTimer(); }
+  function setCustomTimer(){ const v = parseInt(document.getElementById("customSeconds").value, 10); if(v) setTimer(v); }
   function renderTimer(){ document.getElementById("timerDisplay").textContent = fmtTime(state.timer.left); }
   function tickTimer(){
     if(!state.timer.running) return;
@@ -494,59 +519,66 @@
     renderTimer();
     if(left<=0){ state.timer.running=false; beep(); }
   }
-  
-  // UI BUTTONS
-  window.emergencyReset = () => { if(confirm("Reset?")) { localStorage.clear(); location.reload(true); } };
-  window.loadAllPrograms = () => location.reload(); 
-  window.clearLogs = () => { if(confirm("Clear logs?")){ state.logs={}; saveLogsInstant(); renderAll(); }};
-  window.openSessionsDrawer = () => { document.getElementById("sessionsDrawer").innerHTML = document.getElementById("sessions").innerHTML; document.getElementById("drawer").classList.add("open"); };
-  window.closeSessionsDrawer = () => { document.getElementById("drawer").classList.remove("open"); };
-  window.openPlanStats = () => { document.getElementById("planStatsModal").classList.add("open"); };
-  window.closePlanStats = () => { document.getElementById("planStatsModal").classList.remove("open"); };
-  window.exportLogs = () => { const b = new Blob([JSON.stringify(state.logs)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="bolt_logs.json"; a.click(); };
-  
-  // 9. INIT
+  function beep(){ try{const c=new(window.AudioContext||window.webkitAudioContext);const o=c.createOscillator();const g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.value=0.05;o.start();setTimeout(()=>{o.stop();c.close()},250);}catch{} }
+
+  // --- UI EXTRAS ---
+  function clearLogs(){ if(confirm("Clear logs?")){ state.logs={}; saveLogsInstant(); renderAll(); } }
+  function openSessionsDrawer(){ document.getElementById("sessionsDrawer").innerHTML = document.getElementById("sessions").innerHTML; document.getElementById("drawer").classList.add("open"); }
+  function closeSessionsDrawer(){ document.getElementById("drawer").classList.remove("open"); }
+  function openPlanStats(){ document.getElementById("planStatsModal").classList.add("open"); }
+  function closePlanStats(){ document.getElementById("planStatsModal").classList.remove("open"); }
+  function exportLogs(){ const b = new Blob([JSON.stringify(state.logs)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="bolt_logs.json"; a.click(); }
+  function exportCSV(){ alert("CSV Export stub"); }
+  function importLogs(el){
+    const f=el.files[0]; if(!f) return;
+    const r=new FileReader(); r.onload=e=>{ try{state.logs=JSON.parse(e.target.result);saveLogsInstant();renderAll();}catch{alert("Invalid JSON");} };
+    r.readAsText(f);
+  }
+
+  // --- INIT ---
   document.addEventListener("DOMContentLoaded", async () => {
-    // Load Programs
+    // Programs
     try {
       state.programs=[];
-      for(const src of PROGRAM_SOURCES){
-        const res = await fetch(src.url);
-        if(res.ok) {
-           const raw = await res.json();
-           const prog = { id: uid(raw.program), name: raw.program, sessions: raw.sessions.map((s,i)=>({...s, id:uid(raw.program+s.session+i), programName: raw.program})) };
-           state.programs.push(prog);
-        }
+      for(const src of PROGRAM_SOURCES) {
+         try {
+           const res = await fetch(src.url);
+           if(res.ok) {
+             const data = await res.json();
+             const prog = { id: uid(data.program), name: data.program, sessions: data.sessions.map((s,i)=>({...s, id:uid(data.program+s.session+i), programName: data.program})) };
+             state.programs.push(prog);
+           }
+         } catch(e){}
       }
       state.programs.forEach(p=> { state.programById.set(p.id, p); p.sessions.forEach(s=>state.sessionsById.set(s.id, s)); });
-    } catch(e) { console.error("Prog Init", e); }
+    } catch(e){}
 
-    // Load Logs
+    // Logs
     try {
        const local = JSON.parse(localStorage.getItem(LS_KEY));
        if(local) state.logs = local;
     } catch {}
     
-    // Load Prefs
-    try {
-      const prefs = JSON.parse(localStorage.getItem(PREFS_KEY)||"{}");
-      if(prefs.programId && state.programById.has(prefs.programId)) state.activeProgramId = prefs.programId;
-      else state.activeProgramId = state.programs[0]?.id;
-      
-      const actProg = state.programById.get(state.activeProgramId);
-      if(actProg){
-          const sExists = actProg.sessions.some(s=>s.id===prefs.sessionId);
-          state.activeSessionId = sExists ? prefs.sessionId : actProg.sessions[0]?.id;
-      }
-    } catch {}
-
-    // Load Fun Facts
+    // Fun Facts
     try { state.funFacts = await (await fetch("fun_facts.json")).json(); } catch {}
+
+    // Prefs
+    try{ 
+        const prefs = JSON.parse(localStorage.getItem(PREFS_KEY)||"{}"); 
+        if(prefs.programId && state.programById.has(prefs.programId)) state.activeProgramId = prefs.programId;
+        else state.activeProgramId = state.programs[0]?.id;
+        
+        const actProg = state.programById.get(state.activeProgramId);
+        if(actProg){
+            const sExists = actProg.sessions.some(s=>s.id===prefs.sessionId);
+            state.activeSessionId = sExists ? prefs.sessionId : actProg.sessions[0]?.id;
+        }
+    }catch{}
 
     renderAll();
     
     // Auth & Cloud Load
-    if(supabase){
+    if(supabase) {
        const {data} = await supabase.auth.getSession();
        if(data?.session) {
           state._user = data.session.user;
@@ -562,11 +594,11 @@
           }
        }
     }
-    
-    // Safety Net
-    window.addEventListener("pagehide", saveLogsInstant);
-    window.addEventListener("visibilitychange", () => { if(document.visibilityState === "hidden") saveLogsInstant(); });
   });
+
+  // Safety Net
+  window.addEventListener("pagehide", saveLogsInstant);
+  window.addEventListener("visibilitychange", () => { if(document.visibilityState === "hidden") saveLogsInstant(); });
 
 </script>
 </body>

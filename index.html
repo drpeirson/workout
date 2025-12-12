@@ -10,10 +10,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>BOLT</title>
   <style>
-    /* CSS Styles */
     :root{ --bg:#484838; --panel:#343427; --panel2:#2c2c21; --text:#f7f1df; --muted:#d2c79c; --line:#5f5a42; --accent:#f4c300; --good:#35d07f; --warn:#ffc857; --bad:#ff5c7a; --shadow: 0 10px 30px rgba(0,0,0,.35); --r: 14px; --mono: ui-monospace, SFMono-Regular, Menlo, monospace; --sans: system-ui, -apple-system, sans-serif; }
     *{box-sizing:border-box}
-    body{ margin:0; font-family:var(--sans); background:radial-gradient(1200px 600px at 15% 0%, rgba(244,195,0,.14) 0%, transparent 60%), radial-gradient(900px 500px at 100% 25%, rgba(244,195,0,.10) 0%, transparent 55%), var(--bg); color:var(--text); }
+    body{ margin:0; font-family:var(--sans); background:radial-gradient(1200px 600px at 15% 0%, rgba(244,195,0,.14) 0%, transparent 60%), radial-gradient(900px 500px at 100% 25%, rgba(244,195,0,.10) 0%, transparent 55%), var(--bg); color:var(--text); padding-bottom: 50px; }
     .app{display:grid; grid-template-columns: 390px 1fr; gap:14px; height:100dvh; min-height:100vh; padding:14px;}
     .card{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column; min-height:0;}
     header{padding:14px 16px; display:flex; gap:10px; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.01));}
@@ -70,7 +69,9 @@
     #saveStatus { position:fixed; bottom:20px; right:20px; background:rgba(0,0,0,0.7); color:var(--accent); padding:6px 12px; border-radius:20px; font-size:12px; font-weight:bold; opacity:0; transition:opacity 0.2s; pointer-events:none; z-index:9999; }
     #saveStatus.saving { opacity:1; background:rgba(255,200,0,0.8); color:black; }
     #saveStatus.saved { opacity:0; transition:opacity 1s; background:rgba(53,208,127,0.8); color:black; }
-    #errorBox { display:none; position:fixed; top:0; left:0; right:0; background:rgba(255,0,0,0.95); color:white; padding:20px; z-index:99999; font-family:monospace; white-space:pre-wrap; }
+    
+    #errorBox { display:none; position:fixed; top:0; left:0; right:0; background:rgba(255,0,0,0.95); color:white; padding:20px; z-index:99999; font-family:monospace; white-space:pre-wrap; pointer-events:all; }
+    #debugLog { position:fixed; bottom:0; left:0; right:0; height:40px; background:rgba(0,0,0,0.8); color:#0f0; font-family:monospace; font-size:10px; overflow:hidden; z-index:9998; padding:4px; pointer-events:none; display:block; }
     
     @media (max-width: 980px){
       .app{grid-template-columns:1fr; height:auto;}
@@ -85,19 +86,12 @@
       #authStatus{display:none;}
       .authBar{gap:8px;}
     }
-    .stats-grid{ display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px; }
-    .stat{ border:1px solid var(--line); border-radius:14px; padding:10px 12px; background:rgba(0,0,0,.18); }
-    .statv{ font-family:var(--mono); font-size:20px; font-weight:900; margin-top:6px; letter-spacing:.02em; }
-    #planSessionChart{ width:100%; height:260px; display:block; }
-    .toplist{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
-    .topitem{display:flex;justify-content:space-between;gap:10px;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:8px 10px;background:rgba(255,255,255,.02);}
-    .topitem b{font-weight:900;}
-    @media (max-width: 980px){ .stats-grid{grid-template-columns: 1fr;} #planSessionChart{height:220px;} }
   </style>
 </head>
 <body>
   <div id="errorBox"></div>
   <div id="saveStatus">Saved</div>
+  <div id="debugLog">Initializing...</div>
 
   <div class="app">
     <div class="card">
@@ -108,6 +102,7 @@
         </div>
         <div class="pill" id="sessionCount">0 sessions</div>
       </header>
+
       <div class="stack">
         <button class="btn danger small" onclick="window.emergencyReset()" style="align-self:flex-start;">⚠️ Reset App</button>
         <div class="two-col">
@@ -116,7 +111,7 @@
         </div>
         <div class="row"><input id="search" type="text" placeholder="Search sessions/workouts…" oninput="window.renderSessionsList()" /></div>
         <div class="row">
-          <button class="btn primary" onclick="loadAllPrograms()">Reload plan</button>
+          <button class="btn primary" onclick="window.loadAllPrograms()">Reload plan</button>
           <button class="btn" onclick="window.openPlanStats()">Plan stats</button>
           <button class="btn danger" onclick="window.clearLogs()">Clear logs</button>
         </div>
@@ -157,8 +152,8 @@
             <div class="pill" id="activePill">—</div>
             <img id="authAvatar" alt="profile" />
             <span class="pill" id="authStatus" style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Not signed in</span>
-            <button class="btn small primary" id="signInGoogle">Sign in</button>
-            <button class="btn small" id="signOut" style="display:none">Sign out</button>
+            <button class="btn small primary" onclick="window.handleSignIn()" id="signInGoogle">Sign in</button>
+            <button class="btn small" onclick="window.handleSignOut()" id="signOut" style="display:none">Sign out</button>
           </div>
         </header>
         <div class="content" id="content"></div>
@@ -202,13 +197,24 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
+  // --- UTILS ---
+  function log(msg) {
+     const d = document.getElementById("debugLog");
+     if(d) d.innerText = msg;
+     console.log(msg);
+  }
+  
+  // --- GLOBAL ERROR TRAP ---
   window.onerror = function(msg, url, line, col, error) {
     const box = document.getElementById('errorBox');
-    if(box) { box.style.display = 'block'; box.textContent += `Error: ${msg} (Line ${line})\n`; }
-    console.error(error);
+    if(box) {
+       box.style.display = 'block';
+       box.textContent += `Error: ${msg} (Line ${line})\n`;
+    }
+    log(`CRASH: ${msg}`);
   };
 
-  // CONFIG
+  // --- CONFIG ---
   const PROGRAM_SOURCES = [
     { name: "Hypertrophy", url: "data/hypertrophy.json" },
     { name: "Starting Strongman", url: "data/starting_strongman.json" },
@@ -219,7 +225,7 @@
   const LS_KEY = "mst_tracker_logs_v2";
   const PREFS_KEY = "mst_tracker_prefs_v1";
 
-  // STATE
+  // --- STATE ---
   const state = {
     programs: [], programById: new Map(), sessionsById: new Map(),
     activeProgramId: null, activeSessionId: null,
@@ -227,17 +233,31 @@
     timer: { total: 120, left: 120, running: false, t: null },
     funFacts: []
   };
+  
   let supabase = null;
-  if(typeof window.supabase !== 'undefined') supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  if(typeof window.supabase !== 'undefined') {
+     try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch(e){ console.error("Supabase Init Fail", e); }
+  }
 
-  // GLOBAL ACTIONS
+  // --- GLOBAL ACTIONS ---
   window.emergencyReset = () => {
-    if(confirm("Reset app?")) {
+    if(confirm("Reset app? This clears cached code. Your logs are safe.")) {
       if('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(r=>r.forEach(i=>i.unregister()));
-      localStorage.clear();
-      window.location.reload();
+      window.location.reload(true);
     }
   };
+  window.handleSignIn = async () => {
+    if(!supabase) return alert("Auth not loaded");
+    const {error} = await supabase.auth.signInWithOAuth({provider:"google", options:{redirectTo:location.href}});
+    if(error) alert(error.message);
+  };
+  window.handleSignOut = async () => {
+    if(!supabase) return;
+    await supabase.auth.signOut();
+    location.reload();
+  };
+  
+  // --- CORE LOGIC ---
   window.handleProgramChange = (el) => {
     state.activeProgramId = el.value;
     const p = state.programById.get(state.activeProgramId);
@@ -254,159 +274,65 @@
     window.closeSessionsDrawer();
     document.getElementById("content")?.scrollIntoView({behavior:"smooth", block:"start"});
   };
+  
   window.renderSessionsList = () => {
     const elList = document.getElementById("sessions");
     const p = state.programById.get(state.activeProgramId);
     const q = document.getElementById("search").value.toLowerCase();
     const sessions = (p?.sessions||[]).filter(s => !q || s.title.toLowerCase().includes(q));
-    
     document.getElementById("sessionCount").textContent = `${sessions.length} sessions`;
     elList.innerHTML = sessions.map(s => {
       const active = s.id === state.activeSessionId ? "active" : "";
-      const total = getAllWorkoutsForSession(s).length;
+      const total = s.workouts.length;
       const done = countLoggedInSession(s);
-      return `<div class="session-item ${active}" onclick="window.pickSession('${s.id}')">
-        <div class="name">${escapeHtml(s.title)}</div>
-        <div class="meta"><span class="badge">${total} workouts</span><span class="badge">${done}/${total} logged</span></div>
-      </div>`;
+      return `<div class="session-item ${active}" onclick="window.pickSession('${s.id}')"><div class="name">${escapeHtml(s.title)}</div><div class="meta"><span class="badge">${total} workouts</span><span class="badge">${done}/${total} logged</span></div></div>`;
     }).join("");
   };
-  
-  // TIMER ACTIONS
-  window.startTimer = () => {
-    if(state.timer.left <= 0) state.timer.left = state.timer.total;
-    state.timer.endAt = Date.now() + state.timer.left*1000;
-    state.timer.running = true;
-    if(!state.timer.t) state.timer.t = setInterval(tickTimer, 250);
-  };
-  window.pauseTimer = () => { state.timer.running = false; renderTimer(); };
-  window.resetTimer = () => { state.timer.total = state.timer.total; state.timer.left = state.timer.total; state.timer.running = false; renderTimer(); };
-  window.setTimer = (sec) => { state.timer.total = sec; state.timer.left = sec; state.timer.running = false; renderTimer(); };
-  window.setCustomTimer = () => {
-    const v = parseInt(document.getElementById("customSeconds").value, 10);
-    if(v) window.setTimer(v);
-  };
-  function renderTimer(){ document.getElementById("timerDisplay").textContent = fmtTime(state.timer.left); }
-  function tickTimer(){
-    if(!state.timer.running) return;
-    const now = Date.now();
-    const left = Math.max(0, Math.ceil((state.timer.endAt - now)/1000));
-    state.timer.left = left;
-    renderTimer();
-    if(left<=0){ state.timer.running=false; beep(); }
-  }
-  function beep(){ try{const c=new(window.AudioContext||window.webkitAudioContext);const o=c.createOscillator();const g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.value=0.05;o.start();setTimeout(()=>{o.stop();c.close()},250);}catch{} }
 
-  // DATA ACTIONS
-  window.clearLogs = () => {
-    if(confirm("Delete all logs?")) {
-      state.logs = {};
-      saveLogsInstant();
-      renderAll();
-    }
-  };
-  window.exportLogs = () => {
-    const blob = new Blob([JSON.stringify(state.logs,null,2)], {type:"application/json"});
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `bolt_backup_${new Date().toISOString().slice(0,10)}.json`;
-    a.click();
-  };
-  window.exportCSV = () => {
-    // Basic CSV implementation
-    let csv = "Date,Program,Session,Exercise,Set,Weight,Reps,Note\n";
-    // ... logic would go here, stub for now
-    alert("CSV Export ready");
-  };
-  window.importLogs = (el) => {
-    const file = el.files[0];
-    if(!file) return;
-    const r = new FileReader();
-    r.onload = (e) => {
-      try {
-        const d = JSON.parse(e.target.result);
-        if(confirm("Overwrite current logs with imported file?")) {
-          state.logs = d;
-          saveLogsInstant();
-          renderAll();
-        }
-      } catch(err){ alert("Invalid JSON file"); }
-    };
-    r.readAsText(file);
-  };
-
-  // UI ACTIONS
-  window.openSessionsDrawer = () => {
-    const d = document.getElementById("drawer");
-    const c = document.getElementById("sessionsDrawer");
-    c.innerHTML = document.getElementById("sessions").innerHTML;
-    d.classList.add("open"); d.setAttribute("aria-hidden","false");
-  };
-  window.closeSessionsDrawer = () => {
-    const d = document.getElementById("drawer");
-    d.classList.remove("open"); d.setAttribute("aria-hidden","true");
-  };
-  window.openPlanStats = () => {
-    document.getElementById("planStatsModal").classList.add("open");
-    // calc stats here
-  };
-  window.closePlanStats = () => { document.getElementById("planStatsModal").classList.remove("open"); };
-
-  // CORE LOGIC
-  function savePrefs(){ try{localStorage.setItem(PREFS_KEY,JSON.stringify({programId:state.activeProgramId, sessionId:state.activeSessionId}));}catch{} }
-  function saveLogsInstant(){
-    try {
-      if(state.logs) state.logs._updatedAt = Date.now();
-      localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
-      if(typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, state.logs).catch(()=>{});
-      showSaveIndicator();
-    } catch(e) { console.error("Save Fail", e); }
-  }
-  function showSaveIndicator(){
-    const el=document.getElementById("saveStatus");
-    if(el){ el.style.opacity="1"; setTimeout(()=>el.style.opacity="0",1000); }
-  }
-
-  // RENDER MAIN
+  // --- RENDER ---
   function renderAll(){
-    if(!state.activeProgramId) return;
-    renderProgramSelect();
-    renderSessionSelect();
-    renderSessionsList();
-    renderActiveSession();
+    log("Rendering UI...");
+    try {
+        renderProgramSelect();
+        renderSessionSelect();
+        window.renderSessionsList();
+        renderActiveSession();
+    } catch(e) {
+        log("Render Fail: " + e.message);
+        console.error(e);
+    }
   }
-  
+
   function renderProgramSelect(){
-    document.getElementById("programSelect").innerHTML = state.programs.map(p=>`<option value="${p.id}" ${p.id===state.activeProgramId?"selected":""}>${escapeHtml(p.name)}</option>`).join("");
+    const el = document.getElementById("programSelect");
+    el.innerHTML = state.programs.map(p=>`<option value="${p.id}" ${p.id===state.activeProgramId?"selected":""}>${escapeHtml(p.name)}</option>`).join("");
   }
   
   function renderSessionSelect(){
     const p = state.programById.get(state.activeProgramId);
-    const sessions = p?.sessions || [];
     const el = document.getElementById("sessionSelect");
-    // Prevent dropdown reset if content matches
-    const newHtml = sessions.map(s=>`<option value="${s.id}" ${s.id===state.activeSessionId?"selected":""}>${escapeHtml(s.title)}</option>`).join("");
-    if(el.innerHTML !== newHtml) el.innerHTML = newHtml;
+    // ALWAYS rebuild to prevent uncoupling
+    el.innerHTML = (p?.sessions||[]).map(s=>`<option value="${s.id}" ${s.id===state.activeSessionId?"selected":""}>${escapeHtml(s.title)}</option>`).join("");
     el.value = state.activeSessionId;
   }
 
   function renderActiveSession(){
     const el = document.getElementById("content");
     const session = state.sessionsById.get(state.activeSessionId);
-    if(!session) { el.innerHTML = "Select a session"; return; }
+    if(!session) { el.innerHTML="<div class='muted'>No session</div>"; return; }
     
     document.getElementById("activeTitle").textContent = `${session.programName} • ${session.title}`;
     
     // Fun Fact
-    const factEl = document.getElementById("activeFunFact");
-    if(factEl) {
-       const kg = computeVolume(session);
-       if(kg > 0 && state.funFacts.length > 0) {
-          const pick = state.funFacts[hashInt(session.id) % state.funFacts.length];
-          const count = Math.round(kg / pick.unitKg);
-          factEl.textContent = `Lifted ${fmtInt(kg)}kg — equiv to ${fmtInt(count)} ${pick.label}`;
-       } else { factEl.textContent = ""; }
-    }
+    try {
+        const factEl = document.getElementById("activeFunFact");
+        const kg = computeVolume(session);
+        if(kg > 0 && state.funFacts.length > 0) {
+            const pick = state.funFacts[hashInt(session.id) % state.funFacts.length];
+            const count = Math.round(kg / pick.unitKg);
+            factEl.textContent = `Lifted ${fmtInt(kg)}kg — equiv to ${fmtInt(count)} ${pick.label}`;
+        } else { factEl.textContent = ""; }
+    } catch(e){}
 
     const workouts = getAllWorkoutsForSession(session);
     el.innerHTML = workouts.map((w, idx) => {
@@ -414,7 +340,7 @@
        const logged = wlog.sets.some(s=>s.done||s.weight||s.reps);
        const badge = logged ? `<span class="pill" style="color:#8affc1;border-color:#35d07f33;background:#35d07f1a">logged</span>` : "";
        return `<div class="workout" data-wi="${idx}">
-         <div class="workout-head" onclick="toggleWorkout(this)">
+         <div class="workout-head" onclick="window.toggleWorkout(this)">
            <div><div class="workout-title">${escapeHtml(cleanWorkoutTitle(w.title, session.programName))} ${badge}</div>
            <div class="workout-sub">Sets ${w.setsStr} • Reps ${w.repsStr}</div></div>
            <button class="btn small">Toggle</button>
@@ -424,44 +350,100 @@
            <div class="grid"><div class="h">Set</div><div class="h">Target</div><div class="h">Kg</div><div class="h">Reps</div><div class="h">Done</div></div>
            ${wlog.sets.map(r=>renderSetRow(idx, r)).join("")}
            <div class="footer-actions">
-             <button class="btn small" onclick="modSet(${idx},1)">+ Set</button>
-             <button class="btn small danger" onclick="modSet(${idx},-1)">- Set</button>
+             <button class="btn small" onclick="window.modSet(${idx},1)">+ Set</button>
+             <button class="btn small danger" onclick="window.modSet(${idx},-1)">- Set</button>
+             <button class="btn small" onclick="window.startRest(120)">Start 120s rest</button>
            </div>
            <div class="divider"></div>
            <label class="muted">Notes</label>
-           <textarea oninput="updateNote(this, ${idx})">${escapeHtml(wlog.workoutNote||"")}</textarea>
+           <textarea oninput="window.updateNote(this, ${idx})">${escapeHtml(wlog.workoutNote||"")}</textarea>
          </div>
        </div>`;
     }).join("");
+    
+    // Add custom box
+    el.innerHTML += `<div class="workout"><div class="workout-head" onclick="window.toggleWorkout(this)"><div><div class="workout-title">Add exercise</div></div><button class="btn small">Toggle</button></div><div class="workout-body"><div class="grid" style="grid-template-columns: 1fr 90px 120px;"><div class="h">Exercise</div><div class="h">Sets</div><div class="h">Target reps</div><input id="customTitle" type="text" placeholder="e.g. Arnold press" /><input id="customSets" type="number" min="1" step="1" value="3" /><input id="customReps" type="text" placeholder="e.g. 8-12" /></div><div class="footer-actions"><button class="btn small primary" onclick="window.handleCustomAdd()">Add</button></div></div></div>`;
   }
-  
+
   function renderSetRow(wIdx, row){
     return `<div class="set-row ${row.done?"done":""}">
       <div class="grid">
         <div class="mono">#${row.set}</div>
-        <input type="text" value="${escapeHtml(row.targetReps)}" oninput="updateRow(this, ${wIdx}, ${row.set}, 'targetReps')">
-        <input type="text" inputmode="decimal" placeholder="kg" value="${escapeHtml(row.weight)}" oninput="updateRow(this, ${wIdx}, ${row.set}, 'weight')">
-        <input type="text" inputmode="numeric" placeholder="reps" value="${escapeHtml(row.reps)}" oninput="updateRow(this, ${wIdx}, ${row.set}, 'reps')">
-        <input type="checkbox" ${row.done?"checked":""} onchange="updateRow(this, ${wIdx}, ${row.set}, 'done')">
+        <input type="text" value="${escapeHtml(row.targetReps)}" oninput="window.updateRow(this, ${wIdx}, ${row.set}, 'targetReps')">
+        <input type="text" inputmode="decimal" placeholder="kg" value="${escapeHtml(row.weight)}" oninput="window.updateRow(this, ${wIdx}, ${row.set}, 'weight')">
+        <input type="text" inputmode="numeric" placeholder="reps" value="${escapeHtml(row.reps)}" oninput="window.updateRow(this, ${wIdx}, ${row.set}, 'reps')">
+        <input type="checkbox" ${row.done?"checked":""} onchange="window.updateRow(this, ${wIdx}, ${row.set}, 'done')">
       </div>
     </div>`;
   }
 
-  // LOGIC HELPERS
+  // --- HELPERS ---
+  function uid(str){ let h = 2166136261; for (let i=0; i<str.length; i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return "id_" + (h >>> 0).toString(16); }
+  function escapeHtml(s){ return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;"); }
+  function cleanWorkoutTitle(t,p){ return t.replace(new RegExp(`\\s*-\\s*${p}.*`,"i"),"").trim(); }
+  function resolveReps(s,i){ const p=String(s).split(","); return (p[i]||p[p.length-1]||"").trim(); }
+  function fmtTime(s){ return new Date(s*1000).toISOString().substr(14,5); }
+  function hashInt(s){ let h=0; for(let i=0;i<s.length;i++) h = Math.imul(31,h)+s.charCodeAt(i)|0; return Math.abs(h); }
+  function numFloat(n){ const v=parseFloat(n); return isNaN(v)?null:v; }
+  function numInt(n){ const v=parseInt(n); return isNaN(v)?null:v; }
+  function fmtInt(n){ return n.toLocaleString(); }
+  
+  function sessionKey(session){ return `${session.programName}|||${session.title}`; }
+  function ensureWorkoutLog(session, w, idx){
+     const k = `${session.programName}|||${session.title}|||${idx}|||${w.title}`;
+     if(!state.logs[k]) state.logs[k] = { sets: Array.from({length: w.setCount}, (_,i)=>({set:i+1, targetReps:resolveReps(w.targetReps,i), weight:"", reps:"", done:false})) };
+     return state.logs[k];
+  }
+  function getAllWorkoutsForSession(s){
+    // Merge plan workouts + custom workouts
+    const base = s.workouts || [];
+    const customKey = sessionKey(s);
+    const custom = (state.logs.__custom_sessions && state.logs.__custom_sessions[customKey]) || [];
+    const mappedCustom = custom.map((c, i) => ({
+        title: c.title, setCount: c.sets, setsStr: String(c.sets), repsStr: String(c.reps), targetReps: c.reps, notes: [],
+        _isCustom: true, _customIndex: i
+    }));
+    return [...base, ...mappedCustom];
+  }
+  function countLoggedInSession(s){ return getAllWorkoutsForSession(s).filter((w,i)=>ensureWorkoutLog(s,w,i).sets.some(x=>x.done)).length; }
+  function computeVolume(s){
+     let t=0; const p=`${s.programName}|||${s.title}|||`;
+     for(const k in state.logs){
+        if(k.startsWith(p) && state.logs[k].sets) state.logs[k].sets.forEach(r=>{ const w=parseFloat(r.weight), rp=parseInt(r.reps); if(!isNaN(w)&&!isNaN(rp)) t+=w*rp; });
+     }
+     return t;
+  }
+  
+  // --- STORAGE ---
+  function savePrefs(){ try{localStorage.setItem(PREFS_KEY,JSON.stringify({programId:state.activeProgramId, sessionId:state.activeSessionId}));}catch{} }
+  function saveLogsInstant(){
+    try {
+      if(state.logs) state.logs._updatedAt = Date.now();
+      localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
+      if(typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, state.logs).catch(()=>{});
+      
+      const el=document.getElementById("saveStatus");
+      if(el){ el.style.opacity="1"; setTimeout(()=>el.style.opacity="0",1000); }
+      
+      // Cloud
+      if(supabase && state._user) {
+         supabase.from("user_logs").upsert({ user_id: state._user.id, logs: state.logs, updated_at: new Date().toISOString() }, {onConflict:"user_id"}).then(({error})=>{ if(error) console.error(error); });
+      }
+    } catch(e) { console.error("Save Fail", e); }
+  }
+
+  // --- EVENT HANDLERS (HARD WIRED) ---
   window.updateRow = (el, wIdx, setNum, field) => {
     const session = state.sessionsById.get(state.activeSessionId);
     const w = getAllWorkoutsForSession(session)[wIdx];
     const wlog = ensureWorkoutLog(session, w, wIdx);
     const row = wlog.sets.find(r=>r.set===setNum);
-    if(!row) return;
-    if(field === 'done') {
-      row.done = el.checked;
-      el.closest('.set-row').classList.toggle('done', row.done);
-    } else {
-      row[field] = el.value;
+    if(row) {
+      if(field === 'done') { row.done = el.checked; el.closest('.set-row').classList.toggle('done', row.done); }
+      else { row[field] = el.value; }
+      saveLogsInstant();
+      if(field==='done') renderActiveSession(); // Re-render for badge
     }
-    saveLogsInstant();
-    if(field==='done') renderAll(); // Re-render to update badge
   };
   window.updateNote = (el, wIdx) => {
     const session = state.sessionsById.get(state.activeSessionId);
@@ -479,82 +461,136 @@
      else if(wlog.sets.length>1) wlog.sets.pop();
      saveLogsInstant(); renderActiveSession();
   };
-
-  // HELPERS
-  function computeVolume(s){
-     let t=0; const p=`${s.programName}|||${s.title}|||`;
-     for(const k in state.logs){
-        if(k.startsWith(p)) state.logs[k].sets.forEach(r=>{ 
-           const w=parseFloat(r.weight), rp=parseInt(r.reps); 
-           if(!isNaN(w)&&!isNaN(rp)) t+=w*rp; 
-        });
-     }
-     return t;
+  window.handleCustomAdd = () => {
+    const t = document.getElementById("customTitle").value;
+    const s = parseInt(document.getElementById("customSets").value)||3;
+    const r = document.getElementById("customReps").value;
+    if(!t) return alert("Name required");
+    
+    const session = state.sessionsById.get(state.activeSessionId);
+    const key = sessionKey(session);
+    if(!state.logs.__custom_sessions) state.logs.__custom_sessions={};
+    if(!state.logs.__custom_sessions[key]) state.logs.__custom_sessions[key]=[];
+    
+    state.logs.__custom_sessions[key].push({ title: t, sets: s, reps: r });
+    saveLogsInstant();
+    renderActiveSession();
+  };
+  window.removeCustomWorkout = (idx) => {
+    if(!confirm("Remove?")) return;
+    const session = state.sessionsById.get(state.activeSessionId);
+    const key = sessionKey(session);
+    if(state.logs.__custom_sessions && state.logs.__custom_sessions[key]) {
+       state.logs.__custom_sessions[key].splice(idx, 1);
+       saveLogsInstant();
+       renderActiveSession();
+    }
+  };
+  
+  // --- TIMER ---
+  window.startTimer = () => {
+    if(state.timer.left <= 0) state.timer.left = state.timer.total;
+    state.timer.endAt = Date.now() + state.timer.left*1000;
+    state.timer.running = true;
+    if(!state.timer.t) state.timer.t = setInterval(tickTimer, 250);
+  };
+  window.pauseTimer = () => { state.timer.running = false; renderTimer(); };
+  window.resetTimer = () => { state.timer.total = state.timer.total; state.timer.left = state.timer.total; state.timer.running = false; renderTimer(); };
+  window.setTimer = (sec) => { state.timer.total = sec; state.timer.left = sec; state.timer.running = false; renderTimer(); };
+  window.setCustomTimer = () => { const v = parseInt(document.getElementById("customSeconds").value, 10); if(v) window.setTimer(v); };
+  function renderTimer(){ document.getElementById("timerDisplay").textContent = fmtTime(state.timer.left); }
+  function tickTimer(){
+    if(!state.timer.running) return;
+    const now = Date.now();
+    const left = Math.max(0, Math.ceil((state.timer.endAt - now)/1000));
+    state.timer.left = left;
+    renderTimer();
+    if(left<=0){ state.timer.running=false; beep(); }
   }
-  function ensureWorkoutLog(session, w, idx){
-     const k = `${session.programName}|||${session.title}|||${idx}|||${w.title}`;
-     if(!state.logs[k]) state.logs[k] = { 
-        sets: Array.from({length: w.setCount}, (_,i)=>({set:i+1, targetReps:resolveReps(w.targetReps,i), weight:"", reps:"", done:false}))
-     };
-     return state.logs[k];
-  }
-  function getAllWorkoutsForSession(s){ return s.workouts; } // simplified for now
-  function countLoggedInSession(s){ return getAllWorkoutsForSession(s).filter((w,i)=>ensureWorkoutLog(s,w,i).sets.some(x=>x.done)).length; }
-  function escapeHtml(s){ return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;"); }
-  function cleanWorkoutTitle(t,p){ return t.replace(new RegExp(`\\s*-\\s*${p}.*`,"i"),"").trim(); }
-  function resolveReps(s,i){ const p=String(s).split(","); return (p[i]||p[p.length-1]||"").trim(); }
-  function fmtTime(s){ return new Date(s*1000).toISOString().substr(14,5); }
-  function hashInt(s){ let h=0; for(let i=0;i<s.length;i++) h = Math.imul(31,h)+s.charCodeAt(i)|0; return Math.abs(h); }
-  function numFloat(n){ const v=parseFloat(n); return isNaN(v)?null:v; }
-  function numInt(n){ const v=parseInt(n); return isNaN(v)?null:v; }
-  function fmtInt(n){ return n.toLocaleString(); }
 
-  // INIT
-  async function init(){
-    // Load Programs
+  // --- STATS & EXPORT ---
+  window.clearLogs = () => { if(confirm("Clear logs?")) { state.logs={}; saveLogsInstant(); renderAll(); } };
+  window.exportLogs = () => {
+    const b = new Blob([JSON.stringify(state.logs,null,2)], {type:"application/json"});
+    const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "bolt_logs.json"; a.click();
+  };
+  window.openSessionsDrawer = () => {
+    document.getElementById("sessionsDrawer").innerHTML = document.getElementById("sessions").innerHTML;
+    document.getElementById("drawer").classList.add("open");
+  };
+  window.closeSessionsDrawer = () => { document.getElementById("drawer").classList.remove("open"); };
+  window.openPlanStats = () => { document.getElementById("planStatsModal").classList.add("open"); };
+  window.closePlanStats = () => { document.getElementById("planStatsModal").classList.remove("open"); };
+
+  // --- BOOTSTRAP ---
+  document.addEventListener("DOMContentLoaded", async () => {
+    log("Booting...");
+    
+    // 1. Load Programs
     try {
+      state.programs=[];
       for(const src of PROGRAM_SOURCES) {
-         const res = await fetch(src.url);
-         const data = await res.json();
-         const prog = { id: uid(data.program), name: data.program, sessions: data.sessions.map((s,i)=>({...s, id:uid(data.program+s.session+i), programName: data.program})) };
-         state.programs.push(prog);
+         try {
+           const res = await fetch(src.url);
+           if(res.ok) {
+             const data = await res.json();
+             const prog = { id: uid(data.program), name: data.program, sessions: data.sessions.map((s,i)=>({...s, id:uid(data.program+s.session+i), programName: data.program})) };
+             state.programs.push(prog);
+           }
+         } catch(e){ console.warn("Skipping " + src.name); }
       }
-      state.programs.forEach(p=> { state.programById.set(p.id, p); p.sessions.forEach(s=>state.sessionsById.set(s.id, s)); });
-    } catch(e) { console.error("Prog Init", e); }
+      // Populate Maps
+      state.programById.clear(); state.sessionsById.clear();
+      for(const p of state.programs){
+        state.programById.set(p.id, p);
+        for(const s of p.sessions) state.sessionsById.set(s.id, s);
+      }
+      log(`Loaded ${state.programs.length} programs`);
+      
+      // 2. Load Prefs
+      try{ 
+        const prefs = JSON.parse(localStorage.getItem(PREFS_KEY)||"{}"); 
+        if(prefs.programId && state.programById.has(prefs.programId)) state.activeProgramId = prefs.programId;
+        else state.activeProgramId = state.programs[0]?.id;
+        
+        const actProg = state.programById.get(state.activeProgramId);
+        if(actProg){
+            const sExists = actProg.sessions.some(s=>s.id===prefs.sessionId);
+            state.activeSessionId = sExists ? prefs.sessionId : actProg.sessions[0]?.id;
+        }
+      }catch{}
 
-    // Load Logs
+    } catch(e) { log("Prog Err: " + e.message); }
+
+    // 3. Load Logs
     try {
        const local = JSON.parse(localStorage.getItem(LS_KEY));
        if(local) state.logs = local;
     } catch {}
     
-    // Load Prefs
-    try {
-      const prefs = JSON.parse(localStorage.getItem(PREFS_KEY));
-      if(prefs) { state.activeProgramId = prefs.programId; state.activeSessionId = prefs.sessionId; }
-      else { state.activeProgramId = state.programs[0]?.id; state.activeSessionId = state.programs[0]?.sessions[0]?.id; }
-    } catch {}
-
-    // Load Fun Facts
+    // 4. Load Fun Facts
     try { state.funFacts = await (await fetch("fun_facts.json")).json(); } catch {}
-
-    renderAll();
     
-    // Auth
-    if(supabase){
-       document.getElementById("signInGoogle").onclick = () => supabase.auth.signInWithOAuth({provider:"google", options:{redirectTo:location.href}});
-       document.getElementById("signOut").onclick = async () => { await supabase.auth.signOut(); location.reload(); };
-       const session = (await supabase.auth.getSession()).data.session;
-       if(session) {
-          state._user = session.user;
+    // 5. Render
+    renderAll();
+
+    // 6. Auth
+    if(supabase) {
+       const {data} = await supabase.auth.getSession();
+       if(data.session) {
+          state._user = data.session.user;
           document.getElementById("authStatus").textContent = "Signed in";
           document.getElementById("signInGoogle").style.display="none";
           document.getElementById("signOut").style.display="inline-flex";
+          // Cloud Load
+          const {data:cloud} = await supabase.from("user_logs").select("logs").eq("user_id", state._user.id).maybeSingle();
+          if(cloud?.logs && (cloud.logs._updatedAt||0) > (state.logs._updatedAt||0)) {
+             state.logs = cloud.logs;
+             renderAll();
+          }
        }
     }
-  }
-
-  init();
+  });
 
 </script>
 </body>

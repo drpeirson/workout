@@ -83,11 +83,6 @@
     #authAvatar{width:32px;height:32px;border-radius:999px;border:1px solid var(--line);display:none;object-fit:cover;}
     .authBar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
     
-    /* Save indicator */
-    #saveStatus { position:fixed; bottom:20px; right:20px; background:rgba(0,0,0,0.7); color:var(--accent); padding:6px 12px; border-radius:20px; font-size:12px; font-weight:bold; opacity:0; transition:opacity 0.2s; pointer-events:none; z-index:9999; }
-    #saveStatus.saving { opacity:1; background:rgba(255,200,0,0.8); color:black; }
-    #saveStatus.saved { opacity:0; transition:opacity 1s; background:rgba(53,208,127,0.8); color:black; }
-    
     #errorBox { display:none; position:fixed; top:0; left:0; right:0; background:rgba(255,0,0,0.95); color:white; padding:20px; z-index:99999; font-family:monospace; white-space:pre-wrap; }
     
     @media (max-width: 980px){
@@ -116,7 +111,6 @@
 </head>
 <body>
   <div id="errorBox"></div>
-  <div id="saveStatus">Saved</div>
 
   <div class="app">
     <div class="card">
@@ -425,7 +419,7 @@
     if (document.visibilityState === "visible") tickTimer();
   });
 
-  // --- STORAGE (DIRECT SYNC MODE) ---
+  // --- STORAGE ---
   function debounce(func, wait) {
     let timeout;
     return function(...args) {
@@ -434,50 +428,21 @@
     };
   }
 
-  function touchLogs() {
-    if (state.logs) state.logs._updatedAt = Date.now();
-  }
-
-  function showSaveIndicator(){
-    const el = document.getElementById("saveStatus");
-    if(el) {
-      el.textContent = "Saving...";
-      el.classList.add("saving");
-      el.classList.remove("saved");
-      setTimeout(()=> {
-        el.textContent = "Saved";
-        el.classList.remove("saving");
-        el.classList.add("saved");
-      }, 300);
-    }
-  }
-
-  // KEY FIX: Direct write to LocalStorage (Sync) + IDB (Async) on every change
-  function saveLogsInstant() {
+  const saveLogsDebounced = debounce(async () => {
     try {
-      touchLogs();
-      // 1. Sync Save (Blocks browser from freezing)
-      localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
-      showSaveIndicator();
-      
-      // 2. Async backups
-      if (typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, state.logs).catch(()=>{});
+      if (typeof idbKeyval !== 'undefined') await idbKeyval.set(LS_KEY, state.logs);
+      else localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
       scheduleCloudSave();
     } catch (e) { console.error("Save failed", e); }
-  }
+  }, 500);
 
-  // --- EVENT LISTENERS FOR SYNC ---
-  // When resuming, force reload from disk to ensure memory matches reality
-  window.addEventListener("focus", () => {
-     loadLogsAsync(); 
-  });
-  
-  // Backup on freeze
-  window.addEventListener("pagehide", saveLogsInstant);
-  window.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") saveLogsInstant();
-    if (document.visibilityState === "visible") loadLogsAsync(); // Reload on wake
-  });
+  async function saveLogs() {
+    try {
+      if (typeof idbKeyval !== 'undefined') await idbKeyval.set(LS_KEY, state.logs);
+      else localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
+      scheduleCloudSave();
+    } catch (e) { console.error("Immediate save failed", e); }
+  }
 
   // --- CUSTOM EXERCISES ---
   function sessionKey(session){ return `${session.programName}|||${session.title}`; }
@@ -505,8 +470,7 @@
       created_at: new Date().toISOString()
     });
     state.logs.__custom_sessions[key] = arr;
-    saveLogsInstant();
-    renderAll();
+    saveLogs();
   }
 
   function getAllWorkoutsForSession(session){
@@ -568,7 +532,7 @@
     return done;
   }
 
-  // --- AUTH & CLOUD ---
+  // --- AUTH & CLOUD (RESTORED) ---
   function scheduleCloudSave(){
     if(!supabase || !state._user) return;
     if(cloudSaveTimer) clearTimeout(cloudSaveTimer);
@@ -586,15 +550,8 @@
     if(error){ console.warn("cloudLoad error", error); return; }
     const cloudLogs = data?.logs||{};
     if(typeof cloudLogs!=="object" || cloudLogs===null) return;
-    
-    // Cloud Merge strategy
-    const localTs = state.logs._updatedAt || 0;
-    const cloudTs = cloudLogs._updatedAt || 0;
-    if(cloudTs > localTs) {
-       state.logs = cloudLogs;
-       saveLogsInstant();
-       renderAll(); 
-    }
+    state.logs = {...state.logs, ...cloudLogs};
+    await saveLogs(); 
   }
   function setAuthUI(signedIn, email){
     const elStatus = document.getElementById("authStatus");
@@ -631,15 +588,16 @@
       const {error} = await supabase.auth.signInWithOAuth({provider:"google", options:{redirectTo}});
       if(error) alert("Sign-in failed: "+error.message);
     });
+    // LOGICAL FIX: Clear data on sign out
     document.getElementById("signOut")?.addEventListener("click", async()=>{
       await supabase.auth.signOut();
       state._user = null;
       setAuthUI(false);
-      state.logs = {};
-      if (typeof idbKeyval !== 'undefined') await idbKeyval.del(LS_KEY);
-      localStorage.removeItem(LS_KEY);
+      state.logs = {}; // Clear memory
+      if (typeof idbKeyval !== 'undefined') await idbKeyval.del(LS_KEY); // Clear DB
+      localStorage.removeItem(LS_KEY); // Clear legacy
       renderAll();
-      alert("Signed out.");
+      alert("Signed out and local data cleared.");
     });
   }
 
@@ -838,7 +796,7 @@
     } else if (wlog.sets.length > 1) {
       wlog.sets.pop();
     }
-    saveLogsInstant();
+    saveLogs();
     renderActiveSession();
   };
 
@@ -849,7 +807,7 @@
     const w = getAllWorkoutsForSession(session)[wIdx];
     const wlog = ensureWorkoutLog(session, w, wIdx);
     wlog.workoutNote = el.value;
-    saveLogsDebounced(); // Notes are fine with debounce
+    saveLogsDebounced();
   };
 
   window.updateSet = (el, wIdx, setNum, field) => {
@@ -862,7 +820,7 @@
     if(field === 'done') {
       row.done = el.checked;
       el.closest('.set-row').classList.toggle('done', row.done);
-      saveLogsInstant();
+      saveLogs();
       const isLogged = wlog.sets.some(s=>s.done||s.weight||s.reps);
       const tEl = document.getElementById(`title_${wIdx}`);
       if(tEl) {
@@ -872,10 +830,8 @@
       }
       updateActiveProgress();
     } else {
-      state.logs._updatedAt = Date.now();
       row[field] = el.value;
-      // KEY FIX: No more debounce for data. Instant save.
-      saveLogsInstant();
+      saveLogsDebounced();
     }
   };
 
@@ -889,6 +845,7 @@
     renderAll();
   };
 
+  // Custom Workout Deletion
   window.removeCustomWorkout = (index) => {
     if(!confirm("Remove this custom exercise?")) return;
     const session = state.sessionsById.get(state.activeSessionId);
@@ -896,7 +853,7 @@
     const arr = state.logs.__custom_sessions[key];
     if(arr && arr[index]) {
       arr.splice(index, 1);
-      saveLogsInstant();
+      saveLogs();
       renderAll();
     }
   };
@@ -916,6 +873,49 @@
     let h=2166136261;
     for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); }
     return (h>>>0);
+  }
+
+  function sessionLogPrefix(session){ return `${session.programName}|||${session.title}|||`; }
+
+  function computeSessionVolumeKg(session){
+    if (!session) return 0;
+    const prefix = sessionLogPrefix(session);
+    let total = 0;
+    for (const k of Object.keys(state.logs || {})){
+      if (k.startsWith("__") || !k.startsWith(prefix)) continue;
+      const wlog = state.logs[k];
+      const sets = Array.isArray(wlog?.sets) ? wlog.sets : [];
+      for (const s of sets){
+        const w = numFloat(s?.weight);
+        const r = numInt(s?.reps);
+        if (w != null && r != null) total += (w * r);
+      }
+    }
+    return total;
+  }
+
+  function updateSessionFunFact(){
+    const session = state.sessionsById.get(state.activeSessionId);
+    const elFact = document.getElementById("activeFunFact");
+    if (!elFact || !session) {
+      if(elFact) elFact.textContent = "";
+      return;
+    }
+    const kg = computeSessionVolumeKg(session);
+    if (!kg || kg <= 0){ elFact.textContent = ""; return; }
+    
+    // Default picks if file fails
+    let picks = [
+      { label: '3.5" floppy disks', unitKg: 0.02 },
+      { label: 'Raspberry Pi boards', unitKg: 0.045 },
+      { label: 'desktop PCs', unitKg: 8.0 }
+    ];
+    if (state.funFacts && state.funFacts.length > 0) picks = state.funFacts;
+
+    const h = hashInt(`${session.programName}::${session.title}`);
+    const pick = picks[h % picks.length];
+    const count = Math.max(1, Math.round(kg / pick.unitKg));
+    elFact.textContent = `You lifted ${fmtInt(kg)}kg today — about the same weight as ${fmtInt(count)} ${pick.label}.`;
   }
 
   function savePrefs() {
@@ -987,48 +987,76 @@
     }
   }
 
-  // --- INIT & ROBUST SYNC LOAD ---
+  // --- INIT ---
   async function loadLogsAsync() {
     try {
-      // 1. Try LocalStorage (Sync Backup)
-      let localLogs = null;
-      try { localLogs = JSON.parse(localStorage.getItem(LS_KEY)); } catch {}
-
-      // 2. Try IndexedDB (Async Primary)
-      let dbLogs = null;
-      if (typeof idbKeyval !== 'undefined') {
-        try { dbLogs = await idbKeyval.get(LS_KEY); } catch(e){ console.warn("IDB Fail", e); }
-      }
-
-      // 3. Compare Timestamps
-      const localTs = localLogs?._updatedAt || 0;
-      const dbTs = dbLogs?._updatedAt || 0;
-
-      if (localLogs && localTs > dbTs) {
-        console.log("Recovered from LocalStorage backup");
-        state.logs = localLogs;
-        if(typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, state.logs);
-      } else if (dbLogs) {
-        state.logs = dbLogs;
+      if (typeof idbKeyval === 'undefined') {
+        console.warn("IDB missing");
+        state.logs = JSON.parse(localStorage.getItem(LS_KEY)||"{}");
       } else {
-        state.logs = localLogs || {};
+        const dbLogs = await idbKeyval.get(LS_KEY);
+        if (dbLogs) state.logs = dbLogs;
+        else {
+           const local = localStorage.getItem(LS_KEY);
+           if(local) { state.logs = JSON.parse(local); await idbKeyval.set(LS_KEY, state.logs); }
+        }
       }
-
       renderAll();
     } catch(e) {
-      console.error("Load Error", e);
-      try { state.logs = JSON.parse(localStorage.getItem(LS_KEY)||"{}"); } catch{}
-      renderAll();
+      console.error(e);
+      document.getElementById("content").innerHTML = "Error loading logs";
     }
   }
+
+  // Listeners
+  document.getElementById("programSelect").addEventListener("change", (e)=>{
+    state.activeProgramId = e.target.value;
+    const p = state.programById.get(state.activeProgramId);
+    state.activeSessionId = p?.sessions[0]?.id || null;
+    savePrefs(); renderAll();
+  });
+  document.getElementById("sessionSelect").addEventListener("change", (e)=>{
+    state.activeSessionId = e.target.value;
+    savePrefs(); renderAll();
+  });
+  document.getElementById("search").addEventListener("input", renderSessionsList);
+  
+  document.getElementById("openSessions").addEventListener("click", () => {
+    const d = document.getElementById("drawer");
+    const dList = document.getElementById("sessionsDrawer");
+    dList.innerHTML = document.getElementById("sessions").innerHTML;
+    dList.onclick = (e) => {
+       const item = e.target.closest('.session-item');
+       if(item) {
+          // Relies on onclick in string
+       }
+    };
+    d.classList.add("open"); d.setAttribute("aria-hidden", "false");
+  });
+
+  document.getElementById("closeSessions").addEventListener("click", () => {
+    const d = document.getElementById("drawer");
+    d.classList.remove("open"); d.setAttribute("aria-hidden", "true");
+  });
+
+  document.getElementById("timerStart")?.addEventListener("click", startTimer);
+  document.getElementById("timerPause")?.addEventListener("click", pauseTimer);
+  document.getElementById("timerReset")?.addEventListener("click", resetTimer);
+  document.getElementById("setCustom")?.addEventListener("click", () => {
+     const val = parseInt(document.getElementById("customSeconds").value, 10);
+     if(val) setTimer(val);
+  });
+  document.getElementById("preset")?.addEventListener("change", (e) => {
+     setTimer(parseInt(e.target.value, 10));
+  });
 
   // Start
   if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
   
   loadAllPrograms();
   loadLogsAsync();
-  loadFunFacts(); 
-  initAuth();     
+  loadFunFacts(); // Load facts
+  initAuth();     // Now defined and safe to call
 
 </script>
 </body>

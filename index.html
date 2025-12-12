@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#484838" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon-192.png" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>BOLT</title>
   <style>
@@ -425,7 +425,7 @@
     if (document.visibilityState === "visible") tickTimer();
   });
 
-  // --- STORAGE (DIRECT SYNC MODE) ---
+  // --- STORAGE ---
   function debounce(func, wait) {
     let timeout;
     return function(...args) {
@@ -1029,6 +1029,14 @@
   loadLogsAsync();
   loadFunFacts(); 
   initAuth();     
+
+  // --- SAFETY NET ---
+  // Ensure data persists even if browser freezes mid-save
+  window.addEventListener("pagehide", saveLogsInstant);
+  window.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") saveLogsInstant();
+    if (document.visibilityState === "visible") loadLogsAsync(); // Reload on wake
+  });
 
 </script>
 </body>

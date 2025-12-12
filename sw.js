@@ -1,5 +1,5 @@
 /* BOLT Workout Tracker - Service Worker */
-const CACHE_NAME = "bolt-cache-v18"; // Bumped for Function Fix
+const CACHE_NAME = "bolt-cache-v20-modular";
 
 const CORE_ASSETS = [
   "./",
@@ -8,6 +8,12 @@ const CORE_ASSETS = [
   "icon-192.png",
   "icon-512.png",
   "fun_facts.json",
+  "css/style.css",
+  "js/config.js",
+  "js/utils.js",
+  "js/store.js",
+  "js/ui.js",
+  "js/main.js",
   "https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/index-min.js",
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
 ];
@@ -46,6 +52,7 @@ self.addEventListener("fetch", (event) => {
   if (req.method !== "GET") return;
   const url = req.url;
 
+  // Navigate fallback
   if (req.mode === "navigate") {
     event.respondWith(
       fetch(req).then((res) => {
@@ -57,6 +64,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // Program JSON (stale-while-revalidate)
   if (isProgramJson(url)) {
     event.respondWith(
       caches.match(req).then((cached) => {
@@ -71,17 +79,18 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // Core Assets (cache-first + update)
   if (isSameOrigin(url) || CORE_ASSETS.includes(url)) {
     event.respondWith(
       caches.match(req).then((cached) => {
-        if (cached) return cached;
-        return fetch(req).then((res) => {
+        const fetchPromise = fetch(req).then((res) => {
           if(res.ok) {
              const copy = res.clone();
              caches.open(CACHE_NAME).then((c) => c.put(req, copy)).catch(() => {});
           }
           return res;
         });
+        return cached || fetchPromise;
       })
     );
   }

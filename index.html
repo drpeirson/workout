@@ -423,7 +423,7 @@
     if (document.visibilityState === "visible") tickTimer();
   });
 
-  // --- STORAGE & SYNC (AGGRESSIVE FIX) ---
+  // --- STORAGE & SYNC (NUCLEAR OPTION) ---
   function debounce(func, wait) {
     let timeout;
     return function(...args) {
@@ -444,35 +444,27 @@
     }
   }
 
-  // REWRITTEN: Forces LocalStorage write ALWAYS
-  async function saveLogs() {
+  // FORCE SYNC SAVE: Used for critical updates (DONE check, Remove Set)
+  function forceSaveSync() {
     try {
       touchLogs();
-      // 1. Sync Save (Guaranteed)
+      // 1. BLOCKING SAVE to LocalStorage (Guaranteed)
       localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
       
-      // 2. Async Save (Optimistic)
+      // 2. Try IDB (Async background)
       if (typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, state.logs);
       
-      // 3. Cloud (Fire and forget)
+      // 3. Cloud
       scheduleCloudSave();
       showSaveIndicator();
-    } catch (e) { console.error("Save failed", e); }
+      console.log("Force Sync Save Complete");
+    } catch(e) { console.error("Force Save Failed", e); }
   }
 
-  const saveLogsDebounced = debounce(saveLogs, 500);
-
-  // --- EVENT LISTENERS FOR SYNC ---
-  // The magic fix: Detect visibility change and force a sync save
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") {
-      saveLogs(); // Block and save before freeze
-    } else {
-      // Reload on resume to prevent stale state
-      loadLogsAsync();
-    }
-  });
-  window.addEventListener("pagehide", saveLogs);
+  // Debounced Save (for typing) - now also triggers sync save at end
+  const saveLogsDebounced = debounce(() => {
+     forceSaveSync();
+  }, 500);
 
 
   // --- CUSTOM EXERCISES ---
@@ -501,7 +493,8 @@
       created_at: new Date().toISOString()
     });
     state.logs.__custom_sessions[key] = arr;
-    saveLogs();
+    forceSaveSync(); // Instant save
+    renderAll();
   }
 
   function getAllWorkoutsForSession(session){
@@ -582,12 +575,13 @@
     const cloudLogs = data?.logs||{};
     if(typeof cloudLogs!=="object" || cloudLogs===null) return;
     
-    // Cloud Merge strategy (Newest wins based on _updatedAt)
+    // Cloud Merge strategy
     const localTs = state.logs._updatedAt || 0;
     const cloudTs = cloudLogs._updatedAt || 0;
     if(cloudTs > localTs) {
        state.logs = cloudLogs;
-       await saveLogs(); // Update local
+       forceSaveSync();
+       renderAll(); // Re-render if new data arrived
     }
   }
   function setAuthUI(signedIn, email){
@@ -804,7 +798,7 @@
     renderActiveSession();
   }
 
-  // --- ACTIONS (Global Window Scope) ---
+  // --- ACTIONS ---
   window.pickSession = (sid) => {
     state.activeSessionId = sid;
     savePrefs();
@@ -832,7 +826,7 @@
     } else if (wlog.sets.length > 1) {
       wlog.sets.pop();
     }
-    saveLogsDebounced();
+    forceSaveSync(); // NUCLEAR SAVE
     renderActiveSession();
   };
 
@@ -843,7 +837,7 @@
     const w = getAllWorkoutsForSession(session)[wIdx];
     const wlog = ensureWorkoutLog(session, w, wIdx);
     wlog.workoutNote = el.value;
-    saveLogsDebounced();
+    saveLogsDebounced(); // Notes are fine with debounce
   };
 
   window.updateSet = (el, wIdx, setNum, field) => {
@@ -856,7 +850,10 @@
     if(field === 'done') {
       row.done = el.checked;
       el.closest('.set-row').classList.toggle('done', row.done);
-      saveLogs();
+      
+      // CRITICAL: FORCE SYNC SAVE ON DONE
+      forceSaveSync(); 
+
       const isLogged = wlog.sets.some(s=>s.done||s.weight||s.reps);
       const tEl = document.getElementById(`title_${wIdx}`);
       if(tEl) {
@@ -866,9 +863,8 @@
       }
       updateActiveProgress();
     } else {
-      state.logs._updatedAt = Date.now();
       row[field] = el.value;
-      saveLogsDebounced();
+      saveLogsDebounced(); // Typing still debounced to prevent lag, but backup handler catches freeze
     }
   };
 
@@ -889,7 +885,7 @@
     const arr = state.logs.__custom_sessions[key];
     if(arr && arr[index]) {
       arr.splice(index, 1);
-      saveLogs();
+      forceSaveSync(); // NUCLEAR SAVE
       renderAll();
     }
   };
@@ -980,26 +976,27 @@
     }
   }
 
-  // --- INIT & ROBUST SYNC LOAD ---
+  // --- INIT & SYNC ---
   async function loadLogsAsync() {
     try {
-      // 1. Try LocalStorage (Sync Backup)
+      // 1. Always load sync localStorage first (Fastest & most likely to have emergency save)
       let localLogs = null;
       try { localLogs = JSON.parse(localStorage.getItem(LS_KEY)); } catch {}
 
-      // 2. Try IndexedDB (Async Primary)
+      // 2. Load DB
       let dbLogs = null;
       if (typeof idbKeyval !== 'undefined') {
-        try { dbLogs = await idbKeyval.get(LS_KEY); } catch(e){ console.warn("IDB Fail", e); }
+        try { dbLogs = await idbKeyval.get(LS_KEY); } catch {}
       }
 
-      // 3. Conflict Resolution (Newest Timestamp Wins)
+      // 3. Compare & Win
       const localTs = localLogs?._updatedAt || 0;
       const dbTs = dbLogs?._updatedAt || 0;
 
       if (localLogs && localTs > dbTs) {
-        console.log("Recovered from LocalStorage backup");
+        console.log("Using LocalStorage (Newer)");
         state.logs = localLogs;
+        // Repair DB in background
         if(typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, state.logs);
       } else if (dbLogs) {
         state.logs = dbLogs;
@@ -1022,6 +1019,13 @@
   loadLogsAsync();
   loadFunFacts(); 
   initAuth();     
+
+  // --- SAFETY NET ---
+  // Ensure data persists even if browser freezes mid-save
+  window.addEventListener("pagehide", forceSaveSync);
+  window.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") forceSaveSync();
+  });
 
 </script>
 </body>

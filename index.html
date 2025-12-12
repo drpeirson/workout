@@ -10,9 +10,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>BOLT</title>
   <style>
+    /* CSS Styles */
     :root{ --bg:#484838; --panel:#343427; --panel2:#2c2c21; --text:#f7f1df; --muted:#d2c79c; --line:#5f5a42; --accent:#f4c300; --good:#35d07f; --warn:#ffc857; --bad:#ff5c7a; --shadow: 0 10px 30px rgba(0,0,0,.35); --r: 14px; --mono: ui-monospace, SFMono-Regular, Menlo, monospace; --sans: system-ui, -apple-system, sans-serif; }
     *{box-sizing:border-box}
-    body{ margin:0; font-family:var(--sans); background:radial-gradient(1200px 600px at 15% 0%, rgba(244,195,0,.14) 0%, transparent 60%), radial-gradient(900px 500px at 100% 25%, rgba(244,195,0,.10) 0%, transparent 55%), var(--bg); color:var(--text); padding-bottom: 50px; }
+    body{ margin:0; font-family:var(--sans); background:radial-gradient(1200px 600px at 15% 0%, rgba(244,195,0,.14) 0%, transparent 60%), radial-gradient(900px 500px at 100% 25%, rgba(244,195,0,.10) 0%, transparent 55%), var(--bg); color:var(--text); padding-bottom:50px; }
     .app{display:grid; grid-template-columns: 390px 1fr; gap:14px; height:100dvh; min-height:100vh; padding:14px;}
     .card{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column; min-height:0;}
     header{padding:14px 16px; display:flex; gap:10px; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.01));}
@@ -49,7 +50,7 @@
     .grid .h{color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.12em}
     .grid > *{min-width:0;}
     .grid input[type="text"], .grid input[type="number"]{width:100%; min-width:0; max-width:100%; font-family:var(--mono); font-size:16px; padding:9px 10px;}
-    .grid input[type="checkbox"]{ transform: scale(1.15); }
+    .grid input[type="checkbox"]{ transform: scale(1.15); justify-self:center; }
     .set-row{padding:8px; border:1px solid rgba(255,255,255,.05); border-radius:14px; background:rgba(255,255,255,.02); margin-top:8px;}
     .done{border-color:rgba(53,208,127,.35); background:rgba(53,208,127,.06);}
     .footer-actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;}
@@ -71,7 +72,7 @@
     #saveStatus.saved { opacity:0; transition:opacity 1s; background:rgba(53,208,127,0.8); color:black; }
     
     #errorBox { display:none; position:fixed; top:0; left:0; right:0; background:rgba(255,0,0,0.95); color:white; padding:20px; z-index:99999; font-family:monospace; white-space:pre-wrap; pointer-events:all; }
-    #debugLog { position:fixed; bottom:0; left:0; right:0; height:40px; background:rgba(0,0,0,0.8); color:#0f0; font-family:monospace; font-size:10px; overflow:hidden; z-index:9998; padding:4px; pointer-events:none; display:block; }
+    #debugLog { position:fixed; bottom:0; left:0; right:0; height:30px; background:rgba(0,0,0,0.8); color:#0f0; font-family:monospace; font-size:10px; overflow:hidden; z-index:9998; padding:4px; pointer-events:none; display:none; }
     
     @media (max-width: 980px){
       .app{grid-template-columns:1fr; height:auto;}
@@ -91,7 +92,7 @@
 <body>
   <div id="errorBox"></div>
   <div id="saveStatus">Saved</div>
-  <div id="debugLog">Initializing...</div>
+  <div id="debugLog"></div>
 
   <div class="app">
     <div class="card">
@@ -197,24 +198,11 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-  // --- UTILS ---
-  function log(msg) {
-     const d = document.getElementById("debugLog");
-     if(d) d.innerText = msg;
-     console.log(msg);
-  }
-  
-  // --- GLOBAL ERROR TRAP ---
-  window.onerror = function(msg, url, line, col, error) {
-    const box = document.getElementById('errorBox');
-    if(box) {
-       box.style.display = 'block';
-       box.textContent += `Error: ${msg} (Line ${line})\n`;
-    }
-    log(`CRASH: ${msg}`);
-  };
+  // 1. UTILS
+  function log(msg){ const d=document.getElementById("debugLog"); if(d){ d.innerText=msg; d.style.display="block"; } console.log(msg); }
+  window.onerror = function(msg, url, line){ const box=document.getElementById('errorBox'); if(box){ box.style.display='block'; box.textContent+=`Err: ${msg} (L${line})\n`; } log(`CRASH: ${msg}`); };
 
-  // --- CONFIG ---
+  // 2. CONFIG
   const PROGRAM_SOURCES = [
     { name: "Hypertrophy", url: "data/hypertrophy.json" },
     { name: "Starting Strongman", url: "data/starting_strongman.json" },
@@ -225,7 +213,7 @@
   const LS_KEY = "mst_tracker_logs_v2";
   const PREFS_KEY = "mst_tracker_prefs_v1";
 
-  // --- STATE ---
+  // 3. STATE
   const state = {
     programs: [], programById: new Map(), sessionsById: new Map(),
     activeProgramId: null, activeSessionId: null,
@@ -233,106 +221,132 @@
     timer: { total: 120, left: 120, running: false, t: null },
     funFacts: []
   };
-  
   let supabase = null;
   if(typeof window.supabase !== 'undefined') {
      try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch(e){ console.error("Supabase Init Fail", e); }
   }
 
-  // --- GLOBAL ACTIONS ---
-  window.emergencyReset = () => {
-    if(confirm("Reset app? This clears cached code. Your logs are safe.")) {
-      if('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(r=>r.forEach(i=>i.unregister()));
-      window.location.reload(true);
-    }
-  };
-  window.handleSignIn = async () => {
-    if(!supabase) return alert("Auth not loaded");
-    const {error} = await supabase.auth.signInWithOAuth({provider:"google", options:{redirectTo:location.href}});
-    if(error) alert(error.message);
-  };
-  window.handleSignOut = async () => {
-    if(!supabase) return;
-    await supabase.auth.signOut();
-    location.reload();
-  };
-  
-  // --- CORE LOGIC ---
-  window.handleProgramChange = (el) => {
-    state.activeProgramId = el.value;
-    const p = state.programById.get(state.activeProgramId);
-    state.activeSessionId = p?.sessions[0]?.id || null;
-    savePrefs(); renderAll();
-  };
-  window.handleSessionChange = (el) => {
-    state.activeSessionId = el.value;
-    savePrefs(); renderAll();
-  };
-  window.pickSession = (sid) => {
-    state.activeSessionId = sid;
-    savePrefs(); renderAll();
-    window.closeSessionsDrawer();
-    document.getElementById("content")?.scrollIntoView({behavior:"smooth", block:"start"});
-  };
-  
-  window.renderSessionsList = () => {
-    const elList = document.getElementById("sessions");
-    const p = state.programById.get(state.activeProgramId);
-    const q = document.getElementById("search").value.toLowerCase();
-    const sessions = (p?.sessions||[]).filter(s => !q || s.title.toLowerCase().includes(q));
-    document.getElementById("sessionCount").textContent = `${sessions.length} sessions`;
-    elList.innerHTML = sessions.map(s => {
-      const active = s.id === state.activeSessionId ? "active" : "";
-      const total = s.workouts.length;
-      const done = countLoggedInSession(s);
-      return `<div class="session-item ${active}" onclick="window.pickSession('${s.id}')"><div class="name">${escapeHtml(s.title)}</div><div class="meta"><span class="badge">${total} workouts</span><span class="badge">${done}/${total} logged</span></div></div>`;
-    }).join("");
-  };
+  // 4. HELPERS
+  function uid(str){ let h=2166136261; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); } return "id_"+(h>>>0).toString(16); }
+  function escapeHtml(s){ return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;"); }
+  function cleanWorkoutTitle(t,p){ return String(t).replace(new RegExp(`\\s*-\\s*${p}.*`,"i"),"").trim(); }
+  function resolveReps(s,i){ const p=String(s).split(","); return (p[i]||p[p.length-1]||"").trim(); }
+  function fmtTime(s){ return new Date(s*1000).toISOString().substr(14,5); }
+  function numFloat(n){ const v=parseFloat(n); return isNaN(v)?null:v; }
+  function numInt(n){ const v=parseInt(n); return isNaN(v)?null:v; }
+  function fmtInt(n){ return n.toLocaleString(); }
+  function hashInt(s){ let h=0; for(let i=0;i<s.length;i++) h=Math.imul(31,h)+s.charCodeAt(i)|0; return Math.abs(h); }
 
-  // --- RENDER ---
+  // 5. CORE LOGIC (MISSING IN v34/v35)
+  function sessionKey(session){ return `${session.programName}|||${session.title}`; }
+  
+  // This was the missing function causing the crash
+  function getAllWorkoutsForSession(session){
+    const base = Array.isArray(session?.workouts) ? session.workouts : [];
+    const key = sessionKey(session);
+    // Safety check for logs
+    if(!state.logs) state.logs = {};
+    if(!state.logs.__custom_sessions) state.logs.__custom_sessions = {};
+    
+    const custom = state.logs.__custom_sessions[key] || [];
+    const mappedCustom = custom.map((c, i) => ({
+        id: uid(`${session.programName}::${session.title}::custom::${i}::${c.title}`),
+        title: c.title,
+        index: base.length + i,
+        setsStr: String(c.sets),
+        repsStr: String(c.reps),
+        setCount: Number(c.sets)||3,
+        targetReps: String(c.reps||"").trim(),
+        notes: [],
+        _isCustom: true, 
+        _customIndex: i
+    }));
+    return [...base, ...mappedCustom];
+  }
+
+  function ensureWorkoutLog(session, w, idx){
+     const k = `${session.programName}|||${session.title}|||${idx}|||${w.title}`;
+     if(!state.logs[k]) state.logs[k] = { sets: Array.from({length: w.setCount}, (_,i)=>({set:i+1, targetReps:resolveReps(w.targetReps,i), weight:"", reps:"", done:false})) };
+     // Repair
+     if(!Array.isArray(state.logs[k].sets)) state.logs[k].sets = [];
+     while(state.logs[k].sets.length < w.setCount){
+        const i = state.logs[k].sets.length;
+        state.logs[k].sets.push({set:i+1, targetReps:resolveReps(w.targetReps,i), weight:"", reps:"", done:false});
+     }
+     return state.logs[k];
+  }
+  
+  function countLoggedInSession(s){ return getAllWorkoutsForSession(s).filter((w,i)=>ensureWorkoutLog(s,w,i).sets.some(x=>x.done)).length; }
+  
+  function computeVolume(s){
+     let t=0; const p=`${s.programName}|||${s.title}|||`;
+     for(const k in state.logs){
+        if(k.startsWith(p) && state.logs[k].sets) state.logs[k].sets.forEach(r=>{ const w=parseFloat(r.weight), rp=parseInt(r.reps); if(!isNaN(w)&&!isNaN(rp)) t+=w*rp; });
+     }
+     return t;
+  }
+
+  // 6. STORAGE & SYNC
+  function savePrefs(){ try{localStorage.setItem(PREFS_KEY,JSON.stringify({programId:state.activeProgramId, sessionId:state.activeSessionId}));}catch{} }
+  
+  function showSaveIndicator(){
+    const el=document.getElementById("saveStatus");
+    if(el){ el.style.opacity="1"; setTimeout(()=>el.style.opacity="0",1000); }
+  }
+
+  function saveLogsInstant(){
+    try {
+      if(state.logs) state.logs._updatedAt = Date.now();
+      localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
+      if(typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, state.logs).catch(()=>{});
+      showSaveIndicator();
+      if(supabase && state._user) {
+         supabase.from("user_logs").upsert({ user_id: state._user.id, logs: state.logs, updated_at: new Date().toISOString() }, {onConflict:"user_id"});
+      }
+    } catch(e) { console.error("Save Fail", e); }
+  }
+
+  // 7. RENDER
   function renderAll(){
-    log("Rendering UI...");
+    if(!state.activeProgramId) return;
     try {
         renderProgramSelect();
         renderSessionSelect();
         window.renderSessionsList();
         renderActiveSession();
-    } catch(e) {
-        log("Render Fail: " + e.message);
-        console.error(e);
-    }
+    } catch(e) { console.error("Render Fail", e); }
   }
-
+  
   function renderProgramSelect(){
-    const el = document.getElementById("programSelect");
-    el.innerHTML = state.programs.map(p=>`<option value="${p.id}" ${p.id===state.activeProgramId?"selected":""}>${escapeHtml(p.name)}</option>`).join("");
+    document.getElementById("programSelect").innerHTML = state.programs.map(p=>`<option value="${p.id}" ${p.id===state.activeProgramId?"selected":""}>${escapeHtml(p.name)}</option>`).join("");
   }
   
   function renderSessionSelect(){
     const p = state.programById.get(state.activeProgramId);
+    const sessions = p?.sessions || [];
     const el = document.getElementById("sessionSelect");
-    // ALWAYS rebuild to prevent uncoupling
-    el.innerHTML = (p?.sessions||[]).map(s=>`<option value="${s.id}" ${s.id===state.activeSessionId?"selected":""}>${escapeHtml(s.title)}</option>`).join("");
+    const newHtml = sessions.map(s=>`<option value="${s.id}" ${s.id===state.activeSessionId?"selected":""}>${escapeHtml(s.title)}</option>`).join("");
+    if(el.innerHTML !== newHtml) el.innerHTML = newHtml;
     el.value = state.activeSessionId;
   }
 
   function renderActiveSession(){
     const el = document.getElementById("content");
     const session = state.sessionsById.get(state.activeSessionId);
-    if(!session) { el.innerHTML="<div class='muted'>No session</div>"; return; }
+    if(!session) { el.innerHTML = "<div class='muted'>Select a session</div>"; return; }
     
     document.getElementById("activeTitle").textContent = `${session.programName} • ${session.title}`;
     
     // Fun Fact
-    try {
-        const factEl = document.getElementById("activeFunFact");
-        const kg = computeVolume(session);
-        if(kg > 0 && state.funFacts.length > 0) {
-            const pick = state.funFacts[hashInt(session.id) % state.funFacts.length];
-            const count = Math.round(kg / pick.unitKg);
-            factEl.textContent = `Lifted ${fmtInt(kg)}kg — equiv to ${fmtInt(count)} ${pick.label}`;
-        } else { factEl.textContent = ""; }
-    } catch(e){}
+    const factEl = document.getElementById("activeFunFact");
+    if(factEl) {
+       const kg = computeVolume(session);
+       if(kg > 0 && state.funFacts.length > 0) {
+          const pick = state.funFacts[hashInt(session.id) % state.funFacts.length];
+          const count = Math.round(kg / pick.unitKg);
+          factEl.textContent = `Lifted ${fmtInt(kg)}kg — equiv to ${fmtInt(count)} ${pick.label}`;
+       } else { factEl.textContent = ""; }
+    }
 
     const workouts = getAllWorkoutsForSession(session);
     el.innerHTML = workouts.map((w, idx) => {
@@ -360,11 +374,17 @@
          </div>
        </div>`;
     }).join("");
-    
-    // Add custom box
     el.innerHTML += `<div class="workout"><div class="workout-head" onclick="window.toggleWorkout(this)"><div><div class="workout-title">Add exercise</div></div><button class="btn small">Toggle</button></div><div class="workout-body"><div class="grid" style="grid-template-columns: 1fr 90px 120px;"><div class="h">Exercise</div><div class="h">Sets</div><div class="h">Target reps</div><input id="customTitle" type="text" placeholder="e.g. Arnold press" /><input id="customSets" type="number" min="1" step="1" value="3" /><input id="customReps" type="text" placeholder="e.g. 8-12" /></div><div class="footer-actions"><button class="btn small primary" onclick="window.handleCustomAdd()">Add</button></div></div></div>`;
+    
+    // UPDATE HEADER STATS
+    const all = getAllWorkoutsForSession(session);
+    const total = all.length;
+    let done = 0;
+    all.forEach((w, idx) => { if (countWorkoutLogged(session, w, idx)) done++; });
+    document.getElementById("activeMeta").textContent = `Workouts: ${total} • Logged: ${done}/${total}`;
+    document.getElementById("activePill").textContent = `${done}/${total}`;
   }
-
+  
   function renderSetRow(wIdx, row){
     return `<div class="set-row ${row.done?"done":""}">
       <div class="grid">
@@ -377,62 +397,23 @@
     </div>`;
   }
 
-  // --- HELPERS ---
-  function uid(str){ let h = 2166136261; for (let i=0; i<str.length; i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return "id_" + (h >>> 0).toString(16); }
-  function escapeHtml(s){ return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;"); }
-  function cleanWorkoutTitle(t,p){ return t.replace(new RegExp(`\\s*-\\s*${p}.*`,"i"),"").trim(); }
-  function resolveReps(s,i){ const p=String(s).split(","); return (p[i]||p[p.length-1]||"").trim(); }
-  function fmtTime(s){ return new Date(s*1000).toISOString().substr(14,5); }
-  function hashInt(s){ let h=0; for(let i=0;i<s.length;i++) h = Math.imul(31,h)+s.charCodeAt(i)|0; return Math.abs(h); }
-  function numFloat(n){ const v=parseFloat(n); return isNaN(v)?null:v; }
-  function numInt(n){ const v=parseInt(n); return isNaN(v)?null:v; }
-  function fmtInt(n){ return n.toLocaleString(); }
-  
-  function sessionKey(session){ return `${session.programName}|||${session.title}`; }
-  function ensureWorkoutLog(session, w, idx){
-     const k = `${session.programName}|||${session.title}|||${idx}|||${w.title}`;
-     if(!state.logs[k]) state.logs[k] = { sets: Array.from({length: w.setCount}, (_,i)=>({set:i+1, targetReps:resolveReps(w.targetReps,i), weight:"", reps:"", done:false})) };
-     return state.logs[k];
-  }
-  function getAllWorkoutsForSession(s){
-    // Merge plan workouts + custom workouts
-    const base = s.workouts || [];
-    const customKey = sessionKey(s);
-    const custom = (state.logs.__custom_sessions && state.logs.__custom_sessions[customKey]) || [];
-    const mappedCustom = custom.map((c, i) => ({
-        title: c.title, setCount: c.sets, setsStr: String(c.sets), repsStr: String(c.reps), targetReps: c.reps, notes: [],
-        _isCustom: true, _customIndex: i
-    }));
-    return [...base, ...mappedCustom];
-  }
-  function countLoggedInSession(s){ return getAllWorkoutsForSession(s).filter((w,i)=>ensureWorkoutLog(s,w,i).sets.some(x=>x.done)).length; }
-  function computeVolume(s){
-     let t=0; const p=`${s.programName}|||${s.title}|||`;
-     for(const k in state.logs){
-        if(k.startsWith(p) && state.logs[k].sets) state.logs[k].sets.forEach(r=>{ const w=parseFloat(r.weight), rp=parseInt(r.reps); if(!isNaN(w)&&!isNaN(rp)) t+=w*rp; });
-     }
-     return t;
-  }
-  
-  // --- STORAGE ---
-  function savePrefs(){ try{localStorage.setItem(PREFS_KEY,JSON.stringify({programId:state.activeProgramId, sessionId:state.activeSessionId}));}catch{} }
-  function saveLogsInstant(){
-    try {
-      if(state.logs) state.logs._updatedAt = Date.now();
-      localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
-      if(typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, state.logs).catch(()=>{});
-      
-      const el=document.getElementById("saveStatus");
-      if(el){ el.style.opacity="1"; setTimeout(()=>el.style.opacity="0",1000); }
-      
-      // Cloud
-      if(supabase && state._user) {
-         supabase.from("user_logs").upsert({ user_id: state._user.id, logs: state.logs, updated_at: new Date().toISOString() }, {onConflict:"user_id"}).then(({error})=>{ if(error) console.error(error); });
-      }
-    } catch(e) { console.error("Save Fail", e); }
-  }
-
-  // --- EVENT HANDLERS (HARD WIRED) ---
+  // 8. GLOBAL ACTIONS (WINDOW)
+  window.handleProgramChange = (el) => { state.activeProgramId = el.value; const p = state.programById.get(state.activeProgramId); state.activeSessionId = p?.sessions[0]?.id; savePrefs(); renderAll(); };
+  window.handleSessionChange = (el) => { state.activeSessionId = el.value; savePrefs(); renderAll(); };
+  window.pickSession = (sid) => { state.activeSessionId = sid; savePrefs(); renderAll(); window.closeSessionsDrawer(); document.getElementById("content")?.scrollIntoView({behavior:"smooth", block:"start"}); };
+  window.renderSessionsList = () => {
+    const elList = document.getElementById("sessions");
+    const p = state.programById.get(state.activeProgramId);
+    const q = document.getElementById("search").value.toLowerCase();
+    const sessions = (p?.sessions||[]).filter(s => !q || s.title.toLowerCase().includes(q));
+    document.getElementById("sessionCount").textContent = `${sessions.length} sessions`;
+    elList.innerHTML = sessions.map(s => {
+      const active = s.id === state.activeSessionId ? "active" : "";
+      const total = getAllWorkoutsForSession(s).length;
+      const done = countLoggedInSession(s);
+      return `<div class="session-item ${active}" onclick="window.pickSession('${s.id}')"><div class="name">${escapeHtml(s.title)}</div><div class="meta"><span class="badge">${total} workouts</span><span class="badge">${done}/${total} logged</span></div></div>`;
+    }).join("");
+  };
   window.updateRow = (el, wIdx, setNum, field) => {
     const session = state.sessionsById.get(state.activeSessionId);
     const w = getAllWorkoutsForSession(session)[wIdx];
@@ -442,7 +423,7 @@
       if(field === 'done') { row.done = el.checked; el.closest('.set-row').classList.toggle('done', row.done); }
       else { row[field] = el.value; }
       saveLogsInstant();
-      if(field==='done') renderActiveSession(); // Re-render for badge
+      if(field==='done') renderActiveSession();
     }
   };
   window.updateNote = (el, wIdx) => {
@@ -466,15 +447,12 @@
     const s = parseInt(document.getElementById("customSets").value)||3;
     const r = document.getElementById("customReps").value;
     if(!t) return alert("Name required");
-    
     const session = state.sessionsById.get(state.activeSessionId);
     const key = sessionKey(session);
     if(!state.logs.__custom_sessions) state.logs.__custom_sessions={};
     if(!state.logs.__custom_sessions[key]) state.logs.__custom_sessions[key]=[];
-    
     state.logs.__custom_sessions[key].push({ title: t, sets: s, reps: r });
-    saveLogsInstant();
-    renderActiveSession();
+    saveLogsInstant(); renderActiveSession();
   };
   window.removeCustomWorkout = (idx) => {
     if(!confirm("Remove?")) return;
@@ -482,12 +460,21 @@
     const key = sessionKey(session);
     if(state.logs.__custom_sessions && state.logs.__custom_sessions[key]) {
        state.logs.__custom_sessions[key].splice(idx, 1);
-       saveLogsInstant();
-       renderActiveSession();
+       saveLogsInstant(); renderActiveSession();
     }
   };
-  
-  // --- TIMER ---
+  window.startRest = (sec) => { setTimer(sec); startTimer(); };
+  window.handleSignIn = async () => {
+    if(!supabase) return alert("Auth not loaded");
+    const {error} = await supabase.auth.signInWithOAuth({provider:"google", options:{redirectTo:location.href}});
+    if(error) alert(error.message);
+  };
+  window.handleSignOut = async () => {
+    if(!supabase) return;
+    await supabase.auth.signOut();
+    location.reload();
+  };
+  // TIMER
   window.startTimer = () => {
     if(state.timer.left <= 0) state.timer.left = state.timer.total;
     state.timer.endAt = Date.now() + state.timer.left*1000;
@@ -507,89 +494,78 @@
     renderTimer();
     if(left<=0){ state.timer.running=false; beep(); }
   }
-
-  // --- STATS & EXPORT ---
-  window.clearLogs = () => { if(confirm("Clear logs?")) { state.logs={}; saveLogsInstant(); renderAll(); } };
-  window.exportLogs = () => {
-    const b = new Blob([JSON.stringify(state.logs,null,2)], {type:"application/json"});
-    const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "bolt_logs.json"; a.click();
-  };
-  window.openSessionsDrawer = () => {
-    document.getElementById("sessionsDrawer").innerHTML = document.getElementById("sessions").innerHTML;
-    document.getElementById("drawer").classList.add("open");
-  };
+  
+  // UI BUTTONS
+  window.emergencyReset = () => { if(confirm("Reset?")) { localStorage.clear(); location.reload(true); } };
+  window.loadAllPrograms = () => location.reload(); 
+  window.clearLogs = () => { if(confirm("Clear logs?")){ state.logs={}; saveLogsInstant(); renderAll(); }};
+  window.openSessionsDrawer = () => { document.getElementById("sessionsDrawer").innerHTML = document.getElementById("sessions").innerHTML; document.getElementById("drawer").classList.add("open"); };
   window.closeSessionsDrawer = () => { document.getElementById("drawer").classList.remove("open"); };
   window.openPlanStats = () => { document.getElementById("planStatsModal").classList.add("open"); };
   window.closePlanStats = () => { document.getElementById("planStatsModal").classList.remove("open"); };
-
-  // --- BOOTSTRAP ---
+  window.exportLogs = () => { const b = new Blob([JSON.stringify(state.logs)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="bolt_logs.json"; a.click(); };
+  
+  // 9. INIT
   document.addEventListener("DOMContentLoaded", async () => {
-    log("Booting...");
-    
-    // 1. Load Programs
+    // Load Programs
     try {
       state.programs=[];
-      for(const src of PROGRAM_SOURCES) {
-         try {
-           const res = await fetch(src.url);
-           if(res.ok) {
-             const data = await res.json();
-             const prog = { id: uid(data.program), name: data.program, sessions: data.sessions.map((s,i)=>({...s, id:uid(data.program+s.session+i), programName: data.program})) };
-             state.programs.push(prog);
-           }
-         } catch(e){ console.warn("Skipping " + src.name); }
-      }
-      // Populate Maps
-      state.programById.clear(); state.sessionsById.clear();
-      for(const p of state.programs){
-        state.programById.set(p.id, p);
-        for(const s of p.sessions) state.sessionsById.set(s.id, s);
-      }
-      log(`Loaded ${state.programs.length} programs`);
-      
-      // 2. Load Prefs
-      try{ 
-        const prefs = JSON.parse(localStorage.getItem(PREFS_KEY)||"{}"); 
-        if(prefs.programId && state.programById.has(prefs.programId)) state.activeProgramId = prefs.programId;
-        else state.activeProgramId = state.programs[0]?.id;
-        
-        const actProg = state.programById.get(state.activeProgramId);
-        if(actProg){
-            const sExists = actProg.sessions.some(s=>s.id===prefs.sessionId);
-            state.activeSessionId = sExists ? prefs.sessionId : actProg.sessions[0]?.id;
+      for(const src of PROGRAM_SOURCES){
+        const res = await fetch(src.url);
+        if(res.ok) {
+           const raw = await res.json();
+           const prog = { id: uid(raw.program), name: raw.program, sessions: raw.sessions.map((s,i)=>({...s, id:uid(raw.program+s.session+i), programName: raw.program})) };
+           state.programs.push(prog);
         }
-      }catch{}
+      }
+      state.programs.forEach(p=> { state.programById.set(p.id, p); p.sessions.forEach(s=>state.sessionsById.set(s.id, s)); });
+    } catch(e) { console.error("Prog Init", e); }
 
-    } catch(e) { log("Prog Err: " + e.message); }
-
-    // 3. Load Logs
+    // Load Logs
     try {
        const local = JSON.parse(localStorage.getItem(LS_KEY));
        if(local) state.logs = local;
     } catch {}
     
-    // 4. Load Fun Facts
-    try { state.funFacts = await (await fetch("fun_facts.json")).json(); } catch {}
-    
-    // 5. Render
-    renderAll();
+    // Load Prefs
+    try {
+      const prefs = JSON.parse(localStorage.getItem(PREFS_KEY)||"{}");
+      if(prefs.programId && state.programById.has(prefs.programId)) state.activeProgramId = prefs.programId;
+      else state.activeProgramId = state.programs[0]?.id;
+      
+      const actProg = state.programById.get(state.activeProgramId);
+      if(actProg){
+          const sExists = actProg.sessions.some(s=>s.id===prefs.sessionId);
+          state.activeSessionId = sExists ? prefs.sessionId : actProg.sessions[0]?.id;
+      }
+    } catch {}
 
-    // 6. Auth
-    if(supabase) {
+    // Load Fun Facts
+    try { state.funFacts = await (await fetch("fun_facts.json")).json(); } catch {}
+
+    renderAll();
+    
+    // Auth & Cloud Load
+    if(supabase){
        const {data} = await supabase.auth.getSession();
-       if(data.session) {
+       if(data?.session) {
           state._user = data.session.user;
           document.getElementById("authStatus").textContent = "Signed in";
           document.getElementById("signInGoogle").style.display="none";
           document.getElementById("signOut").style.display="inline-flex";
-          // Cloud Load
+          // Load cloud
           const {data:cloud} = await supabase.from("user_logs").select("logs").eq("user_id", state._user.id).maybeSingle();
           if(cloud?.logs && (cloud.logs._updatedAt||0) > (state.logs._updatedAt||0)) {
              state.logs = cloud.logs;
+             saveLogsInstant(); // Sync down
              renderAll();
           }
        }
     }
+    
+    // Safety Net
+    window.addEventListener("pagehide", saveLogsInstant);
+    window.addEventListener("visibilitychange", () => { if(document.visibilityState === "hidden") saveLogsInstant(); });
   });
 
 </script>

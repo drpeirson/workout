@@ -1,5 +1,5 @@
 /* MST Workout Tracker - Service Worker */
-const CACHE_NAME = "bolt-cache-v35"; // Bumped for "Fail-Safe" update
+const CACHE_NAME = "bolt-cache-v36"; // Bumped for Clean Slate
 
 const CORE_ASSETS = [
   "./",
@@ -7,15 +7,16 @@ const CORE_ASSETS = [
   "manifest.json",
   "icon-192.png",
   "icon-512.png",
-  // "fun_facts.json", // Optional
   "https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/index-min.js",
-  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
+  "https://cdn.jsdelivr.net/npm/chart.js"
 ];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
+        // Optional file, don't crash if missing
         cache.add("fun_facts.json").catch(() => {});
         return cache.addAll(CORE_ASSETS);
       })
@@ -35,7 +36,7 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
 
-  // HTML: Network first, then cache (to ensure you get the new index.html)
+  // HTML: Network first (get fresh code), fallback to cache
   if (req.mode === "navigate") {
     event.respondWith(
       fetch(req).catch(() => caches.match("./"))
@@ -43,13 +44,14 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Assets: Cache first
+  // Assets: Cache first, update in background
   event.respondWith(
     caches.match(req).then((cached) => {
-      return cached || fetch(req).then(res => {
-        caches.open(CACHE_NAME).then(c => c.put(req, res.clone()));
+      const fetchPromise = fetch(req).then((res) => {
+        caches.open(CACHE_NAME).then((c) => c.put(req, res.clone())).catch(()=>{});
         return res;
-      });
+      }).catch(() => cached);
+      return cached || fetchPromise;
     })
   );
 });

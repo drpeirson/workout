@@ -12,8 +12,7 @@ import {
   ensureWorkoutLog,
   addCustomWorkout,
   getAllWorkoutsForSession,
-  sessionKey,
-  resolveReps
+  sessionKey
 } from './store.js';
 
 import { 
@@ -30,7 +29,8 @@ import {
   setTimer, 
   tickTimer,
   cleanWorkoutTitle,
-  escapeHtml
+  escapeHtml,
+  resolveReps
 } from './utils.js';
 
 // --- VISIBILITY FIX (SAVE ON LOCK) ---

@@ -876,6 +876,7 @@
     } else {
       state.logs._updatedAt = Date.now();
       row[field] = el.value;
+      // KEY FIX: No more debounce for data. Instant save.
       saveLogsInstant();
     }
   };
@@ -1032,27 +1033,35 @@
   }
 
   // --- INIT & ROBUST SYNC LOAD ---
+  // DATA RECOVERY MODE
   async function loadLogsAsync() {
     try {
-      // 1. Try LocalStorage (Sync Backup)
+      // 1. Get Sync Backup
       let localLogs = null;
       try { localLogs = JSON.parse(localStorage.getItem(LS_KEY)); } catch {}
 
-      // 2. Try IndexedDB (Async Primary)
+      // 2. Get Async Database
       let dbLogs = null;
       if (typeof idbKeyval !== 'undefined') {
         try { dbLogs = await idbKeyval.get(LS_KEY); } catch(e){ console.warn("IDB Fail", e); }
       }
 
-      // 3. Compare Timestamps
+      // 3. MERGE LOGIC (Crucial Fix)
+      // Instead of "Winner Takes All", we default to IDB if Local is empty/broken.
+      // But if Local has data and IDB is missing/stale, we trust Local.
+      
+      const localKeys = localLogs ? Object.keys(localLogs).length : 0;
+      const dbKeys = dbLogs ? Object.keys(dbLogs).length : 0;
       const localTs = localLogs?._updatedAt || 0;
       const dbTs = dbLogs?._updatedAt || 0;
 
-      if (localLogs && localTs > dbTs) {
-        console.log("Recovered from LocalStorage backup");
+      if (localKeys > 0 && (localTs > dbTs || dbKeys === 0)) {
+        console.log("Restoring from LocalStorage (Newer/More Data)");
         state.logs = localLogs;
+        // Repair DB immediately
         if(typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, state.logs);
-      } else if (dbLogs) {
+      } else if (dbKeys > 0) {
+        console.log("Restoring from IndexedDB (Stable Source)");
         state.logs = dbLogs;
       } else {
         state.logs = localLogs || {};
@@ -1060,7 +1069,8 @@
 
       renderAll();
     } catch(e) {
-      console.error("Load Error", e);
+      console.error("Critical Load Error", e);
+      // Last resort fallback
       try { state.logs = JSON.parse(localStorage.getItem(LS_KEY)||"{}"); } catch{}
       renderAll();
     }
@@ -1079,7 +1089,7 @@
   window.addEventListener("pagehide", saveLogsInstant);
   window.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") saveLogsInstant();
-    if (document.visibilityState === "visible") safeReload(); // Reload on wake
+    if (document.visibilityState === "visible") loadLogsAsync(); // Reload on wake
   });
 
 </script>

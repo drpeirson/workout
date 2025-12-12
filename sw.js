@@ -1,5 +1,5 @@
 /* MST Workout Tracker - Service Worker */
-const CACHE_NAME = "bolt-cache-v30"; // Bumped for Render Safety
+const CACHE_NAME = "bolt-cache-v31"; // Bumped for Data Recovery
 
 const CORE_ASSETS = [
   "./",
@@ -7,7 +7,7 @@ const CORE_ASSETS = [
   "manifest.json",
   "icon-192.png",
   "icon-512.png",
-  "fun_facts.json",
+  // "fun_facts.json", // REMOVED to prevent crash if file missing
   "https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/index-min.js",
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
 ];
@@ -15,7 +15,11 @@ const CORE_ASSETS = [
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(CORE_ASSETS))
+      .then((cache) => {
+        // Soft fail: Try to cache fun_facts, but don't break if missing
+        cache.add("fun_facts.json").catch(() => console.log("Optional fun_facts.json missing"));
+        return cache.addAll(CORE_ASSETS);
+      })
       .then(() => self.skipWaiting())
   );
 });

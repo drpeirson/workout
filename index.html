@@ -419,20 +419,33 @@
   const saveLogsDebounced = debounce(async () => {
     try {
       touchLogs();
+      // Try IDB first (async)
       if (typeof idbKeyval !== 'undefined') await idbKeyval.set(LS_KEY, state.logs);
       else localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
       scheduleCloudSave();
     } catch (e) { console.error("Save failed", e); }
   }, 500);
 
-  async function saveLogs() {
+  // Synchronous Emergency Save
+  function saveLogsSync() {
     try {
       touchLogs();
-      if (typeof idbKeyval !== 'undefined') await idbKeyval.set(LS_KEY, state.logs);
-      else localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
-      scheduleCloudSave();
-    } catch (e) { console.error("Immediate save failed", e); }
+      localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
+    } catch (e) { console.error("Sync Save Failed", e); }
   }
+
+  // --- EVENT LISTENERS FOR SYNC ---
+  // The magic fix: Detect visibility change and force a sync save
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") {
+      saveLogsSync(); // Block and save before freeze
+    } else {
+      // Optional: reload on resume?
+      // loadLogsAsync(); 
+    }
+  });
+  window.addEventListener("pagehide", saveLogsSync);
+
 
   // --- CUSTOM EXERCISES ---
   function sessionKey(session){ return `${session.programName}|||${session.title}`; }
@@ -460,7 +473,7 @@
       created_at: new Date().toISOString()
     });
     state.logs.__custom_sessions[key] = arr;
-    saveLogs();
+    saveLogsDebounced(); // Use debounced here as it's UI driven
   }
 
   function getAllWorkoutsForSession(session){
@@ -541,14 +554,19 @@
     const cloudLogs = data?.logs||{};
     if(typeof cloudLogs!=="object" || cloudLogs===null) return;
     
-    // Cloud Merge strategy (Newest wins based on _updatedAt)
+    // Simple merge: Last writer wins logic is usually sufficient for single user
+    // Ideally compare timestamps
     const localTs = state.logs._updatedAt || 0;
     const cloudTs = cloudLogs._updatedAt || 0;
+    
     if(cloudTs > localTs) {
        state.logs = cloudLogs;
-       await saveLogs(); // Update local
+       // Sync to local DB
+       if(typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, state.logs);
     }
+    // else local is newer, keep local (it will sync up eventually)
   }
+
   function setAuthUI(signedIn, email){
     const elStatus = document.getElementById("authStatus");
     const elIn = document.getElementById("signInGoogle");
@@ -791,7 +809,7 @@
     } else if (wlog.sets.length > 1) {
       wlog.sets.pop();
     }
-    saveLogs();
+    saveLogsDebounced();
     renderActiveSession();
   };
 
@@ -815,6 +833,7 @@
     if(field === 'done') {
       row.done = el.checked;
       el.closest('.set-row').classList.toggle('done', row.done);
+      // Checkbox is a 'change' event essentially, so sync save is safer
       saveLogs();
       const isLogged = wlog.sets.some(s=>s.done||s.weight||s.reps);
       const tEl = document.getElementById(`title_${wIdx}`);
@@ -825,8 +844,6 @@
       }
       updateActiveProgress();
     } else {
-      // INSTANT TIMESTAMP UPDATE
-      state.logs._updatedAt = Date.now();
       row[field] = el.value;
       saveLogsDebounced();
     }
@@ -940,7 +957,7 @@
     }
   }
 
-  // --- INIT & ROBUST SYNC LOAD ---
+  // --- INIT ---
   async function loadLogsAsync() {
     try {
       // 1. Try LocalStorage (Sync Backup)
@@ -961,7 +978,7 @@
         console.log("Recovered from LocalStorage backup");
         state.logs = localLogs;
         // Repair DB
-        if(typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, localLogs);
+        if(typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, state.logs);
       } else if (dbLogs) {
         state.logs = dbLogs;
       } else {
@@ -1026,33 +1043,6 @@
   loadLogsAsync();
   loadFunFacts(); 
   initAuth();     
-
-  // --- SAFETY NET (CRITICAL FIX) ---
-  // 1. Force sync save on lock/switch
-  const emergencySave = () => {
-    try { 
-      if(state.logs) state.logs._updatedAt = Date.now();
-      // Manual input capture for active element
-      if(document.activeElement && document.activeElement.tagName === "INPUT") {
-         // We trigger a manual 'input' event logic here if needed, but saving active value is enough
-         // actually we can't easily reach into the specific row logic from here without state.
-         // BUT, the 'input' listener on the element ALREADY updated state.logs.
-         // The issue is the debounce didn't fire.
-         // So simply forcing a sync save of state.logs is enough.
-      }
-      localStorage.setItem(LS_KEY, JSON.stringify(state.logs)); 
-    } catch(e){ console.error(e); }
-  };
-  
-  window.addEventListener("pagehide", emergencySave);
-  window.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") {
-       emergencySave();
-    } else if (document.visibilityState === "visible") {
-       // 2. Auto-Refresh on Unlock
-       loadLogsAsync();
-    }
-  });
 
 </script>
 </body>

@@ -419,7 +419,7 @@
     if (document.visibilityState === "visible") tickTimer();
   });
 
-  // --- STORAGE ---
+  // --- STORAGE & SYNC (Robust Timestamp Logic) ---
   function debounce(func, wait) {
     let timeout;
     return function(...args) {
@@ -428,8 +428,14 @@
     };
   }
 
+  // Helper to mark update time
+  function touchLogs() {
+    if (state.logs) state.logs._updatedAt = Date.now();
+  }
+
   const saveLogsDebounced = debounce(async () => {
     try {
+      touchLogs();
       if (typeof idbKeyval !== 'undefined') await idbKeyval.set(LS_KEY, state.logs);
       else localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
       scheduleCloudSave();
@@ -438,13 +444,14 @@
 
   async function saveLogs() {
     try {
+      touchLogs();
       if (typeof idbKeyval !== 'undefined') await idbKeyval.set(LS_KEY, state.logs);
       else localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
       scheduleCloudSave();
     } catch (e) { console.error("Immediate save failed", e); }
   }
 
-  // --- CUSTOM EXERCISES & DATA ---
+  // --- CUSTOM EXERCISES ---
   function sessionKey(session){ return `${session.programName}|||${session.title}`; }
   
   function ensureCustomStore(){
@@ -532,7 +539,7 @@
     return done;
   }
 
-  // --- AUTH & CLOUD (RESTORED) ---
+  // --- AUTH & CLOUD ---
   function scheduleCloudSave(){
     if(!supabase || !state._user) return;
     if(cloudSaveTimer) clearTimeout(cloudSaveTimer);
@@ -550,8 +557,14 @@
     if(error){ console.warn("cloudLoad error", error); return; }
     const cloudLogs = data?.logs||{};
     if(typeof cloudLogs!=="object" || cloudLogs===null) return;
-    state.logs = {...state.logs, ...cloudLogs};
-    await saveLogs(); 
+    
+    // Cloud Merge strategy (Newest wins based on _updatedAt)
+    const localTs = state.logs._updatedAt || 0;
+    const cloudTs = cloudLogs._updatedAt || 0;
+    if(cloudTs > localTs) {
+       state.logs = cloudLogs;
+       await saveLogs(); // Update local
+    }
   }
   function setAuthUI(signedIn, email){
     const elStatus = document.getElementById("authStatus");
@@ -592,11 +605,11 @@
       await supabase.auth.signOut();
       state._user = null;
       setAuthUI(false);
-      state.logs = {}; // Clear memory
-      if (typeof idbKeyval !== 'undefined') await idbKeyval.del(LS_KEY); // Clear DB
-      localStorage.removeItem(LS_KEY); // Clear legacy
+      state.logs = {};
+      if (typeof idbKeyval !== 'undefined') await idbKeyval.del(LS_KEY);
+      localStorage.removeItem(LS_KEY);
       renderAll();
-      alert("Signed out and local data cleared.");
+      alert("Signed out.");
     });
   }
 
@@ -767,7 +780,7 @@
     renderActiveSession();
   }
 
-  // --- ACTIONS (Global Window Scope) ---
+  // --- ACTIONS ---
   window.pickSession = (sid) => {
     state.activeSessionId = sid;
     savePrefs();
@@ -873,48 +886,6 @@
     return (h>>>0);
   }
 
-  function sessionLogPrefix(session){ return `${session.programName}|||${session.title}|||`; }
-
-  function computeSessionVolumeKg(session){
-    if (!session) return 0;
-    const prefix = sessionLogPrefix(session);
-    let total = 0;
-    for (const k of Object.keys(state.logs || {})){
-      if (k.startsWith("__") || !k.startsWith(prefix)) continue;
-      const wlog = state.logs[k];
-      const sets = Array.isArray(wlog?.sets) ? wlog.sets : [];
-      for (const s of sets){
-        const w = numFloat(s?.weight);
-        const r = numInt(s?.reps);
-        if (w != null && r != null) total += (w * r);
-      }
-    }
-    return total;
-  }
-
-  function updateSessionFunFact(){
-    const session = state.sessionsById.get(state.activeSessionId);
-    const elFact = document.getElementById("activeFunFact");
-    if (!elFact || !session) {
-      if(elFact) elFact.textContent = "";
-      return;
-    }
-    const kg = computeSessionVolumeKg(session);
-    if (!kg || kg <= 0){ elFact.textContent = ""; return; }
-    
-    let picks = [
-      { label: '3.5" floppy disks', unitKg: 0.02 },
-      { label: 'Raspberry Pi boards', unitKg: 0.045 },
-      { label: 'desktop PCs', unitKg: 8.0 }
-    ];
-    if (state.funFacts && state.funFacts.length > 0) picks = state.funFacts;
-
-    const h = hashInt(`${session.programName}::${session.title}`);
-    const pick = picks[h % picks.length];
-    const count = Math.max(1, Math.round(kg / pick.unitKg));
-    elFact.textContent = `You lifted ${fmtInt(kg)}kg today — about the same weight as ${fmtInt(count)} ${pick.label}.`;
-  }
-
   function savePrefs() {
     try {
       const prefs = {
@@ -984,81 +955,64 @@
     }
   }
 
-  // --- INIT ---
+  // --- INIT & ROBUST SYNC LOAD ---
   async function loadLogsAsync() {
     try {
-      if (typeof idbKeyval === 'undefined') {
-        console.warn("IDB missing");
-        state.logs = JSON.parse(localStorage.getItem(LS_KEY)||"{}");
-      } else {
-        const dbLogs = await idbKeyval.get(LS_KEY);
-        if (dbLogs) state.logs = dbLogs;
-        else {
-           const local = localStorage.getItem(LS_KEY);
-           if(local) { state.logs = JSON.parse(local); await idbKeyval.set(LS_KEY, state.logs); }
-        }
+      // 1. Load sync localStorage backup first (Instant)
+      const localStr = localStorage.getItem(LS_KEY);
+      let localLogs = null;
+      if (localStr) {
+        try { localLogs = JSON.parse(localStr); } catch {}
       }
+
+      // 2. Load async IndexedDB (Better data structure, usually larger)
+      let dbLogs = null;
+      if (typeof idbKeyval !== 'undefined') {
+        try { dbLogs = await idbKeyval.get(LS_KEY); } catch(e) { console.warn("IDB read fail", e); }
+      }
+
+      // 3. Compare Timestamps
+      const localTs = localLogs?._updatedAt || 0;
+      const dbTs = dbLogs?._updatedAt || 0;
+
+      if (localLogs && localTs > dbTs) {
+        console.log("Using localStorage backup (newer)");
+        state.logs = localLogs;
+        // Sync back to DB
+        if (typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, localLogs);
+      } else if (dbLogs) {
+        console.log("Using IndexedDB (newer or equal)");
+        state.logs = dbLogs;
+      } else {
+        state.logs = localLogs || {};
+      }
+
       renderAll();
     } catch(e) {
-      console.error(e);
-      document.getElementById("content").innerHTML = "Error loading logs";
+      console.error("Critical Load Error", e);
+      // Fallback
+      state.logs = JSON.parse(localStorage.getItem(LS_KEY)||"{}");
+      renderAll();
     }
   }
-
-  // Listeners
-  document.getElementById("programSelect").addEventListener("change", (e)=>{
-    state.activeProgramId = e.target.value;
-    const p = state.programById.get(state.activeProgramId);
-    state.activeSessionId = p?.sessions[0]?.id || null;
-    savePrefs(); renderAll();
-  });
-  document.getElementById("sessionSelect").addEventListener("change", (e)=>{
-    state.activeSessionId = e.target.value;
-    savePrefs(); renderAll();
-  });
-  document.getElementById("search").addEventListener("input", renderSessionsList);
-  
-  document.getElementById("openSessions").addEventListener("click", () => {
-    const d = document.getElementById("drawer");
-    const dList = document.getElementById("sessionsDrawer");
-    dList.innerHTML = document.getElementById("sessions").innerHTML;
-    dList.onclick = (e) => {
-       const item = e.target.closest('.session-item');
-       if(item) {
-          // Relies on onclick in string
-       }
-    };
-    d.classList.add("open"); d.setAttribute("aria-hidden", "false");
-  });
-
-  document.getElementById("closeSessions").addEventListener("click", () => {
-    const d = document.getElementById("drawer");
-    d.classList.remove("open"); d.setAttribute("aria-hidden", "true");
-  });
-
-  document.getElementById("timerStart")?.addEventListener("click", startTimer);
-  document.getElementById("timerPause")?.addEventListener("click", pauseTimer);
-  document.getElementById("timerReset")?.addEventListener("click", resetTimer);
-  document.getElementById("setCustom")?.addEventListener("click", () => {
-     const val = parseInt(document.getElementById("customSeconds").value, 10);
-     if(val) setTimer(val);
-  });
-  document.getElementById("preset")?.addEventListener("change", (e) => {
-     setTimer(parseInt(e.target.value, 10));
-  });
 
   // Start
   if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
   
   loadAllPrograms();
   loadLogsAsync();
-  loadFunFacts(); // Load facts
-  initAuth();     // Now safely defined
+  loadFunFacts(); 
+  initAuth();     
 
   // --- SAFETY NET ---
-  // Save to localStorage on page hide as a backup
+  // Force sync save on pagehide/visibilitychange
+  // This catches "Switch App" or "Lock Screen" events
   window.addEventListener("pagehide", () => {
-    try { localStorage.setItem(LS_KEY, JSON.stringify(state.logs)); } catch(e){}
+    try { 
+      // Ensure we have a timestamp
+      if(state.logs) state.logs._updatedAt = Date.now();
+      localStorage.setItem(LS_KEY, JSON.stringify(state.logs)); 
+    } catch(e){}
   });
 
 </script>

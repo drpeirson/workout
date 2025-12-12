@@ -1,5 +1,5 @@
 /* MST Workout Tracker - Service Worker */
-const CACHE_NAME = "bolt-cache-v25"; // Bumped for "Hanging DB" Fix
+const CACHE_NAME = "bolt-cache-v26"; // Bumped for Zombie Fix
 
 const CORE_ASSETS = [
   "./",

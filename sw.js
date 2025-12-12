@@ -1,5 +1,5 @@
 /* MST Workout Tracker - Service Worker */
-const CACHE_NAME = "bolt-cache-v23"; // Bumped for Auth Restoration
+const CACHE_NAME = "bolt-cache-v24"; // Bumped for Wake/Sleep Fix
 
 const CORE_ASSETS = [
   "./",

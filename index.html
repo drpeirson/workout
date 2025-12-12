@@ -11,30 +11,16 @@
   <title>BOLT</title>
   <style>
     /* CSS Styles */
-    :root{
-      --bg:#484838; --panel:#343427; --panel2:#2c2c21; --text:#f7f1df; --muted:#d2c79c;
-      --line:#5f5a42; --accent:#f4c300; --good:#35d07f; --warn:#ffc857; --bad:#ff5c7a;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --r: 14px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-    }
+    :root{ --bg:#484838; --panel:#343427; --panel2:#2c2c21; --text:#f7f1df; --muted:#d2c79c; --line:#5f5a42; --accent:#f4c300; --good:#35d07f; --warn:#ffc857; --bad:#ff5c7a; --shadow: 0 10px 30px rgba(0,0,0,.35); --r: 14px; --mono: ui-monospace, SFMono-Regular, Menlo, monospace; --sans: system-ui, -apple-system, sans-serif; }
     *{box-sizing:border-box}
-    body{
-      margin:0; font-family:var(--sans); background:radial-gradient(1200px 600px at 15% 0%, rgba(244,195,0,.14) 0%, transparent 60%),
-      radial-gradient(900px 500px at 100% 25%, rgba(244,195,0,.10) 0%, transparent 55%), var(--bg);
-      color:var(--text);
-    }
+    body{ margin:0; font-family:var(--sans); background:radial-gradient(1200px 600px at 15% 0%, rgba(244,195,0,.14) 0%, transparent 60%), radial-gradient(900px 500px at 100% 25%, rgba(244,195,0,.10) 0%, transparent 55%), var(--bg); color:var(--text); }
     .app{display:grid; grid-template-columns: 390px 1fr; gap:14px; height:100dvh; min-height:100vh; padding:14px;}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)); border:1px solid var(--line);
-      border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column; min-height:0;}
-    header{padding:14px 16px; display:flex; gap:10px; align-items:center; justify-content:space-between;
-      border-bottom:1px solid var(--line); background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.01));}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column; min-height:0;}
+    header{padding:14px 16px; display:flex; gap:10px; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.01));}
     header .title{font-weight:800; letter-spacing:.2px; font-size:15px;}
     header .subtitle{color:var(--muted); font-size:12px; margin-top:2px;}
     .stack{display:flex; flex-direction:column; gap:10px; padding:12px; flex:1; min-height:0;}
-    .row{display:flex; gap:10px; align-items:center;}
-    .row > *{flex:1}
+    .row{display:flex; gap:10px; align-items:center;} .row > *{flex:1}
     .btn{appearance:none; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--text); padding:9px 10px; border-radius:12px; cursor:pointer; font-weight:650;}
     .btn:hover{border-color:#2d4364}
     .btn.primary{border-color:rgba(110,168,255,.35); background:rgba(110,168,255,.12)}
@@ -43,9 +29,7 @@
     .pill{font-family:var(--mono); font-size:11px; color:var(--text); background:rgba(244,195,0,.12); border:1px solid rgba(244,195,0,.28); padding:4px 8px; border-radius:999px; display:inline-flex; align-items:center; gap:6px;}
     input[type="text"], input[type="number"], textarea, select{ width:100%; background:rgba(0,0,0,.25); border:1px solid var(--line); color:var(--text); border-radius:12px; padding:9px 10px; outline:none; }
     textarea{min-height:70px; resize:vertical}
-    .muted{color:var(--muted)}
-    .mono{font-family:var(--mono)}
-    .divider{height:1px; background:var(--line); margin:10px 0}
+    .muted{color:var(--muted)} .mono{font-family:var(--mono)} .divider{height:1px; background:var(--line); margin:10px 0}
     .sessions{ display:flex; flex-direction:column; gap:8px; overflow:auto; padding-right:6px; padding-bottom:8px; flex:1; min-height:0; }
     .session-item{border:1px solid var(--line); border-radius:14px; padding:10px 10px; cursor:pointer; background:rgba(0,0,0,.18);}
     .session-item:hover{border-color:#2d4364}
@@ -428,7 +412,6 @@
     };
   }
 
-  // Helper to mark update time
   function touchLogs() {
     if (state.logs) state.logs._updatedAt = Date.now();
   }
@@ -450,6 +433,22 @@
       scheduleCloudSave();
     } catch (e) { console.error("Immediate save failed", e); }
   }
+
+  // --- EMERGENCY SYNC ---
+  // The magic function that saves synchronously when you lock/switch apps
+  const emergencySave = () => {
+    try {
+      touchLogs();
+      // Synchronous save to localStorage blocks the freeze
+      localStorage.setItem(LS_KEY, JSON.stringify(state.logs)); 
+    } catch(e) { console.error("Emergency save fail", e); }
+  };
+
+  // Bind to multiple events for maximum reliability
+  window.addEventListener("pagehide", emergencySave);
+  window.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") emergencySave();
+  });
 
   // --- CUSTOM EXERCISES ---
   function sessionKey(session){ return `${session.programName}|||${session.title}`; }
@@ -780,7 +779,7 @@
     renderActiveSession();
   }
 
-  // --- ACTIONS ---
+  // --- ACTIONS (Global Window Scope) ---
   window.pickSession = (sid) => {
     state.activeSessionId = sid;
     savePrefs();
@@ -842,6 +841,8 @@
       }
       updateActiveProgress();
     } else {
+      // INSTANT TIMESTAMP UPDATE
+      state.logs._updatedAt = Date.now();
       row[field] = el.value;
       saveLogsDebounced();
     }
@@ -857,6 +858,7 @@
     renderAll();
   };
 
+  // Custom Workout Deletion
   window.removeCustomWorkout = (index) => {
     if(!confirm("Remove this custom exercise?")) return;
     const session = state.sessionsById.get(state.activeSessionId);
@@ -955,33 +957,29 @@
     }
   }
 
-  // --- INIT & ROBUST SYNC LOAD ---
+  // --- INIT ---
   async function loadLogsAsync() {
     try {
-      // 1. Load sync localStorage backup first (Instant)
-      const localStr = localStorage.getItem(LS_KEY);
+      // 1. Try LocalStorage (Sync Backup)
       let localLogs = null;
-      if (localStr) {
-        try { localLogs = JSON.parse(localStr); } catch {}
-      }
+      try { localLogs = JSON.parse(localStorage.getItem(LS_KEY)); } catch {}
 
-      // 2. Load async IndexedDB (Better data structure, usually larger)
+      // 2. Try IndexedDB (Async Primary)
       let dbLogs = null;
       if (typeof idbKeyval !== 'undefined') {
-        try { dbLogs = await idbKeyval.get(LS_KEY); } catch(e) { console.warn("IDB read fail", e); }
+        try { dbLogs = await idbKeyval.get(LS_KEY); } catch(e){ console.warn("IDB Fail", e); }
       }
 
-      // 3. Compare Timestamps
+      // 3. Conflict Resolution (Newest Timestamp Wins)
       const localTs = localLogs?._updatedAt || 0;
       const dbTs = dbLogs?._updatedAt || 0;
 
       if (localLogs && localTs > dbTs) {
-        console.log("Using localStorage backup (newer)");
+        console.log("Recovered from LocalStorage backup");
         state.logs = localLogs;
-        // Sync back to DB
-        if (typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, localLogs);
+        // Repair DB
+        if(typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, state.logs);
       } else if (dbLogs) {
-        console.log("Using IndexedDB (newer or equal)");
         state.logs = dbLogs;
       } else {
         state.logs = localLogs || {};
@@ -989,12 +987,54 @@
 
       renderAll();
     } catch(e) {
-      console.error("Critical Load Error", e);
-      // Fallback
-      state.logs = JSON.parse(localStorage.getItem(LS_KEY)||"{}");
+      console.error("Load Error", e);
+      // Last ditch effort
+      try { state.logs = JSON.parse(localStorage.getItem(LS_KEY)||"{}"); } catch{}
       renderAll();
     }
   }
+
+  // Listeners
+  document.getElementById("programSelect").addEventListener("change", (e)=>{
+    state.activeProgramId = e.target.value;
+    const p = state.programById.get(state.activeProgramId);
+    state.activeSessionId = p?.sessions[0]?.id || null;
+    savePrefs(); renderAll();
+  });
+  document.getElementById("sessionSelect").addEventListener("change", (e)=>{
+    state.activeSessionId = e.target.value;
+    savePrefs(); renderAll();
+  });
+  document.getElementById("search").addEventListener("input", renderSessionsList);
+  
+  document.getElementById("openSessions").addEventListener("click", () => {
+    const d = document.getElementById("drawer");
+    const dList = document.getElementById("sessionsDrawer");
+    dList.innerHTML = document.getElementById("sessions").innerHTML;
+    dList.onclick = (e) => {
+       const item = e.target.closest('.session-item');
+       if(item) {
+          // Relies on onclick in string
+       }
+    };
+    d.classList.add("open"); d.setAttribute("aria-hidden", "false");
+  });
+
+  document.getElementById("closeSessions").addEventListener("click", () => {
+    const d = document.getElementById("drawer");
+    d.classList.remove("open"); d.setAttribute("aria-hidden", "true");
+  });
+
+  document.getElementById("timerStart")?.addEventListener("click", startTimer);
+  document.getElementById("timerPause")?.addEventListener("click", pauseTimer);
+  document.getElementById("timerReset")?.addEventListener("click", resetTimer);
+  document.getElementById("setCustom")?.addEventListener("click", () => {
+     const val = parseInt(document.getElementById("customSeconds").value, 10);
+     if(val) setTimer(val);
+  });
+  document.getElementById("preset")?.addEventListener("change", (e) => {
+     setTimer(parseInt(e.target.value, 10));
+  });
 
   // Start
   if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
@@ -1003,17 +1043,6 @@
   loadLogsAsync();
   loadFunFacts(); 
   initAuth();     
-
-  // --- SAFETY NET ---
-  // Force sync save on pagehide/visibilitychange
-  // This catches "Switch App" or "Lock Screen" events
-  window.addEventListener("pagehide", () => {
-    try { 
-      // Ensure we have a timestamp
-      if(state.logs) state.logs._updatedAt = Date.now();
-      localStorage.setItem(LS_KEY, JSON.stringify(state.logs)); 
-    } catch(e){}
-  });
 
 </script>
 </body>

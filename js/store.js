@@ -1,6 +1,5 @@
 import { PROGRAM_SOURCES, SUPABASE_URL, SUPABASE_ANON_KEY, LS_KEY, PREFS_KEY, CLOUD_SAVE_DEBOUNCE_MS } from './config.js';
 import { uid, toIntMaybe, cleanWorkoutTitle, resolveReps, debounce } from './utils.js';
-import { setAuthUI, renderAll } from './ui.js';
 
 // Setup Supabase
 const supabase = (typeof window.supabase !== 'undefined' && SUPABASE_ANON_KEY.length > 20) 
@@ -249,17 +248,30 @@ export function countLoggedInSession(session){
 
 // --- AUTH ---
 
-export async function initAuth() {
-  if(!supabase){ setAuthUI(false); return; }
+export async function initAuth(onAuthChange) {
+  if(!supabase){ 
+      if(onAuthChange) onAuthChange(null);
+      return; 
+  }
+
+  // 1. Check initial session
   const {data:sessData} = await supabase.auth.getSession();
   state._user = sessData?.session?.user || null;
-  setAuthUI(!!state._user, state._user?.email);
-  if(state._user){ await cloudLoad(); renderAll(); }
   
+  if(state._user){ await cloudLoad(); }
+  
+  // Notify main.js that we are ready
+  if(onAuthChange) onAuthChange(state._user);
+  
+  // 2. Listen for future changes
   supabase.auth.onAuthStateChange(async (_event, session)=>{
     state._user = session?.user || null;
-    setAuthUI(!!state._user, state._user?.email);
-    if(state._user){ await cloudLoad(); renderAll(); scheduleCloudSave(); }
+    if(state._user){ 
+        await cloudLoad(); 
+        scheduleCloudSave(); 
+    }
+    // Notify main.js again
+    if(onAuthChange) onAuthChange(state._user);
   });
 }
 
@@ -272,10 +284,9 @@ export async function handleSignIn() {
 export async function handleSignOut() {
   await supabase.auth.signOut();
   state._user = null;
-  setAuthUI(false);
   state.logs = {}; 
   if (typeof idbKeyval !== 'undefined') await idbKeyval.del(LS_KEY); 
   localStorage.removeItem(LS_KEY); 
-  renderAll();
-  alert("Signed out and local data cleared.");
+  // We return true to let the caller know we are done
+  return true; 
 }

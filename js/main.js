@@ -19,7 +19,8 @@ import {
   renderAll, 
   renderSessionsList, 
   renderActiveSession, 
-  updateActiveProgress 
+  updateActiveProgress,
+  setAuthUI // <--- ADDED THIS
 } from './ui.js';
 
 import { 
@@ -44,17 +45,21 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-// --- GLOBAL EXPORTS FOR HTML HANDLERS ---
-// Because we use type="module", functions aren't global by default.
-// We must attach them to window for onclick="..." to work.
+// --- UI UPDATE BRIDGE ---
+// This function bridges the Store and the UI without circular dependencies
+function handleAppUpdate(user) {
+    setAuthUI(!!user, user?.email);
+    renderAll();
+}
 
+// --- GLOBAL EXPORTS FOR HTML HANDLERS ---
 window.pickSession = (sid) => {
   state.activeSessionId = sid;
   savePrefs();
   renderAll();
   const drawer = document.getElementById("drawer");
   if(drawer.classList.contains("open")){
-     drawer.classList.remove("open"); drawer.setAttribute("aria-hidden", "true");
+      drawer.classList.remove("open"); drawer.setAttribute("aria-hidden", "true");
   }
   document.getElementById("content")?.scrollIntoView({ behavior: "smooth", block: "start" });
 };
@@ -141,7 +146,13 @@ window.removeCustomWorkout = (index) => {
 document.addEventListener("DOMContentLoaded", async () => {
   // Global buttons
   document.getElementById("signInGoogle")?.addEventListener("click", handleSignIn);
-  document.getElementById("signOut")?.addEventListener("click", handleSignOut);
+  
+  // UPDATED SIGN OUT LOGIC
+  document.getElementById("signOut")?.addEventListener("click", async () => {
+      await handleSignOut();
+      handleAppUpdate(null); // Manual UI update
+      alert("Signed out and local data cleared.");
+  });
   
   document.getElementById("programSelect").addEventListener("change", (e)=>{
     state.activeProgramId = e.target.value;
@@ -175,12 +186,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("timerReset")?.addEventListener("click", resetTimer);
   
   document.getElementById("setCustom")?.addEventListener("click", () => {
-     const val = parseInt(document.getElementById("customSeconds").value, 10);
-     if(val) setTimer(val);
+      const val = parseInt(document.getElementById("customSeconds").value, 10);
+      if(val) setTimer(val);
   });
   
   document.getElementById("preset")?.addEventListener("change", (e) => {
-     setTimer(parseInt(e.target.value, 10));
+      setTimer(parseInt(e.target.value, 10));
   });
   
   document.getElementById("emergencyResetBtn")?.addEventListener("click", () => {
@@ -200,5 +211,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await loadAllPrograms();
   await loadLogsAsync();
   loadFunFacts();
-  initAuth();
+  
+  // UPDATED INIT AUTH (Pass the bridge function)
+  initAuth(handleAppUpdate);
 });

@@ -1,5 +1,5 @@
 /* MST Workout Tracker - Service Worker */
-const CACHE_NAME = "bolt-cache-v27"; // Bumped for Nuclear Sync
+const CACHE_NAME = "bolt-cache-v28"; // Bumped for Zombie Fix
 
 const CORE_ASSETS = [
   "./",

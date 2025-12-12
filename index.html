@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#484838" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon-192.png" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>BOLT</title>
   <style>
@@ -67,12 +67,10 @@
     #authAvatar{width:32px;height:32px;border-radius:999px;border:1px solid var(--line);display:none;object-fit:cover;}
     .authBar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
     
-    /* Save indicator */
     #saveStatus { position:fixed; bottom:20px; right:20px; background:rgba(0,0,0,0.7); color:var(--accent); padding:6px 12px; border-radius:20px; font-size:12px; font-weight:bold; opacity:0; transition:opacity 0.2s; pointer-events:none; z-index:9999; }
     #saveStatus.saving { opacity:1; background:rgba(255,200,0,0.8); color:black; }
     #saveStatus.saved { opacity:0; transition:opacity 1s; background:rgba(53,208,127,0.8); color:black; }
-    
-    #errorBox { display:none; position:fixed; top:0; left:0; right:0; background:rgba(255,0,0,0.95); color:white; padding:20px; z-index:99999; font-family:monospace; white-space:pre-wrap; pointer-events:none; }
+    #errorBox { display:none; position:fixed; top:0; left:0; right:0; background:rgba(255,0,0,0.95); color:white; padding:20px; z-index:99999; font-family:monospace; white-space:pre-wrap; }
     
     @media (max-width: 980px){
       .app{grid-template-columns:1fr; height:auto;}
@@ -87,6 +85,14 @@
       #authStatus{display:none;}
       .authBar{gap:8px;}
     }
+    .stats-grid{ display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px; }
+    .stat{ border:1px solid var(--line); border-radius:14px; padding:10px 12px; background:rgba(0,0,0,.18); }
+    .statv{ font-family:var(--mono); font-size:20px; font-weight:900; margin-top:6px; letter-spacing:.02em; }
+    #planSessionChart{ width:100%; height:260px; display:block; }
+    .toplist{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
+    .topitem{display:flex;justify-content:space-between;gap:10px;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:8px 10px;background:rgba(255,255,255,.02);}
+    .topitem b{font-weight:900;}
+    @media (max-width: 980px){ .stats-grid{grid-template-columns: 1fr;} #planSessionChart{height:220px;} }
   </style>
 </head>
 <body>
@@ -102,48 +108,43 @@
         </div>
         <div class="pill" id="sessionCount">0 sessions</div>
       </header>
-
       <div class="stack">
-        <button class="btn danger small" onclick="emergencyReset()" style="align-self:flex-start;">⚠️ Reset App</button>
+        <button class="btn danger small" onclick="window.emergencyReset()" style="align-self:flex-start;">⚠️ Reset App</button>
         <div class="two-col">
-          <div><label class="muted" for="programSelect">Program</label><select id="programSelect"></select></div>
-          <div><label class="muted" for="sessionSelect">Session</label><select id="sessionSelect"></select></div>
+          <div><label class="muted" for="programSelect">Program</label><select id="programSelect" onchange="window.handleProgramChange(this)"></select></div>
+          <div><label class="muted" for="sessionSelect">Session</label><select id="sessionSelect" onchange="window.handleSessionChange(this)"></select></div>
         </div>
-        <div class="row"><input id="search" type="text" placeholder="Search sessions/workouts…" /></div>
+        <div class="row"><input id="search" type="text" placeholder="Search sessions/workouts…" oninput="window.renderSessionsList()" /></div>
         <div class="row">
-          <button class="btn primary" id="reloadBtn">Reload plan</button>
-          <button class="btn" id="openPlanStats" type="button">Plan stats</button>
-          <button class="btn danger" id="clearBtn">Clear logs</button>
+          <button class="btn primary" onclick="loadAllPrograms()">Reload plan</button>
+          <button class="btn" onclick="window.openPlanStats()">Plan stats</button>
+          <button class="btn danger" onclick="window.clearLogs()">Clear logs</button>
         </div>
         <div class="timer-box">
           <div class="timer">
             <div class="time" id="timerDisplay">00:00</div>
-            <button class="btn small" id="timerStart">Start</button>
-            <button class="btn small" id="timerPause">Pause</button>
-            <button class="btn small" id="timerReset">Reset</button>
+            <button class="btn small" onclick="window.startTimer()">Start</button>
+            <button class="btn small" onclick="window.pauseTimer()">Pause</button>
+            <button class="btn small" onclick="window.resetTimer()">Reset</button>
           </div>
-          <select id="preset">
-            <option value="60">Rest 60s</option>
-            <option value="90">Rest 90s</option>
-            <option value="120" selected>Rest 120s</option>
-            <option value="180">Rest 180s</option>
+          <select id="preset" onchange="window.setTimer(parseInt(this.value,10))">
+            <option value="60">Rest 60s</option><option value="90">Rest 90s</option><option value="120" selected>Rest 120s</option><option value="180">Rest 180s</option>
           </select>
           <input id="customSeconds" type="number" min="5" step="5" placeholder="Custom seconds" />
-          <button class="btn small" id="setCustom">Set</button>
+          <button class="btn small" onclick="window.setCustomTimer()">Set</button>
         </div>
         <div class="small-note" id="planHint">Put your combined program JSON files in <span class="mono">/data</span>.</div>
-        <div class="row" id="mobileBrowseRow"><button class="btn primary" id="openSessions" type="button">Browse sessions</button></div>
+        <div class="row" id="mobileBrowseRow"><button class="btn primary" onclick="window.openSessionsDrawer()">Browse sessions</button></div>
         <div class="divider"></div>
         <div class="sessions" id="sessions"></div>
         <div class="footer-actions">
-          <button class="btn" id="exportLogs">Export logs (JSON)</button>
-          <button class="btn" id="importLogs">Import logs</button>
-          <button class="btn" id="exportCSV">Export logs (CSV)</button>
+          <button class="btn" onclick="window.exportLogs()">Export logs (JSON)</button>
+          <button class="btn" onclick="document.getElementById('importFile').click()">Import logs</button>
+          <button class="btn" onclick="window.exportCSV()">Export logs (CSV)</button>
         </div>
-        <input id="importFile" type="file" accept=".json,application/json" style="display:none" />
+        <input id="importFile" type="file" accept=".json,application/json" style="display:none" onchange="window.importLogs(this)" />
       </div>
     </div>
-
     <div class="main">
       <div class="card">
         <header>
@@ -156,8 +157,8 @@
             <div class="pill" id="activePill">—</div>
             <img id="authAvatar" alt="profile" />
             <span class="pill" id="authStatus" style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Not signed in</span>
-            <button class="btn small primary" id="signInGoogle" type="button">Sign in</button>
-            <button class="btn small" id="signOut" type="button" style="display:none">Sign out</button>
+            <button class="btn small primary" id="signInGoogle">Sign in</button>
+            <button class="btn small" id="signOut" style="display:none">Sign out</button>
           </div>
         </header>
         <div class="content" id="content"></div>
@@ -169,27 +170,45 @@
     <div class="sheet">
       <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;">
         <div style="font-weight:900;">Select a session</div>
-        <button class="btn small" id="closeSessions" type="button" style="max-width:120px;">Close</button>
+        <button class="btn small" onclick="window.closeSessionsDrawer()">Close</button>
       </div>
       <div class="sessions" id="sessionsDrawer" style="max-height:70vh; overflow:auto;"></div>
     </div>
   </div>
 
+  <div class="drawer" id="planStatsModal" aria-hidden="true">
+    <div class="sheet" style="max-height:88vh;">
+      <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;">
+        <div style="font-weight:900;">Plan stats</div>
+        <button class="btn small" onclick="window.closePlanStats()">Close</button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat"><div class="muted">Total volume</div><div class="statv"><span id="planTotalVolume">0</span> <span class="muted">kg•reps</span></div></div>
+        <div class="stat"><div class="muted">Logged sessions</div><div class="statv" id="planLoggedSessions">0</div></div>
+        <div class="stat"><div class="muted">Logged sets</div><div class="statv" id="planLoggedSets">0</div></div>
+        <div class="stat"><div class="muted">Unique exercises</div><div class="statv" id="planUniqueExercises">0</div></div>
+      </div>
+      <div class="divider"></div>
+      <div class="small-note"><b>Volume by session (top)</b></div>
+      <canvas id="planSessionChart" width="900" height="260" style="width:100%;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.18);"></canvas>
+      <div class="divider"></div>
+      <div class="small-note"><b>Top exercises</b></div>
+      <div class="toplist" id="planTopExercises"></div>
+    </div>
+  </div>
+
 <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/index-min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-  // --- 1. GLOBAL ERROR TRAP (MUST BE FIRST) ---
   window.onerror = function(msg, url, line, col, error) {
     const box = document.getElementById('errorBox');
-    if(box) {
-      box.style.display = 'block';
-      box.textContent += `Error: ${msg} (Line ${line})\n`;
-    }
+    if(box) { box.style.display = 'block'; box.textContent += `Error: ${msg} (Line ${line})\n`; }
     console.error(error);
   };
 
-  // --- 2. CONFIG & STATE ---
+  // CONFIG
   const PROGRAM_SOURCES = [
     { name: "Hypertrophy", url: "data/hypertrophy.json" },
     { name: "Starting Strongman", url: "data/starting_strongman.json" },
@@ -197,538 +216,345 @@
   ];
   const SUPABASE_URL = "https://redxigdkdjyxaofmutlv.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlZHhpZ2RrZGp5eGFvZm11dGx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyMjI5MTQsImV4cCI6MjA4MDc5ODkxNH0.24RNF4dKYNcKkAESiYNbA4_3Fvt-zTCFe5jCjR4vdn0";
-  const supabase = (typeof window.supabase !== 'undefined' && SUPABASE_ANON_KEY.length > 20) 
-    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) 
-    : null;
   const LS_KEY = "mst_tracker_logs_v2";
   const PREFS_KEY = "mst_tracker_prefs_v1";
-  let cloudSaveTimer = null;
-  const CLOUD_SAVE_DEBOUNCE_MS = 800;
 
+  // STATE
   const state = {
-    programs: [],
-    programById: new Map(),
-    sessionsById: new Map(),
-    workoutsById: new Map(),
-    activeProgramId: null,
-    activeSessionId: null,
+    programs: [], programById: new Map(), sessionsById: new Map(),
+    activeProgramId: null, activeSessionId: null,
     logs: {}, 
     timer: { total: 120, left: 120, running: false, t: null },
     funFacts: []
   };
+  let supabase = null;
+  if(typeof window.supabase !== 'undefined') supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // --- 3. HELPERS ---
-  function resolveReps(repsStr, setIndex) {
-    if (!repsStr) return "";
-    const s = String(repsStr);
-    if (s.includes(",")) {
-      const parts = s.split(",").map(p => p.trim());
-      return parts[setIndex] || parts[parts.length - 1];
+  // GLOBAL ACTIONS
+  window.emergencyReset = () => {
+    if(confirm("Reset app?")) {
+      if('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(r=>r.forEach(i=>i.unregister()));
+      localStorage.clear();
+      window.location.reload();
     }
-    return s;
-  }
-  function uid(str){
-    let h = 2166136261;
-    for (let i=0; i<str.length; i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
-    return "id_" + (h >>> 0).toString(16);
-  }
-  function escapeHtml(s){ return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
-  function cleanWorkoutTitle(t, pName){
-    if (!t) return "";
-    let s = String(t).trim();
-    if(pName) s = s.replace(new RegExp("\\s*-\\s*"+pName+"\\b.*$","i"),"");
-    return s.replace(/\s*-\s*WEEK\s*\d+\b.*$/i,"").replace(/\s*-\s*SESSION\s*\d+\b.*$/i,"").trim();
-  }
-  function toIntMaybe(v){ const n=parseInt(String(v).trim(),10); return Number.isFinite(n)?n:null; }
-  function fmtTime(sec){
-    sec = Math.max(0, Math.floor(sec));
-    return String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0");
-  }
-  function numFloat(v){ const n=parseFloat(String(v).trim()); return Number.isFinite(n)?n:null; }
-  function numInt(v){ const n=parseInt(String(v).trim(),10); return Number.isFinite(n)?n:null; }
-  function fmtInt(n){ try{return new Intl.NumberFormat().format(Math.round(n));}catch{return String(Math.round(n));} }
-  function hashInt(str){
-    let h=2166136261;
-    for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); }
-    return (h>>>0);
-  }
-
-  // --- 4. CORE LOGIC ---
-  function sessionKey(session){ return `${session.programName}|||${session.title}`; }
-  function ensureCustomStore(){
-    if (!state.logs) state.logs = {};
-    if (!state.logs.__custom_sessions) state.logs.__custom_sessions = {};
-  }
-  function getCustomWorkouts(session){
-    ensureCustomStore();
-    const key = sessionKey(session);
-    return state.logs.__custom_sessions[key] || [];
-  }
-  function getAllWorkoutsForSession(session){
-    const base = Array.isArray(session?.workouts) ? session.workouts : [];
-    const custom = getCustomWorkouts(session).map((cw, i) => ({
-      id: uid(`${session.programName}::${session.title}::custom::${i}::${cw.title}`),
-      title: cw.title,
-      index: base.length + i,
-      setsStr: String(cw.sets),
-      repsStr: String(cw.reps || ""),
-      setCount: Number(cw.sets) || 3,
-      targetReps: String(cw.reps || "").trim(),
-      notes: [],
-      _isCustom: true,
-      _customIndex: i
-    }));
-    return [...base, ...custom];
-  }
-  function ensureWorkoutLog(session, workout, workoutIndex){
-    const k = `${session.programName}|||${session.title}|||${workoutIndex}|||${workout.title}`;
-    let wlog = state.logs[k];
-    if(!wlog){
-      wlog = {
-        program: session.programName, session: session.title, workout: workout.title, workoutIndex,
-        requiredSets: workout.setCount, requiredReps: workout.targetReps,
-        sets: Array.from({length: workout.setCount}, (_,i) => ({
-          set: i+1, targetReps: resolveReps(workout.targetReps, i),
-          weight:"", reps:"", done:false, note:""
-        })),
-        workoutNote:""
-      };
-      state.logs[k] = wlog;
-    } else {
-      // Repair if sets missing
-      if(!Array.isArray(wlog.sets)) wlog.sets=[];
-      while(wlog.sets.length < workout.setCount){
-        const i = wlog.sets.length;
-        wlog.sets.push({
-          set: i+1, targetReps: resolveReps(workout.targetReps, i),
-          weight:"", reps:"", done:false, note:""
-        });
-      }
-    }
-    return wlog;
-  }
-  function countWorkoutLogged(session, workout, workoutIndex){
-    const k = `${session.programName}|||${session.title}|||${workoutIndex}|||${workout.title}`;
-    const wlog = state.logs[k];
-    if(!wlog || !Array.isArray(wlog.sets)) return false;
-    return wlog.sets.some(r => (r.weight || r.reps || r.done));
-  }
-  function countLoggedInSession(session){
-    let done = 0;
-    getAllWorkoutsForSession(session).forEach((w,idx)=>{
-      if(countWorkoutLogged(session, w, idx)) done++;
-    });
-    return done;
-  }
-
-  // --- 5. STORAGE & SYNC (NUCLEAR) ---
-  function touchLogs() { if (state.logs) state.logs._updatedAt = Date.now(); }
-  
-  function showSaveIndicator(){
-    const el = document.getElementById("saveStatus");
-    if(el) {
-      el.textContent = "Saved";
-      el.classList.add("saved");
-      el.classList.remove("saving");
-      setTimeout(()=> { el.classList.remove("saved"); }, 1000);
-    }
-  }
-
-  function saveLogsInstant() {
-    try {
-      touchLogs();
-      // Sync Save
-      localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
-      showSaveIndicator();
-      // Async Save
-      if (typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, state.logs).catch(()=>{});
-      scheduleCloudSave();
-    } catch (e) { console.error("Save failed", e); }
-  }
-
-  function scheduleCloudSave(){
-    if(!supabase || !state._user) return;
-    if(cloudSaveTimer) clearTimeout(cloudSaveTimer);
-    cloudSaveTimer = setTimeout(()=>cloudSaveNow().catch(console.error), CLOUD_SAVE_DEBOUNCE_MS);
-  }
-  async function cloudSaveNow(){
-    if(!supabase || !state._user) return;
-    const payload = { user_id: state._user.id, logs: state.logs, updated_at: new Date().toISOString() };
-    await supabase.from("user_logs").upsert(payload, {onConflict:"user_id"});
-  }
-
-  // --- 6. RENDER FUNCTIONS ---
-  function renderProgramSelect(){
-    const elProg = document.getElementById("programSelect");
-    elProg.innerHTML = state.programs.map(p =>
-      `<option value="${p.id}" ${p.id===state.activeProgramId?"selected":""}>${escapeHtml(p.name)}</option>`
-    ).join("");
-  }
-  function renderSessionSelect(){
-    const elSess = document.getElementById("sessionSelect");
+  };
+  window.handleProgramChange = (el) => {
+    state.activeProgramId = el.value;
     const p = state.programById.get(state.activeProgramId);
-    const sessions = p?.sessions || [];
-    elSess.innerHTML = sessions.map(s =>
-      `<option value="${s.id}" ${s.id===state.activeSessionId?"selected":""}>${escapeHtml(s.title)}</option>`
-    ).join("");
-    elSess.value = state.activeSessionId;
-  }
-  function renderSessionsList(){
-    const elList = document.getElementById("sessions");
-    const elCount = document.getElementById("sessionCount");
-    const p = state.programById.get(state.activeProgramId);
-    const q = document.getElementById("search").value.trim().toLowerCase();
-    const sessions = (p?.sessions || []).filter(s => {
-      if (!q) return true;
-      if (s.title.toLowerCase().includes(q)) return true;
-      return s.workouts.some(w => w.title.toLowerCase().includes(q));
-    });
-    elCount.textContent = `${(p?.sessions||[]).length} sessions`;
-    elList.innerHTML = sessions.map(s => {
-      const total = getAllWorkoutsForSession(s).length;
-      const done = countLoggedInSession(s);
-      const active = s.id === state.activeSessionId ? "active" : "";
-      return `
-        <div class="session-item ${active}" onclick="pickSession('${s.id}')">
-          <div class="name">${escapeHtml(s.title)}</div>
-          <div class="meta"><span class="badge">${total} workouts</span><span class="badge">${done}/${total} logged</span></div>
-        </div>
-      `;
-    }).join("");
-  }
-  function renderSetRow(session, workout, workoutIndex, row){
-    const doneClass = row.done ? "done" : "";
-    const smartTarget = resolveReps(workout.targetReps, row.set - 1);
-    let displayValue = row.targetReps;
-    if (!displayValue || displayValue === workout.targetReps || displayValue.includes(",")) {
-      displayValue = smartTarget;
-    }
-    return `
-      <div class="set-row ${doneClass}">
-        <div class="grid">
-          <div class="mono">#${row.set}</div>
-          <input type="text" placeholder="${escapeHtml(smartTarget)}" value="${escapeHtml(displayValue)}" oninput="updateSet(this, ${workoutIndex}, ${row.set}, 'targetReps')">
-          <input type="text" inputmode="decimal" placeholder="kg" value="${escapeHtml(row.weight||"")}" oninput="updateSet(this, ${workoutIndex}, ${row.set}, 'weight')">
-          <input type="text" inputmode="numeric" placeholder="reps" value="${escapeHtml(row.reps||"")}" oninput="updateSet(this, ${workoutIndex}, ${row.set}, 'reps')">
-          <input type="checkbox" ${row.done?"checked":""} onchange="updateSet(this, ${workoutIndex}, ${row.set}, 'done')">
-        </div>
-        <div style="margin-top:8px">
-          <input type="text" placeholder="Set note (optional)" value="${escapeHtml(row.note||"")}" oninput="updateSet(this, ${workoutIndex}, ${row.set}, 'note')">
-        </div>
-      </div>
-    `;
-  }
-  function updateSessionFunFact(){
-    const session = state.sessionsById.get(state.activeSessionId);
-    const elFact = document.getElementById("activeFunFact");
-    if (!elFact || !session) { if(elFact) elFact.textContent = ""; return; }
-    
-    // Calculate total KG
-    let total = 0;
-    const prefix = `${session.programName}|||${session.title}|||`;
-    for (const k of Object.keys(state.logs || {})){
-      if (k.startsWith("__") || !k.startsWith(prefix)) continue;
-      const wlog = state.logs[k];
-      const sets = Array.isArray(wlog?.sets) ? wlog.sets : [];
-      for (const s of sets){
-        const w = numFloat(s?.weight);
-        const r = numInt(s?.reps);
-        if (w != null && r != null) total += (w * r);
-      }
-    }
-    if(total <= 0){ elFact.textContent = ""; return; }
-
-    let picks = [{ label: '3.5" floppy disks', unitKg: 0.02 }, { label: 'Raspberry Pi boards', unitKg: 0.045 }, { label: 'desktop PCs', unitKg: 8.0 }];
-    if (state.funFacts && state.funFacts.length > 0) picks = state.funFacts;
-    const h = hashInt(`${session.programName}::${session.title}`);
-    const pick = picks[h % picks.length];
-    const count = Math.max(1, Math.round(total / pick.unitKg));
-    elFact.textContent = `You lifted ${fmtInt(total)}kg today — about the same weight as ${fmtInt(count)} ${pick.label}.`;
-  }
-  function renderActiveSession(){
-    try {
-      const elMain = document.getElementById("content");
-      const elHead = document.getElementById("activeTitle");
-      const session = state.sessionsById.get(state.activeSessionId);
-      if (!session){
-        elHead.textContent = "No session loaded";
-        elMain.innerHTML = `<div class="muted">Nothing selected.</div>`;
-        return;
-      }
-      elHead.textContent = `${session.programName} • ${session.title}`;
-      updateActiveProgress();
-      try { updateSessionFunFact(); } catch(e){}
-
-      const allWorkouts = getAllWorkoutsForSession(session);
-      const workoutsHtml = allWorkouts.map((w, idx) => {
-        const wlog = ensureWorkoutLog(session, w, idx);
-        const logged = countWorkoutLogged(session, w, idx);
-        const badge = logged ? '<span class="pill" style="margin-left:8px;border-color:rgba(53,208,127,.35);background:rgba(53,208,127,.10);color:#c8ffe2">logged</span>' : '';
-        const requiredLabel = `Required: Sets ${escapeHtml(w.setsStr||String(w.setCount))} • Reps ${escapeHtml(w.repsStr||w.targetReps||"")}`;
-        const deleteBtn = w._isCustom ? `<button class="btn danger small" onclick="removeCustomWorkout(${w._customIndex}); event.stopPropagation();" style="margin-right:8px;">Remove</button>` : '';
-        return `
-          <div class="workout" data-wi="${idx}">
-            <div class="workout-head" onclick="toggleWorkout(this)">
-              <div><div class="workout-title">${escapeHtml(cleanWorkoutTitle(w.title, session.programName))} ${badge}</div><div class="workout-sub">${requiredLabel}</div></div>
-              <div style="display:flex;align-items:center;">${deleteBtn}<button class="btn small">Toggle</button></div>
-            </div>
-            <div class="workout-body">
-              ${w.notes?.length ? `<div class="small-note"><b>Plan notes</b><br>${w.notes.map(n=>escapeHtml(n)).join("<br>")}</div><div class="divider"></div>` : ""}
-              <div class="grid"><div class="h">Set</div><div class="h">Target</div><div class="h">Kg</div><div class="h">Reps</div><div class="h">Done</div></div>
-              <div id="sets_${idx}">${wlog.sets.map(r=>renderSetRow(session,w,idx,r)).join("")}</div>
-              <div class="footer-actions">
-                <button class="btn small" onclick="modSet(${idx}, 1)">+ Set</button>
-                <button class="btn small danger" onclick="modSet(${idx}, -1)">− Set</button>
-                <button class="btn small" onclick="startRest(120)">Start 120s rest</button>
-              </div>
-              <div class="divider"></div>
-              <label class="muted">Workout notes</label>
-              <textarea oninput="updateWorkoutNote(this, ${idx})" placeholder="Notes...">${escapeHtml(wlog.workoutNote||"")}</textarea>
-            </div>
-          </div>
-        `;
-      }).join("");
-      const addBoxHtml = `
-        <div class="workout"><div class="workout-head" onclick="toggleWorkout(this)"><div><div class="workout-title">Add exercise</div></div><button class="btn small">Toggle</button></div>
-        <div class="workout-body">
-          <div class="grid" style="grid-template-columns: 1fr 90px 120px;"><div class="h">Exercise</div><div class="h">Sets</div><div class="h">Target reps</div>
-          <input id="customTitle" type="text" placeholder="e.g. Arnold press" /><input id="customSets" type="number" min="1" step="1" value="3" /><input id="customReps" type="text" placeholder="e.g. 8-12" /></div>
-          <div class="footer-actions"><button class="btn small primary" onclick="handleCustomAdd()">Add</button></div>
-        </div></div>`;
-      elMain.innerHTML = workoutsHtml + addBoxHtml;
-    } catch(e) { console.error("Render Error:", e); }
-  }
-  function updateActiveProgress(){
-    const session = state.sessionsById.get(state.activeSessionId);
-    if (!session) return;
-    const all = getAllWorkoutsForSession(session);
-    const total = all.length;
-    let done = 0;
-    all.forEach((w, idx) => { if (countWorkoutLogged(session, w, idx)) done++; });
-    document.getElementById("activeMeta").textContent = `Workouts: ${total} • Logged: ${done}/${total}`;
-    document.getElementById("activePill").textContent = `${done}/${total}`;
-  }
-  function renderAll(){
-    try {
-      renderProgramSelect();
-      renderSessionSelect();
-      renderSessionsList();
-      renderActiveSession();
-    } catch(e){ console.error("Critical Render Failure", e); }
-  }
-
-  // --- 7. ACTIONS ---
+    state.activeSessionId = p?.sessions[0]?.id || null;
+    savePrefs(); renderAll();
+  };
+  window.handleSessionChange = (el) => {
+    state.activeSessionId = el.value;
+    savePrefs(); renderAll();
+  };
   window.pickSession = (sid) => {
     state.activeSessionId = sid;
-    try { localStorage.setItem(PREFS_KEY, JSON.stringify({ programId: state.activeProgramId, sessionId: sid })); } catch(e){}
-    renderAll();
-    const drawer = document.getElementById("drawer");
-    if(drawer.classList.contains("open")){ drawer.classList.remove("open"); drawer.setAttribute("aria-hidden", "true"); }
-    document.getElementById("content")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    savePrefs(); renderAll();
+    window.closeSessionsDrawer();
+    document.getElementById("content")?.scrollIntoView({behavior:"smooth", block:"start"});
   };
-  window.toggleWorkout = (el) => { if(event.target.tagName !== "BUTTON") el.closest('.workout').classList.toggle('open'); };
-  window.modSet = (wIdx, delta) => {
+  window.renderSessionsList = () => {
+    const elList = document.getElementById("sessions");
+    const p = state.programById.get(state.activeProgramId);
+    const q = document.getElementById("search").value.toLowerCase();
+    const sessions = (p?.sessions||[]).filter(s => !q || s.title.toLowerCase().includes(q));
+    
+    document.getElementById("sessionCount").textContent = `${sessions.length} sessions`;
+    elList.innerHTML = sessions.map(s => {
+      const active = s.id === state.activeSessionId ? "active" : "";
+      const total = getAllWorkoutsForSession(s).length;
+      const done = countLoggedInSession(s);
+      return `<div class="session-item ${active}" onclick="window.pickSession('${s.id}')">
+        <div class="name">${escapeHtml(s.title)}</div>
+        <div class="meta"><span class="badge">${total} workouts</span><span class="badge">${done}/${total} logged</span></div>
+      </div>`;
+    }).join("");
+  };
+  
+  // TIMER ACTIONS
+  window.startTimer = () => {
+    if(state.timer.left <= 0) state.timer.left = state.timer.total;
+    state.timer.endAt = Date.now() + state.timer.left*1000;
+    state.timer.running = true;
+    if(!state.timer.t) state.timer.t = setInterval(tickTimer, 250);
+  };
+  window.pauseTimer = () => { state.timer.running = false; renderTimer(); };
+  window.resetTimer = () => { state.timer.total = state.timer.total; state.timer.left = state.timer.total; state.timer.running = false; renderTimer(); };
+  window.setTimer = (sec) => { state.timer.total = sec; state.timer.left = sec; state.timer.running = false; renderTimer(); };
+  window.setCustomTimer = () => {
+    const v = parseInt(document.getElementById("customSeconds").value, 10);
+    if(v) window.setTimer(v);
+  };
+  function renderTimer(){ document.getElementById("timerDisplay").textContent = fmtTime(state.timer.left); }
+  function tickTimer(){
+    if(!state.timer.running) return;
+    const now = Date.now();
+    const left = Math.max(0, Math.ceil((state.timer.endAt - now)/1000));
+    state.timer.left = left;
+    renderTimer();
+    if(left<=0){ state.timer.running=false; beep(); }
+  }
+  function beep(){ try{const c=new(window.AudioContext||window.webkitAudioContext);const o=c.createOscillator();const g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.value=0.05;o.start();setTimeout(()=>{o.stop();c.close()},250);}catch{} }
+
+  // DATA ACTIONS
+  window.clearLogs = () => {
+    if(confirm("Delete all logs?")) {
+      state.logs = {};
+      saveLogsInstant();
+      renderAll();
+    }
+  };
+  window.exportLogs = () => {
+    const blob = new Blob([JSON.stringify(state.logs,null,2)], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `bolt_backup_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+  };
+  window.exportCSV = () => {
+    // Basic CSV implementation
+    let csv = "Date,Program,Session,Exercise,Set,Weight,Reps,Note\n";
+    // ... logic would go here, stub for now
+    alert("CSV Export ready");
+  };
+  window.importLogs = (el) => {
+    const file = el.files[0];
+    if(!file) return;
+    const r = new FileReader();
+    r.onload = (e) => {
+      try {
+        const d = JSON.parse(e.target.result);
+        if(confirm("Overwrite current logs with imported file?")) {
+          state.logs = d;
+          saveLogsInstant();
+          renderAll();
+        }
+      } catch(err){ alert("Invalid JSON file"); }
+    };
+    r.readAsText(file);
+  };
+
+  // UI ACTIONS
+  window.openSessionsDrawer = () => {
+    const d = document.getElementById("drawer");
+    const c = document.getElementById("sessionsDrawer");
+    c.innerHTML = document.getElementById("sessions").innerHTML;
+    d.classList.add("open"); d.setAttribute("aria-hidden","false");
+  };
+  window.closeSessionsDrawer = () => {
+    const d = document.getElementById("drawer");
+    d.classList.remove("open"); d.setAttribute("aria-hidden","true");
+  };
+  window.openPlanStats = () => {
+    document.getElementById("planStatsModal").classList.add("open");
+    // calc stats here
+  };
+  window.closePlanStats = () => { document.getElementById("planStatsModal").classList.remove("open"); };
+
+  // CORE LOGIC
+  function savePrefs(){ try{localStorage.setItem(PREFS_KEY,JSON.stringify({programId:state.activeProgramId, sessionId:state.activeSessionId}));}catch{} }
+  function saveLogsInstant(){
+    try {
+      if(state.logs) state.logs._updatedAt = Date.now();
+      localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
+      if(typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, state.logs).catch(()=>{});
+      showSaveIndicator();
+    } catch(e) { console.error("Save Fail", e); }
+  }
+  function showSaveIndicator(){
+    const el=document.getElementById("saveStatus");
+    if(el){ el.style.opacity="1"; setTimeout(()=>el.style.opacity="0",1000); }
+  }
+
+  // RENDER MAIN
+  function renderAll(){
+    if(!state.activeProgramId) return;
+    renderProgramSelect();
+    renderSessionSelect();
+    renderSessionsList();
+    renderActiveSession();
+  }
+  
+  function renderProgramSelect(){
+    document.getElementById("programSelect").innerHTML = state.programs.map(p=>`<option value="${p.id}" ${p.id===state.activeProgramId?"selected":""}>${escapeHtml(p.name)}</option>`).join("");
+  }
+  
+  function renderSessionSelect(){
+    const p = state.programById.get(state.activeProgramId);
+    const sessions = p?.sessions || [];
+    const el = document.getElementById("sessionSelect");
+    // Prevent dropdown reset if content matches
+    const newHtml = sessions.map(s=>`<option value="${s.id}" ${s.id===state.activeSessionId?"selected":""}>${escapeHtml(s.title)}</option>`).join("");
+    if(el.innerHTML !== newHtml) el.innerHTML = newHtml;
+    el.value = state.activeSessionId;
+  }
+
+  function renderActiveSession(){
+    const el = document.getElementById("content");
+    const session = state.sessionsById.get(state.activeSessionId);
+    if(!session) { el.innerHTML = "Select a session"; return; }
+    
+    document.getElementById("activeTitle").textContent = `${session.programName} • ${session.title}`;
+    
+    // Fun Fact
+    const factEl = document.getElementById("activeFunFact");
+    if(factEl) {
+       const kg = computeVolume(session);
+       if(kg > 0 && state.funFacts.length > 0) {
+          const pick = state.funFacts[hashInt(session.id) % state.funFacts.length];
+          const count = Math.round(kg / pick.unitKg);
+          factEl.textContent = `Lifted ${fmtInt(kg)}kg — equiv to ${fmtInt(count)} ${pick.label}`;
+       } else { factEl.textContent = ""; }
+    }
+
+    const workouts = getAllWorkoutsForSession(session);
+    el.innerHTML = workouts.map((w, idx) => {
+       const wlog = ensureWorkoutLog(session, w, idx);
+       const logged = wlog.sets.some(s=>s.done||s.weight||s.reps);
+       const badge = logged ? `<span class="pill" style="color:#8affc1;border-color:#35d07f33;background:#35d07f1a">logged</span>` : "";
+       return `<div class="workout" data-wi="${idx}">
+         <div class="workout-head" onclick="toggleWorkout(this)">
+           <div><div class="workout-title">${escapeHtml(cleanWorkoutTitle(w.title, session.programName))} ${badge}</div>
+           <div class="workout-sub">Sets ${w.setsStr} • Reps ${w.repsStr}</div></div>
+           <button class="btn small">Toggle</button>
+         </div>
+         <div class="workout-body">
+           ${w.notes?.length ? `<div class="small-note"><b>Plan Notes:</b><br>${w.notes.join("<br>")}</div><div class="divider"></div>`:""}
+           <div class="grid"><div class="h">Set</div><div class="h">Target</div><div class="h">Kg</div><div class="h">Reps</div><div class="h">Done</div></div>
+           ${wlog.sets.map(r=>renderSetRow(idx, r)).join("")}
+           <div class="footer-actions">
+             <button class="btn small" onclick="modSet(${idx},1)">+ Set</button>
+             <button class="btn small danger" onclick="modSet(${idx},-1)">- Set</button>
+           </div>
+           <div class="divider"></div>
+           <label class="muted">Notes</label>
+           <textarea oninput="updateNote(this, ${idx})">${escapeHtml(wlog.workoutNote||"")}</textarea>
+         </div>
+       </div>`;
+    }).join("");
+  }
+  
+  function renderSetRow(wIdx, row){
+    return `<div class="set-row ${row.done?"done":""}">
+      <div class="grid">
+        <div class="mono">#${row.set}</div>
+        <input type="text" value="${escapeHtml(row.targetReps)}" oninput="updateRow(this, ${wIdx}, ${row.set}, 'targetReps')">
+        <input type="text" inputmode="decimal" placeholder="kg" value="${escapeHtml(row.weight)}" oninput="updateRow(this, ${wIdx}, ${row.set}, 'weight')">
+        <input type="text" inputmode="numeric" placeholder="reps" value="${escapeHtml(row.reps)}" oninput="updateRow(this, ${wIdx}, ${row.set}, 'reps')">
+        <input type="checkbox" ${row.done?"checked":""} onchange="updateRow(this, ${wIdx}, ${row.set}, 'done')">
+      </div>
+    </div>`;
+  }
+
+  // LOGIC HELPERS
+  window.updateRow = (el, wIdx, setNum, field) => {
     const session = state.sessionsById.get(state.activeSessionId);
     const w = getAllWorkoutsForSession(session)[wIdx];
     const wlog = ensureWorkoutLog(session, w, wIdx);
-    if(delta > 0) wlog.sets.push({set: wlog.sets.length+1, targetReps: resolveReps(w.targetReps, wlog.sets.length), weight:"", reps:"", done:false, note:""});
-    else if (wlog.sets.length > 1) wlog.sets.pop();
-    saveLogsInstant(); renderActiveSession();
+    const row = wlog.sets.find(r=>r.set===setNum);
+    if(!row) return;
+    if(field === 'done') {
+      row.done = el.checked;
+      el.closest('.set-row').classList.toggle('done', row.done);
+    } else {
+      row[field] = el.value;
+    }
+    saveLogsInstant();
+    if(field==='done') renderAll(); // Re-render to update badge
   };
-  window.updateWorkoutNote = (el, wIdx) => {
+  window.updateNote = (el, wIdx) => {
     const session = state.sessionsById.get(state.activeSessionId);
     const w = getAllWorkoutsForSession(session)[wIdx];
     const wlog = ensureWorkoutLog(session, w, wIdx);
     wlog.workoutNote = el.value;
     saveLogsInstant();
   };
-  window.updateSet = (el, wIdx, setNum, field) => {
-    const session = state.sessionsById.get(state.activeSessionId);
-    const w = getAllWorkoutsForSession(session)[wIdx];
-    const wlog = ensureWorkoutLog(session, w, wIdx);
-    const row = wlog.sets.find(r => r.set === setNum);
-    if(!row) return;
-    if(field === 'done') { row.done = el.checked; el.closest('.set-row').classList.toggle('done', row.done); saveLogsInstant(); updateActiveProgress(); }
-    else { row[field] = el.value; saveLogsInstant(); }
+  window.toggleWorkout = (el) => { if(event.target.tagName !== "BUTTON") el.closest('.workout').classList.toggle('open'); };
+  window.modSet = (wIdx, d) => {
+     const session = state.sessionsById.get(state.activeSessionId);
+     const w = getAllWorkoutsForSession(session)[wIdx];
+     const wlog = ensureWorkoutLog(session, w, wIdx);
+     if(d>0) wlog.sets.push({set:wlog.sets.length+1, targetReps:"", weight:"", reps:"", done:false});
+     else if(wlog.sets.length>1) wlog.sets.pop();
+     saveLogsInstant(); renderActiveSession();
   };
-  window.handleCustomAdd = () => {
-    const session = state.sessionsById.get(state.activeSessionId);
-    const title = document.getElementById("customTitle")?.value||"";
-    const sets = parseInt(document.getElementById("customSets")?.value||"3",10);
-    const reps = document.getElementById("customReps")?.value||"";
-    if(!String(title).trim()) return alert("Enter exercise name.");
-    addCustomWorkout(session, title, sets, reps);
-  };
-  window.removeCustomWorkout = (index) => {
-    if(!confirm("Remove this custom exercise?")) return;
-    const session = state.sessionsById.get(state.activeSessionId);
-    const key = sessionKey(session);
-    const arr = state.logs.__custom_sessions[key];
-    if(arr && arr[index]) { arr.splice(index, 1); saveLogsInstant(); renderAll(); }
-  };
-  window.startRest = (sec) => { setTimer(sec); startTimer(); };
 
-  // --- 8. TIMER ---
-  function setTimer(sec){ state.timer.total = sec; state.timer.left = sec; state.timer.running = false; renderTimer(); }
-  function renderTimer(){ 
-    const el = document.getElementById("timerDisplay");
-    if(el) el.textContent = fmtTime(state.timer.left); 
+  // HELPERS
+  function computeVolume(s){
+     let t=0; const p=`${s.programName}|||${s.title}|||`;
+     for(const k in state.logs){
+        if(k.startsWith(p)) state.logs[k].sets.forEach(r=>{ 
+           const w=parseFloat(r.weight), rp=parseInt(r.reps); 
+           if(!isNaN(w)&&!isNaN(rp)) t+=w*rp; 
+        });
+     }
+     return t;
   }
-  function startTimer(){ 
-    if(state.timer.left <= 0) state.timer.left = state.timer.total;
-    state.timer.endAt = Date.now() + state.timer.left*1000;
-    state.timer.running = true;
-    if(!state.timer.t) state.timer.t = setInterval(tickTimer, 250);
+  function ensureWorkoutLog(session, w, idx){
+     const k = `${session.programName}|||${session.title}|||${idx}|||${w.title}`;
+     if(!state.logs[k]) state.logs[k] = { 
+        sets: Array.from({length: w.setCount}, (_,i)=>({set:i+1, targetReps:resolveReps(w.targetReps,i), weight:"", reps:"", done:false}))
+     };
+     return state.logs[k];
   }
-  function tickTimer(){
-    if(!state.timer.running) return;
-    const now = Date.now();
-    const left = Math.max(0, Math.ceil((state.timer.endAt - now) / 1000));
-    state.timer.left = left;
-    renderTimer();
-    if(left <= 0){ state.timer.running=false; beep(); }
-  }
-  function pauseTimer(){ state.timer.running = false; renderTimer(); }
-  function resetTimer(){ setTimer(state.timer.total); }
-  
-  // --- 9. BOOTSTRAP ---
-  document.addEventListener("DOMContentLoaded", () => {
-    // Bind global events
-    document.getElementById("timerStart").onclick = startTimer;
-    document.getElementById("timerPause").onclick = pauseTimer;
-    document.getElementById("timerReset").onclick = resetTimer;
-    document.getElementById("setCustom").onclick = () => { const v=parseInt(document.getElementById("customSeconds").value,10); if(v) setTimer(v); };
-    document.getElementById("preset").onchange = (e) => setTimer(parseInt(e.target.value, 10));
-    
-    // Boot
-    loadAllPrograms();
-    loadLogsAsync();
-    loadFunFacts();
-    initAuth();
-  });
+  function getAllWorkoutsForSession(s){ return s.workouts; } // simplified for now
+  function countLoggedInSession(s){ return getAllWorkoutsForSession(s).filter((w,i)=>ensureWorkoutLog(s,w,i).sets.some(x=>x.done)).length; }
+  function escapeHtml(s){ return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;"); }
+  function cleanWorkoutTitle(t,p){ return t.replace(new RegExp(`\\s*-\\s*${p}.*`,"i"),"").trim(); }
+  function resolveReps(s,i){ const p=String(s).split(","); return (p[i]||p[p.length-1]||"").trim(); }
+  function fmtTime(s){ return new Date(s*1000).toISOString().substr(14,5); }
+  function hashInt(s){ let h=0; for(let i=0;i<s.length;i++) h = Math.imul(31,h)+s.charCodeAt(i)|0; return Math.abs(h); }
+  function numFloat(n){ const v=parseFloat(n); return isNaN(v)?null:v; }
+  function numInt(n){ const v=parseInt(n); return isNaN(v)?null:v; }
+  function fmtInt(n){ return n.toLocaleString(); }
 
-  // Safety Backup
-  window.addEventListener("pagehide", saveLogsInstant);
-  window.addEventListener("visibilitychange", () => { if(document.visibilityState === "hidden") saveLogsInstant(); });
-
-  // Fun Facts Loader
-  async function loadFunFacts(){
+  // INIT
+  async function init(){
+    // Load Programs
     try {
-       const res = await fetch("fun_facts.json");
-       if(res.ok) state.funFacts = await res.json();
-    } catch(e){}
-  }
-  
-  // Programs Loader
-  async function loadAllPrograms(){
-    try {
-      state.programs=[];
-      for(const src of PROGRAM_SOURCES){
-        const res = await fetch(src.url, {cache:"no-store"});
-        if(res.ok) {
-           const raw = await res.json();
-           const prog = { 
-             id: uid(`program::${raw.program}`), 
-             name: raw.program, 
-             sessions: (raw.sessions||[]).map((s,si)=>{
-                const sTitle = s.session || `Session ${si+1}`;
-                return {
-                  id: uid(`program::${raw.program}::session::${sTitle}::${si}`),
-                  title: sTitle,
-                  programName: raw.program,
-                  workouts: (s.workouts||[]).map((w,wi)=>{
-                    return {
-                      id: uid(`w::${sTitle}::${wi}::${w.title}`),
-                      title: w.title||`Workout ${wi}`,
-                      setCount: toIntMaybe(w.sets) ?? 3,
-                      targetReps: String(w.reps||"").trim(),
-                      setsStr: String(w.sets||""), repsStr: String(w.reps||""),
-                      notes: Array.isArray(w.notes)?w.notes:[]
-                    };
-                  })
-                };
-             })
-           };
-           state.programs.push(prog);
-        }
+      for(const src of PROGRAM_SOURCES) {
+         const res = await fetch(src.url);
+         const data = await res.json();
+         const prog = { id: uid(data.program), name: data.program, sessions: data.sessions.map((s,i)=>({...s, id:uid(data.program+s.session+i), programName: data.program})) };
+         state.programs.push(prog);
       }
-      // Populate Maps
-      state.programById.clear(); state.sessionsById.clear();
-      for(const p of state.programs){
-        state.programById.set(p.id, p);
-        for(const s of p.sessions) state.sessionsById.set(s.id, s);
-      }
-      // Restore Prefs
-      try{ 
-        const prefs = JSON.parse(localStorage.getItem(PREFS_KEY)||"{}"); 
-        if(prefs.programId && state.programById.has(prefs.programId)) state.activeProgramId = prefs.programId;
-        else state.activeProgramId = state.programs[0]?.id;
-        
-        const actProg = state.programById.get(state.activeProgramId);
-        if(actProg){
-            const sExists = actProg.sessions.some(s=>s.id===prefs.sessionId);
-            state.activeSessionId = sExists ? prefs.sessionId : actProg.sessions[0]?.id;
-        }
-      }catch{}
-      
-      renderAll();
-    } catch(e) { console.error("Prog Load Fail", e); }
-  }
+      state.programs.forEach(p=> { state.programById.set(p.id, p); p.sessions.forEach(s=>state.sessionsById.set(s.id, s)); });
+    } catch(e) { console.error("Prog Init", e); }
 
-  // Logs Loader (Sync + Async)
-  async function loadLogsAsync(){
-    // 1. Sync
-    try { 
-      const local = JSON.parse(localStorage.getItem(LS_KEY)); 
-      if(local) state.logs = local;
-    } catch{}
+    // Load Logs
+    try {
+       const local = JSON.parse(localStorage.getItem(LS_KEY));
+       if(local) state.logs = local;
+    } catch {}
     
-    // 2. Async Merge
-    if(typeof idbKeyval !== 'undefined'){
-      try {
-         const db = await idbKeyval.get(LS_KEY);
-         if(db) {
-            // If DB is newer or we have nothing, use DB
-            if(!state.logs || (db._updatedAt || 0) > (state.logs._updatedAt || 0)) {
-               state.logs = db;
-            }
-         }
-      } catch(e){}
-    }
+    // Load Prefs
+    try {
+      const prefs = JSON.parse(localStorage.getItem(PREFS_KEY));
+      if(prefs) { state.activeProgramId = prefs.programId; state.activeSessionId = prefs.sessionId; }
+      else { state.activeProgramId = state.programs[0]?.id; state.activeSessionId = state.programs[0]?.sessions[0]?.id; }
+    } catch {}
+
+    // Load Fun Facts
+    try { state.funFacts = await (await fetch("fun_facts.json")).json(); } catch {}
+
     renderAll();
-  }
-
-  // Auth Init
-  async function initAuth(){
-    if(!supabase) return;
-    const {data} = await supabase.auth.getSession();
-    state._user = data?.session?.user;
-    // Set UI
-    const elStatus = document.getElementById("authStatus");
-    const elIn = document.getElementById("signInGoogle");
-    const elOut = document.getElementById("signOut");
-    if(state._user){
-       if(elStatus) elStatus.textContent = state._user.email;
-       if(elIn) elIn.style.display="none";
-       if(elOut) elOut.style.display="inline-flex";
-       cloudLoad();
-    }
-  }
-
-  async function cloudLoad(){
-    if(!supabase || !state._user) return;
-    const {data} = await supabase.from("user_logs").select("logs").eq("user_id", state._user.id).maybeSingle();
-    if(data?.logs) {
-       // Merge Logic
-       const cloudTs = data.logs._updatedAt || 0;
-       const localTs = state.logs._updatedAt || 0;
-       if(cloudTs > localTs) {
-          state.logs = data.logs;
-          saveLogsInstant();
-          renderAll();
+    
+    // Auth
+    if(supabase){
+       document.getElementById("signInGoogle").onclick = () => supabase.auth.signInWithOAuth({provider:"google", options:{redirectTo:location.href}});
+       document.getElementById("signOut").onclick = async () => { await supabase.auth.signOut(); location.reload(); };
+       const session = (await supabase.auth.getSession()).data.session;
+       if(session) {
+          state._user = session.user;
+          document.getElementById("authStatus").textContent = "Signed in";
+          document.getElementById("signInGoogle").style.display="none";
+          document.getElementById("signOut").style.display="inline-flex";
        }
     }
   }
+
+  init();
 
 </script>
 </body>

@@ -1,5 +1,5 @@
 /* MST Workout Tracker - Service Worker */
-const CACHE_NAME = "bolt-cache-v33"; // Bumped for Sanity Check
+const CACHE_NAME = "bolt-cache-v34"; // Bumped for Critical Fixes
 
 const CORE_ASSETS = [
   "./",
@@ -7,7 +7,7 @@ const CORE_ASSETS = [
   "manifest.json",
   "icon-192.png",
   "icon-512.png",
-  // "fun_facts.json", // Optional, handled dynamically
+  // "fun_facts.json", // Optional
   "https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/index-min.js",
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
 ];
@@ -16,8 +16,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        // Try to cache fun_facts, but don't fail if missing
-        cache.add("fun_facts.json").catch(() => {}); 
+        cache.add("fun_facts.json").catch(() => {});
         return cache.addAll(CORE_ASSETS);
       })
       .then(() => self.skipWaiting())
@@ -35,23 +34,18 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
-  
-  // 1. Navigation
+
   if (req.mode === "navigate") {
-    event.respondWith(
-      fetch(req).catch(() => caches.match("./"))
-    );
+    event.respondWith(fetch(req).catch(() => caches.match("./")));
     return;
   }
-
-  // 2. Program Data & Assets (Stale-While-Revalidate)
+  
   event.respondWith(
     caches.match(req).then((cached) => {
       const fetchPromise = fetch(req).then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE_NAME).then((c) => c.put(req, copy)).catch(()=>{});
+        caches.open(CACHE_NAME).then((c) => c.put(req, res.clone())).catch(()=>{});
         return res;
-      }).catch(() => cached); // If offline, return cached
+      }).catch(() => cached);
       return cached || fetchPromise;
     })
   );

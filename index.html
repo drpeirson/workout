@@ -649,9 +649,20 @@
     const elSess = document.getElementById("sessionSelect");
     const p = state.programById.get(state.activeProgramId);
     const sessions = p?.sessions || [];
-    elSess.innerHTML = sessions.map(s =>
+    
+    // UI FIX: Only re-render if the program changed (prevents uncoupling)
+    const currentHtml = elSess.innerHTML;
+    const newHtml = sessions.map(s =>
       `<option value="${s.id}" ${s.id===state.activeSessionId?"selected":""}>${escapeHtml(s.title)}</option>`
     ).join("");
+    
+    // Only update DOM if options actually changed (avoids resetting visual selection)
+    if (currentHtml !== newHtml && newHtml.length > 0) {
+        elSess.innerHTML = newHtml;
+    } else {
+        // Just ensure value is correct
+        if(elSess.value !== state.activeSessionId) elSess.value = state.activeSessionId;
+    }
   }
 
   function renderSessionsList(){
@@ -806,7 +817,7 @@
   function renderAll(){
     try {
       renderProgramSelect();
-      renderSessionSelect();
+      renderSessionSelect(); // Now smarter
       renderSessionsList();
       renderActiveSession();
     } catch(e){ console.error("Critical Render Failure", e); }
@@ -1033,35 +1044,28 @@
   }
 
   // --- INIT & ROBUST SYNC LOAD ---
-  // DATA RECOVERY MODE
   async function loadLogsAsync() {
     try {
-      // 1. Get Sync Backup
+      // 1. Always load sync localStorage first (Fastest & most likely to have emergency save)
       let localLogs = null;
       try { localLogs = JSON.parse(localStorage.getItem(LS_KEY)); } catch {}
 
-      // 2. Get Async Database
+      // 2. Load DB
       let dbLogs = null;
       if (typeof idbKeyval !== 'undefined') {
-        try { dbLogs = await idbKeyval.get(LS_KEY); } catch(e){ console.warn("IDB Fail", e); }
+        try { dbLogs = await idbKeyval.get(LS_KEY); } catch {}
       }
 
-      // 3. MERGE LOGIC (Crucial Fix)
-      // Instead of "Winner Takes All", we default to IDB if Local is empty/broken.
-      // But if Local has data and IDB is missing/stale, we trust Local.
-      
-      const localKeys = localLogs ? Object.keys(localLogs).length : 0;
-      const dbKeys = dbLogs ? Object.keys(dbLogs).length : 0;
+      // 3. Compare & Win
       const localTs = localLogs?._updatedAt || 0;
       const dbTs = dbLogs?._updatedAt || 0;
 
-      if (localKeys > 0 && (localTs > dbTs || dbKeys === 0)) {
-        console.log("Restoring from LocalStorage (Newer/More Data)");
+      if (localLogs && localTs > dbTs) {
+        console.log("Recovered from LocalStorage backup");
         state.logs = localLogs;
-        // Repair DB immediately
+        // Repair DB in background
         if(typeof idbKeyval !== 'undefined') idbKeyval.set(LS_KEY, state.logs);
-      } else if (dbKeys > 0) {
-        console.log("Restoring from IndexedDB (Stable Source)");
+      } else if (dbLogs) {
         state.logs = dbLogs;
       } else {
         state.logs = localLogs || {};
@@ -1069,8 +1073,7 @@
 
       renderAll();
     } catch(e) {
-      console.error("Critical Load Error", e);
-      // Last resort fallback
+      console.error("Load Error", e);
       try { state.logs = JSON.parse(localStorage.getItem(LS_KEY)||"{}"); } catch{}
       renderAll();
     }
@@ -1089,7 +1092,7 @@
   window.addEventListener("pagehide", saveLogsInstant);
   window.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") saveLogsInstant();
-    if (document.visibilityState === "visible") loadLogsAsync(); // Reload on wake
+    if (document.visibilityState === "visible") safeReload(); // Reload on wake
   });
 
 </script>

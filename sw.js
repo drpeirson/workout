@@ -1,5 +1,5 @@
 /* MST Workout Tracker - Service Worker */
-const CACHE_NAME = "bolt-cache-v37"; // Bumped for Scope Fix
+const CACHE_NAME = "bolt-cache-v38"; // Bumped for Scope Fix
 
 const CORE_ASSETS = [
   "./",

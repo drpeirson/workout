@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#484838" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon-192.png" />
-  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>BOLT</title>
   <style>
@@ -441,12 +441,14 @@
   function showSaveIndicator(){
     const el = document.getElementById("saveStatus");
     if(el) {
-      el.textContent = "Saved";
-      el.classList.add("saved");
-      el.classList.remove("saving");
+      el.textContent = "Saving...";
+      el.classList.add("saving");
+      el.classList.remove("saved");
       setTimeout(()=> {
-        el.classList.remove("saved");
-      }, 1000);
+        el.textContent = "Saved";
+        el.classList.remove("saving");
+        el.classList.add("saved");
+      }, 300);
     }
   }
 
@@ -870,7 +872,6 @@
       }
       updateActiveProgress();
     } else {
-      // INSTANT TIMESTAMP UPDATE
       state.logs._updatedAt = Date.now();
       row[field] = el.value;
       // KEY FIX: No more debounce for data. Instant save.
@@ -915,49 +916,6 @@
     let h=2166136261;
     for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); }
     return (h>>>0);
-  }
-
-  function sessionLogPrefix(session){ return `${session.programName}|||${session.title}|||`; }
-
-  function computeSessionVolumeKg(session){
-    if (!session) return 0;
-    const prefix = sessionLogPrefix(session);
-    let total = 0;
-    for (const k of Object.keys(state.logs || {})){
-      if (k.startsWith("__") || !k.startsWith(prefix)) continue;
-      const wlog = state.logs[k];
-      const sets = Array.isArray(wlog?.sets) ? wlog.sets : [];
-      for (const s of sets){
-        const w = numFloat(s?.weight);
-        const r = numInt(s?.reps);
-        if (w != null && r != null) total += (w * r);
-      }
-    }
-    return total;
-  }
-
-  function updateSessionFunFact(){
-    const session = state.sessionsById.get(state.activeSessionId);
-    const elFact = document.getElementById("activeFunFact");
-    if (!elFact || !session) {
-      if(elFact) elFact.textContent = "";
-      return;
-    }
-    const kg = computeSessionVolumeKg(session);
-    if (!kg || kg <= 0){ elFact.textContent = ""; return; }
-    
-    // Default picks if file fails
-    let picks = [
-      { label: '3.5" floppy disks', unitKg: 0.02 },
-      { label: 'Raspberry Pi boards', unitKg: 0.045 },
-      { label: 'desktop PCs', unitKg: 8.0 }
-    ];
-    if (state.funFacts && state.funFacts.length > 0) picks = state.funFacts;
-
-    const h = hashInt(`${session.programName}::${session.title}`);
-    const pick = picks[h % picks.length];
-    const count = Math.max(1, Math.round(kg / pick.unitKg));
-    elFact.textContent = `You lifted ${fmtInt(kg)}kg today — about the same weight as ${fmtInt(count)} ${pick.label}.`;
   }
 
   function savePrefs() {

@@ -7,7 +7,7 @@ const CORE_ASSETS = [
   "manifest.json",
   "icon-192.png",
   "icon-512.png",
-  "fun_facts.json", // ENSURE THIS FILE EXISTS IN REPO
+  "fun_facts.json", // THIS FILE MUST EXIST ON GITHUB
   "https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/index-min.js",
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
 ];

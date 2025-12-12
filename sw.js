@@ -1,5 +1,5 @@
-/* BOLT Workout Tracker - Service Worker */
-const CACHE_NAME = "bolt-cache-v18"; // Bumped for Function Fix
+/* MST Workout Tracker - Service Worker */
+const CACHE_NAME = "bolt-cache-v19"; // Bumped version
 
 const CORE_ASSETS = [
   "./",
@@ -7,7 +7,7 @@ const CORE_ASSETS = [
   "manifest.json",
   "icon-192.png",
   "icon-512.png",
-  "fun_facts.json",
+  "fun_facts.json", 
   "https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/index-min.js",
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
 ];

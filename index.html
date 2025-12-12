@@ -444,7 +444,7 @@
     } catch (e) { console.error("Immediate save failed", e); }
   }
 
-  // --- CUSTOM EXERCISES ---
+  // --- CUSTOM EXERCISES & DATA ---
   function sessionKey(session){ return `${session.programName}|||${session.title}`; }
   
   function ensureCustomStore(){
@@ -588,7 +588,6 @@
       const {error} = await supabase.auth.signInWithOAuth({provider:"google", options:{redirectTo}});
       if(error) alert("Sign-in failed: "+error.message);
     });
-    // LOGICAL FIX: Clear data on sign out
     document.getElementById("signOut")?.addEventListener("click", async()=>{
       await supabase.auth.signOut();
       state._user = null;
@@ -845,7 +844,6 @@
     renderAll();
   };
 
-  // Custom Workout Deletion
   window.removeCustomWorkout = (index) => {
     if(!confirm("Remove this custom exercise?")) return;
     const session = state.sessionsById.get(state.activeSessionId);
@@ -904,7 +902,6 @@
     const kg = computeSessionVolumeKg(session);
     if (!kg || kg <= 0){ elFact.textContent = ""; return; }
     
-    // Default picks if file fails
     let picks = [
       { label: '3.5" floppy disks', unitKg: 0.02 },
       { label: 'Raspberry Pi boards', unitKg: 0.045 },
@@ -1056,7 +1053,13 @@
   loadAllPrograms();
   loadLogsAsync();
   loadFunFacts(); // Load facts
-  initAuth();     // Now defined and safe to call
+  initAuth();     // Now safely defined
+
+  // --- SAFETY NET ---
+  // Save to localStorage on page hide as a backup
+  window.addEventListener("pagehide", () => {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(state.logs)); } catch(e){}
+  });
 
 </script>
 </body>

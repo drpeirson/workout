@@ -1,5 +1,5 @@
 /* MST Workout Tracker - Service Worker */
-const CACHE_NAME = "bolt-cache-v36"; // Bumped for Clean Slate
+const CACHE_NAME = "bolt-cache-v37"; // Bumped for Scope Fix
 
 const CORE_ASSETS = [
   "./",
@@ -16,7 +16,6 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        // Optional file, don't crash if missing
         cache.add("fun_facts.json").catch(() => {});
         return cache.addAll(CORE_ASSETS);
       })
@@ -36,7 +35,6 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
 
-  // HTML: Network first (get fresh code), fallback to cache
   if (req.mode === "navigate") {
     event.respondWith(
       fetch(req).catch(() => caches.match("./"))
@@ -44,7 +42,6 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Assets: Cache first, update in background
   event.respondWith(
     caches.match(req).then((cached) => {
       const fetchPromise = fetch(req).then((res) => {

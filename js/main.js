@@ -13,7 +13,7 @@ import {
   addCustomWorkout,
   getAllWorkoutsForSession,
   sessionKey,
-  getAutoSelectedSessionId // <--- IMPORTED HERE
+  getAutoSelectedSessionId
 } from './store.js';
 
 import { 
@@ -50,6 +50,161 @@ document.addEventListener("visibilitychange", () => {
 function handleAppUpdate(user) {
     setAuthUI(!!user, user?.email);
     renderAll();
+}
+
+// --- STATS & EXPORT LOGIC ---
+
+function renderPlanStats() {
+  let totalVol = 0;
+  let totalSets = 0;
+  let sessMap = new Set();
+  let exMap = new Set();
+  const volBySession = {}; // For chart
+
+  Object.values(state.logs).forEach(log => {
+    if(!log.program || !log.session) return;
+    
+    // Track unique sessions
+    const sKey = `${log.program}|||${log.session}`;
+    sessMap.add(sKey);
+    
+    // Track unique exercises
+    if(log.workout) exMap.add(log.workout);
+
+    let logVol = 0;
+    if(log.sets && Array.isArray(log.sets)) {
+      log.sets.forEach(s => {
+        const w = parseFloat(s.weight||0);
+        const r = parseFloat(s.reps||0); // simple parsing
+        if(w > 0 && r > 0) {
+          const v = w * r;
+          totalVol += v;
+          logVol += v;
+        }
+        if(s.done || (w>0 && r>0)) totalSets++;
+      });
+    }
+    
+    if (logVol > 0) {
+      volBySession[sKey] = (volBySession[sKey] || 0) + logVol;
+    }
+  });
+
+  // Update Text
+  document.getElementById("planTotalVolume").textContent = Math.round(totalVol).toLocaleString();
+  document.getElementById("planLoggedSessions").textContent = sessMap.size;
+  document.getElementById("planLoggedSets").textContent = totalSets;
+  document.getElementById("planUniqueExercises").textContent = exMap.size;
+
+  // Render Chart
+  renderSimpleChart(volBySession);
+  
+  // Render Top Exercises
+  renderTopExercises();
+}
+
+function renderSimpleChart(dataObj) {
+  const canvas = document.getElementById("planSessionChart");
+  if(!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width;
+  const h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+  
+  const values = Object.values(dataObj);
+  if(values.length === 0) {
+    ctx.fillStyle = "#5f5a42"; ctx.font="14px monospace"; ctx.fillText("No data yet", 20, 50);
+    return;
+  }
+  
+  const max = Math.max(...values) * 1.1;
+  const barW = Math.min(40, (w - 20) / values.length);
+  const gap = 4;
+  
+  ctx.fillStyle = "#f4c300";
+  values.forEach((val, i) => {
+    const barH = (val / max) * (h - 20);
+    const x = 10 + i * (barW + gap);
+    const y = h - barH - 10;
+    ctx.fillRect(x, y, barW, barH);
+  });
+}
+
+function renderTopExercises() {
+  const el = document.getElementById("planTopExercises");
+  if(!el) return;
+  
+  // Aggregate volume by exercise name
+  const exVol = {};
+  Object.values(state.logs).forEach(log => {
+    if(!log.workout || !log.sets) return;
+    log.sets.forEach(s => {
+       const w = parseFloat(s.weight||0);
+       const r = parseFloat(s.reps||0);
+       if(w>0 && r>0) exVol[log.workout] = (exVol[log.workout]||0) + (w*r);
+    });
+  });
+  
+  const sorted = Object.entries(exVol).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  el.innerHTML = sorted.map(([name, vol]) => `
+    <div class="topitem">
+      <span>${escapeHtml(name)}</span>
+      <b class="mono">${Math.round(vol).toLocaleString()} kg</b>
+    </div>
+  `).join("");
+}
+
+function downloadFile(content, fileName, mimeType) {
+  const a = document.createElement("a");
+  const file = new Blob([content], {type: mimeType});
+  a.href = URL.createObjectURL(file);
+  a.download = fileName;
+  a.click();
+}
+
+function handleExportJSON() {
+  const json = JSON.stringify(state.logs, null, 2);
+  downloadFile(json, `bolt_backup_${new Date().toISOString().slice(0,10)}.json`, "application/json");
+}
+
+function handleExportCSV() {
+  let csv = "Date,Program,Session,Exercise,Set,Reps,Weight,Note\n";
+  const dateStr = new Date().toISOString().slice(0,10);
+  
+  Object.values(state.logs).forEach(log => {
+    if(!log.sets) return;
+    log.sets.forEach(s => {
+      // Only export rows with data
+      if(s.weight || s.reps || s.done || s.note) {
+        // Escape quotes
+        const note = (s.note||"").replace(/"/g, '""'); 
+        csv += `"${dateStr}","${log.program}","${log.session}","${log.workout}",${s.set},"${s.reps||""}","${s.weight||""}","${note}"\n`;
+      }
+    });
+  });
+  downloadFile(csv, `bolt_export_${dateStr}.csv`, "text/csv");
+}
+
+function handleImportJSON(e) {
+  const file = e.target.files[0];
+  if(!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = async (ev) => {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if(typeof imported === 'object' && imported !== null) {
+        state.logs = { ...state.logs, ...imported };
+        await saveLogs(true); // Force save
+        renderAll();
+        alert(`Imported successfully. Merged ${Object.keys(imported).length} records.`);
+      }
+    } catch(err) {
+      alert("Failed to parse JSON file.");
+      console.error(err);
+    }
+  };
+  reader.readAsText(file);
 }
 
 // --- GLOBAL EXPORTS FOR HTML HANDLERS ---
@@ -211,6 +366,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
+  // --- STATS & EXPORT LISTENERS ---
+  // Restoring functionality here
+  document.getElementById("exportLogs")?.addEventListener("click", handleExportJSON);
+  document.getElementById("exportCSV")?.addEventListener("click", handleExportCSV);
+  document.getElementById("importLogs")?.addEventListener("click", () => document.getElementById("importFile").click());
+  document.getElementById("importFile")?.addEventListener("change", handleImportJSON);
+
   // --- START DATE LOGIC ---
   const elDate = document.getElementById("programStartDate");
   const btnJump = document.getElementById("applyStartDate");
@@ -223,6 +385,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const saved = state.programStartDates[state.activeProgramId];
     if(saved) elDate.value = saved;
     else elDate.value = "2025-11-24"; // Default for you
+    
+    // Refresh stats when modal opens
+    renderPlanStats();
   });
   
   document.getElementById("closePlanStats")?.addEventListener("click", () => {

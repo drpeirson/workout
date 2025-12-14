@@ -393,15 +393,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     // 2. Draw Visuals
     const plates = getPlateArray(weight || 0);
     
-    // Convert numbers to CSS classes (e.g. 2.5 -> "p-2-5")
+    // Create HTML for plates
     const htmlPlates = plates.map(p => {
       const cls = "p-" + String(p).replace(".","-");
       return `<div class="plate ${cls}">${p}</div>`;
     }).join("");
 
+    // Draw Collar + Plates (No background bar sticking out)
     visualEl.innerHTML = `
-      <div class="bar-sleeve"></div>
       <div class="plate-stack">
+        <div class="bar-collar"></div>
         ${htmlPlates}
       </div>
     `;

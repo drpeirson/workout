@@ -99,53 +99,68 @@ textarea{min-height:70px; resize:vertical}
 .plate-visual {
   display: flex;
   align-items: center;
-  justify-content: center; /* Center the bar */
+  justify-content: center;
   height: 140px;
   margin: 15px 0;
-  position: relative;
-  background: rgba(0,0,0,0.1); /* Subtle background for contrast */
+  background: rgba(0,0,0,0.15);
   border-radius: 12px;
-  overflow: hidden;
+  overflow-x: auto; /* Allow scrolling if huge weight */
+  padding: 0 20px;
 }
 
-/* The Barbell Sleeve */
-.bar-sleeve {
-  height: 18px;
-  width: 90%;
-  background: linear-gradient(180deg, #999, #eee, #999); /* Silver metallic look */
-  position: absolute;
-  z-index: 0;
-  border-radius: 4px;
-}
-
-/* Container for the plates (sits on top of the bar) */
+/* The container for the bar parts */
 .plate-stack {
   display: flex;
   align-items: center;
-  gap: 2px; /* Tiny gap between plates */
-  z-index: 1;
+  gap: 1px; /* Tighter gap for realistic look */
+  /* No fixed width or background lines! */
 }
 
-/* Base Plate Style */
+/* The Barbell "Collar" (Always visible) */
+.bar-collar {
+  width: 40px;
+  height: 28px; /* Thickness of the shaft */
+  background: linear-gradient(180deg, #b0b0b0, #f0f0f0, #b0b0b0); /* Metallic Silver */
+  border: 1px solid #888;
+  border-right: 4px solid #666; /* The stop ring */
+  border-radius: 4px 0 0 4px;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+  z-index: 2;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: #555;
+  font-family: var(--mono);
+}
+.bar-collar::after {
+  content: "BAR";
+  opacity: 0.7;
+}
+
+/* The Plates */
 .plate {
-  width: 22px; /* Thickness of plate */
-  border-radius: 4px;
-  border: 1px solid rgba(0,0,0,0.2);
+  width: 24px;
+  border-radius: 3px;
+  border: 1px solid rgba(0,0,0,0.3);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--mono);
   font-size: 10px;
-  color: rgba(0,0,0,0.7);
   font-weight: 900;
-  box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+  box-shadow: 3px 0 6px rgba(0,0,0,0.3);
+  color: rgba(255,255,255,0.9);
+  position: relative;
+  z-index: 1;
 }
 
-/* Colors & Sizes (Height relative to 450mm standard plate) */
-.p-25   { height: 120px; background: #ff4d4d; border-color: #cc0000; } /* Red */
-.p-20   { height: 120px; background: #4d79ff; border-color: #0000cc; } /* Blue */
-.p-15   { height: 105px; background: #ffdf00; border-color: #b39b00; } /* Yellow (Standard) */
-.p-10   { height: 90px;  background: #4caf50; border-color: #006600; } /* Green */
-.p-5    { height: 75px;  background: #333;    border-color: #000; color: #fff; } /* Black */
-.p-2-5  { height: 60px;  background: #eee;    border-color: #bbb; } /* White */
-.p-1-25 { height: 50px;  background: #ccc;    border-color: #888; } /* Silver/Metal */
+/* User Defined Colors */
+.p-25   { height: 120px; background: #e02b2b; border-color: #990000; } /* Red */
+.p-20   { height: 120px; background: #2b60e0; border-color: #003399; } /* Blue */
+.p-15   { height: 105px; background: #f4c300; border-color: #b39b00; color: #333; } /* Yellow (Std fallback) */
+.p-10   { height: 90px;  background: #28a745; border-color: #1e7e34; } /* Green */
+.p-5    { height: 75px;  background: #111;    border-color: #000;    } /* Black */
+.p-2-5  { height: 60px;  background: #f0f0f0; border-color: #bbb; color: #333; } /* White */
+.p-1-25 { height: 50px;  background: #ccc;    border-color: #888; color: #333; } /* Silver */

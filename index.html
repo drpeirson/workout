@@ -121,7 +121,16 @@
         <div style="font-weight:900;">Plan stats</div>
         <button class="btn small" id="closePlanStats" type="button" style="max-width:120px;">Close</button>
       </div>
-      <div class="stats-grid">
+
+      <div style="margin-top:12px; background:rgba(0,0,0,0.2); padding:10px; border-radius:12px;">
+        <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Program Start Date (Week 1)</label>
+        <div class="row">
+          <input type="date" id="programStartDate" style="font-family:var(--mono);" />
+          <button class="btn small primary" id="applyStartDate">Auto-Jump</button>
+        </div>
+        <div class="small-note" style="margin-top:6px;">Sets "Week 1 Day 1". Example: Set to Nov 24 to make Dec 15 start Week 4.</div>
+      </div>
+      <div class="stats-grid" style="margin-top:10px;">
         <div class="stat"><div class="muted">Total volume</div><div class="statv"><span id="planTotalVolume">0</span> <span class="muted">kg•reps</span></div></div>
         <div class="stat"><div class="muted">Logged sessions</div><div class="statv" id="planLoggedSessions">0</div></div>
         <div class="stat"><div class="muted">Logged sets</div><div class="statv" id="planLoggedSets">0</div></div>

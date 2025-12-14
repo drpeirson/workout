@@ -12,7 +12,8 @@ import {
   ensureWorkoutLog,
   addCustomWorkout,
   getAllWorkoutsForSession,
-  sessionKey
+  sessionKey,
+  getAutoSelectedSessionId // <--- IMPORTED HERE
 } from './store.js';
 
 import { 
@@ -20,7 +21,7 @@ import {
   renderSessionsList, 
   renderActiveSession, 
   updateActiveProgress,
-  setAuthUI // <--- ADDED THIS
+  setAuthUI 
 } from './ui.js';
 
 import { 
@@ -46,7 +47,6 @@ document.addEventListener("visibilitychange", () => {
 });
 
 // --- UI UPDATE BRIDGE ---
-// This function bridges the Store and the UI without circular dependencies
 function handleAppUpdate(user) {
     setAuthUI(!!user, user?.email);
     renderAll();
@@ -158,6 +158,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     state.activeProgramId = e.target.value;
     const p = state.programById.get(state.activeProgramId);
     state.activeSessionId = p?.sessions[0]?.id || null;
+    
+    // If we switch programs, check if we have a saved start date for it and jump
+    const autoId = getAutoSelectedSessionId();
+    if (autoId) state.activeSessionId = autoId;
+
     savePrefs(); renderAll();
   });
   
@@ -206,12 +211,60 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
+  // --- START DATE LOGIC ---
+  const elDate = document.getElementById("programStartDate");
+  const btnJump = document.getElementById("applyStartDate");
+
+  document.getElementById("openPlanStats")?.addEventListener("click", () => {
+    const d = document.getElementById("planStatsModal");
+    d.classList.add("open"); d.setAttribute("aria-hidden", "false");
+    
+    // Fill input
+    const saved = state.programStartDates[state.activeProgramId];
+    if(saved) elDate.value = saved;
+    else elDate.value = "2025-11-24"; // Default for you
+  });
+  
+  document.getElementById("closePlanStats")?.addEventListener("click", () => {
+    document.getElementById("planStatsModal").classList.remove("open");
+  });
+
+  btnJump?.addEventListener("click", () => {
+    if(elDate.value){
+      state.programStartDates[state.activeProgramId] = elDate.value;
+      savePrefs();
+      const autoId = getAutoSelectedSessionId();
+      if(autoId) {
+         state.activeSessionId = autoId;
+         savePrefs();
+         renderAll();
+         alert("Jumped to correct week based on date!");
+         document.getElementById("planStatsModal").classList.remove("open");
+      } else {
+         alert("Could not calculate session (Date might be in future or program too short).");
+      }
+    }
+  });
+
   // Start Loading
   if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
   await loadAllPrograms();
   await loadLogsAsync();
   loadFunFacts();
   
+  // --- AUTO-SELECT ON LOAD ---
+  // If we have a stored date, or if we want to force the default you requested:
+  if (!state.programStartDates[state.activeProgramId]) {
+      // Hardcode default for your immediate use case
+      state.programStartDates[state.activeProgramId] = "2025-11-24";
+  }
+  
+  const autoId = getAutoSelectedSessionId();
+  if (autoId) {
+      state.activeSessionId = autoId;
+      console.log("Auto-selected session:", autoId);
+  }
+
   // UPDATED INIT AUTH (Pass the bridge function)
   initAuth(handleAppUpdate);
 });

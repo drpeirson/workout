@@ -12,6 +12,7 @@ export const state = {
   sessionsById: new Map(),
   activeProgramId: null,
   activeSessionId: null,
+  programStartDates: {}, // Stores start date per program ID
   logs: {}, 
   funFacts: [],
   _user: null
@@ -70,7 +71,8 @@ export function savePrefs() {
   try {
     const prefs = {
       programId: state.activeProgramId,
-      sessionId: state.activeSessionId
+      sessionId: state.activeSessionId,
+      startDates: state.programStartDates
     };
     localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
   } catch (e) { console.warn("Failed to save prefs", e); }
@@ -100,7 +102,6 @@ export async function loadLogsAsync() {
     }
   } catch(e) {
     console.error(e);
-    // document.getElementById("content").innerHTML = "Error loading logs"; // UI concern
   }
 }
 
@@ -147,9 +148,15 @@ export async function loadAllPrograms() {
   
   let prefs = {};
   try{ prefs = JSON.parse(localStorage.getItem(PREFS_KEY)||"{}"); }catch{}
+  
+  // Load Start Dates
+  state.programStartDates = prefs.startDates || {};
+
+  // Set Active Program
   if(prefs.programId && state.programById.has(prefs.programId)) state.activeProgramId = prefs.programId;
   else state.activeProgramId = state.programs[0]?.id || null;
   
+  // Set Active Session
   const actProg = state.programById.get(state.activeProgramId);
   if(actProg){
      const sessExists = actProg.sessions.some(s=>s.id===prefs.sessionId);
@@ -254,23 +261,19 @@ export async function initAuth(onAuthChange) {
       return; 
   }
 
-  // 1. Check initial session
   const {data:sessData} = await supabase.auth.getSession();
   state._user = sessData?.session?.user || null;
   
   if(state._user){ await cloudLoad(); }
   
-  // Notify main.js that we are ready
   if(onAuthChange) onAuthChange(state._user);
   
-  // 2. Listen for future changes
   supabase.auth.onAuthStateChange(async (_event, session)=>{
     state._user = session?.user || null;
     if(state._user){ 
         await cloudLoad(); 
         scheduleCloudSave(); 
     }
-    // Notify main.js again
     if(onAuthChange) onAuthChange(state._user);
   });
 }
@@ -287,6 +290,50 @@ export async function handleSignOut() {
   state.logs = {}; 
   if (typeof idbKeyval !== 'undefined') await idbKeyval.del(LS_KEY); 
   localStorage.removeItem(LS_KEY); 
-  // We return true to let the caller know we are done
   return true; 
+}
+
+// --- AUTO DATE LOGIC ---
+
+export function getAutoSelectedSessionId() {
+  if (!state.activeProgramId) return null;
+  
+  const startDateStr = state.programStartDates[state.activeProgramId];
+  if (!startDateStr) return null; // No date set
+
+  const start = new Date(startDateStr);
+  const now = new Date();
+  
+  // Reset hours to compare pure dates
+  start.setHours(0,0,0,0);
+  now.setHours(0,0,0,0);
+
+  const diffTime = now - start;
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) return null; // Future start date
+
+  const weekIndex = Math.floor(diffDays / 7); // 0-based week
+  const dayOfWeek = now.getDay(); // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+
+  // Map Day to Session Index (Assuming 4 sessions per week: Mon, Tue, Thu, Fri)
+  let sessionInWeek = 0;
+  if (dayOfWeek === 1) sessionInWeek = 0;      // Mon -> Session 1
+  else if (dayOfWeek === 2) sessionInWeek = 1; // Tue -> Session 2
+  else if (dayOfWeek === 3) sessionInWeek = 1; // Wed -> Session 2 (Rest, stick to prev)
+  else if (dayOfWeek === 4) sessionInWeek = 2; // Thu -> Session 3
+  else if (dayOfWeek === 5) sessionInWeek = 3; // Fri -> Session 4
+  else if (dayOfWeek === 6) sessionInWeek = 3; // Sat -> Session 4 (Rest)
+  else if (dayOfWeek === 0) sessionInWeek = 3; // Sun -> Session 4 (Rest)
+
+  // NOTE: This assumes your JSON is flat (Session 1 to 40)
+  const targetIndex = (weekIndex * 4) + sessionInWeek;
+
+  const prog = state.programById.get(state.activeProgramId);
+  // Boundary check: if week is beyond program length, stay at last session
+  if (!prog || !prog.sessions[targetIndex]) {
+      return prog?.sessions[prog.sessions.length - 1]?.id || null;
+  }
+
+  return prog.sessions[targetIndex].id;
 }

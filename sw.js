@@ -1,5 +1,5 @@
 /* BOLT Workout Tracker - Service Worker */
-const CACHE_NAME = "bolt-cache-v25-layout-fix"; // BUMPED VERSION
+const CACHE_NAME = "bolt-cache-v26-layout-final";
 
 const CORE_ASSETS = [
   "./",

@@ -40,11 +40,7 @@
           <input id="search" type="text" placeholder="Search sessions/workouts…" />
         </div>
 
-        <div class="row">
-          <button class="btn primary" id="reloadBtn">Reload plan</button>
-          <button class="btn" id="openPlanStats" type="button">Plan stats</button>
-          <button class="btn danger" id="clearBtn">Clear logs</button>
-        </div>
+        <button class="btn primary" id="openPlanStats" type="button" style="width:100%; justify-content:center; padding:12px;">📊 View Plan Stats</button>
 
         <div class="timer-box">
           <div class="timer">
@@ -73,10 +69,13 @@
 
         <div class="divider"></div>
 
-        <div class="footer-actions" style="margin-top:auto;">
+        <div class="small-note" style="margin-bottom:6px;">Data Management</div>
+        <div class="footer-actions">
           <button class="btn small" id="exportLogs">Export JSON</button>
           <button class="btn small" id="importLogs">Import JSON</button>
           <button class="btn small" id="exportCSV">Export CSV</button>
+          <button class="btn small" id="reloadBtn" title="Reload plan data">Reload Plan</button>
+          <button class="btn small danger" id="clearBtn" title="Clear all logs">Clear Logs</button>
         </div>
         <input id="importFile" type="file" accept=".json,application/json" style="display:none" />
 
@@ -84,7 +83,7 @@
           Put your combined program JSON files in <span class="mono">/data</span>.
         </div>
         
-        <button class="btn small danger" id="emergencyResetBtn" style="margin-top:10px; width:100%;">⚠️ Reset App / Debug</button>
+        <button class="btn small danger" id="emergencyResetBtn" style="margin-top:10px; width:100%; opacity:0.7;">⚠️ Reset App / Debug</button>
       </div>
     </div>
 

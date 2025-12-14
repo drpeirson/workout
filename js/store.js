@@ -12,7 +12,7 @@ export const state = {
   sessionsById: new Map(),
   activeProgramId: null,
   activeSessionId: null,
-  programStartDates: {}, // Stores start date per program ID
+  programStartDates: {}, 
   logs: {}, 
   funFacts: [],
   _user: null
@@ -26,7 +26,6 @@ export async function saveLogs(force = false) {
   try {
     // Immediate Local Save
     if (typeof idbKeyval !== 'undefined') {
-        // We use catch here to ensure main thread isn't blocked if IDB fails
         idbKeyval.set(LS_KEY, state.logs).catch(console.error);
     }
     localStorage.setItem(LS_KEY, JSON.stringify(state.logs));
@@ -293,44 +292,57 @@ export async function handleSignOut() {
   return true; 
 }
 
+// --- WAKE UP SYNC (NEW) ---
+export async function checkAuthConnection() {
+  if(!supabase) return;
+  try {
+    // Attempt to refresh the session token
+    const { data } = await supabase.auth.getSession();
+    if(data?.session) {
+      state._user = data.session.user;
+      console.log("Wake-up: Auth refreshed. Forcing sync...");
+      // Force a push of the current local state to the cloud
+      saveLogs(true); 
+    }
+  } catch(e) {
+    console.warn("Wake-up check failed", e);
+  }
+}
+
 // --- AUTO DATE LOGIC ---
 
 export function getAutoSelectedSessionId() {
   if (!state.activeProgramId) return null;
   
   const startDateStr = state.programStartDates[state.activeProgramId];
-  if (!startDateStr) return null; // No date set
+  if (!startDateStr) return null; 
 
   const start = new Date(startDateStr);
   const now = new Date();
   
-  // Reset hours to compare pure dates
   start.setHours(0,0,0,0);
   now.setHours(0,0,0,0);
 
   const diffTime = now - start;
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-  if (diffDays < 0) return null; // Future start date
+  if (diffDays < 0) return null; 
 
-  const weekIndex = Math.floor(diffDays / 7); // 0-based week
-  const dayOfWeek = now.getDay(); // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+  const weekIndex = Math.floor(diffDays / 7); 
+  const dayOfWeek = now.getDay(); 
 
-  // Map Day to Session Index (Assuming 4 sessions per week: Mon, Tue, Thu, Fri)
   let sessionInWeek = 0;
-  if (dayOfWeek === 1) sessionInWeek = 0;      // Mon -> Session 1
-  else if (dayOfWeek === 2) sessionInWeek = 1; // Tue -> Session 2
-  else if (dayOfWeek === 3) sessionInWeek = 1; // Wed -> Session 2 (Rest, stick to prev)
-  else if (dayOfWeek === 4) sessionInWeek = 2; // Thu -> Session 3
-  else if (dayOfWeek === 5) sessionInWeek = 3; // Fri -> Session 4
-  else if (dayOfWeek === 6) sessionInWeek = 3; // Sat -> Session 4 (Rest)
-  else if (dayOfWeek === 0) sessionInWeek = 3; // Sun -> Session 4 (Rest)
+  if (dayOfWeek === 1) sessionInWeek = 0;      
+  else if (dayOfWeek === 2) sessionInWeek = 1; 
+  else if (dayOfWeek === 3) sessionInWeek = 1; 
+  else if (dayOfWeek === 4) sessionInWeek = 2; 
+  else if (dayOfWeek === 5) sessionInWeek = 3; 
+  else if (dayOfWeek === 6) sessionInWeek = 3; 
+  else if (dayOfWeek === 0) sessionInWeek = 3; 
 
-  // NOTE: This assumes your JSON is flat (Session 1 to 40)
   const targetIndex = (weekIndex * 4) + sessionInWeek;
 
   const prog = state.programById.get(state.activeProgramId);
-  // Boundary check: if week is beyond program length, stay at last session
   if (!prog || !prog.sessions[targetIndex]) {
       return prog?.sessions[prog.sessions.length - 1]?.id || null;
   }

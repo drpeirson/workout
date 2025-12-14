@@ -13,7 +13,8 @@ import {
   addCustomWorkout,
   getAllWorkoutsForSession,
   sessionKey,
-  getAutoSelectedSessionId
+  getAutoSelectedSessionId,
+  checkAuthConnection // <--- ADD THIS
 } from './store.js';
 
 import { 
@@ -35,17 +36,19 @@ import {
   resolveReps,
   normalizeName,
   calculate1RM,
-  calculatePlates,
-  getPlateArray
+  calculatePlates
 } from './utils.js';
 
-
-// --- VISIBILITY FIX ---
+// --- VISIBILITY FIX & WAKE UP SYNC ---
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "hidden") {
+    // 1. Save local immediately on hide/lock
     saveLogs(true);
   } else if (document.visibilityState === "visible") {
+    // 2. Resume timers
     tickTimer();
+    // 3. Force reconnect and cloud sync (Fixes "refresh to sync" bug)
+    checkAuthConnection();
   }
 });
 
@@ -236,9 +239,33 @@ window.showHistory = (exerciseName) => {
   modal.classList.add("open"); modal.setAttribute("aria-hidden", "false");
 };
 
+// Plate Calc Input & Visuals
+const renderPlateVisuals = (weight) => {
+  const visualEl = document.getElementById("plateVisual");
+  const textEl = document.getElementById("plateResult");
+  if(!visualEl || !textEl) return;
+
+  textEl.textContent = weight ? calculatePlates(weight) : "";
+
+  const plates = getPlateArray(weight || 0);
+  
+  const htmlPlates = plates.map(p => {
+    const cls = "p-" + String(p).replace(".","-");
+    return `<div class="plate ${cls}">${p}</div>`;
+  }).join("");
+
+  visualEl.innerHTML = `
+    <div class="plate-stack">
+      <div class="bar-collar"></div>
+      ${htmlPlates}
+    </div>
+  `;
+};
+
 window.showPlateCalc = () => {
   document.getElementById("plateModal").classList.add("open");
   document.getElementById("plateModal").setAttribute("aria-hidden", "false");
+  // Trigger once on open
   const el = document.getElementById("plateTarget");
   if(el) el.dispatchEvent(new Event('input'));
 };
@@ -335,29 +362,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("setCustom")?.addEventListener("click", () => { const val = parseInt(document.getElementById("customSeconds").value, 10); if(val) setTimer(val); });
   document.getElementById("preset")?.addEventListener("change", (e) => { setTimer(parseInt(e.target.value, 10)); });
   
-// --- NUCLEAR RESET (Fixes Mobile Caching) ---
   document.getElementById("emergencyResetBtn")?.addEventListener("click", async () => {
     if(!confirm("⚠️ Force Update? This will reload the latest version. Your logs are safe.")) return;
-    
     document.getElementById("emergencyResetBtn").textContent = "Updating...";
-
-    // 1. Unregister Service Worker
     if('serviceWorker' in navigator) {
       const regs = await navigator.serviceWorker.getRegistrations();
       for(let reg of regs) await reg.unregister();
     }
-
-    // 2. Delete ALL File Caches (This is what fixes the mobile issue)
     if('caches' in window) {
       const keys = await caches.keys();
       for(let key of keys) await caches.delete(key);
     }
-
-    // 3. Force Reload
     window.location.reload(true);
   });
 
-  // BUTTON LISTENERS (Restored)
+  // BUTTON LISTENERS
   document.getElementById("reloadBtn")?.addEventListener("click", async () => {
     if(!confirm("Reload program data?")) return;
     await loadAllPrograms();
@@ -397,39 +416,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("closeHistory").addEventListener("click", () => document.getElementById("historyModal").classList.remove("open"));
   document.getElementById("closePlate").addEventListener("click", () => document.getElementById("plateModal").classList.remove("open"));
   
-// Plate Calc Input & Visuals
-  const renderPlateVisuals = (weight) => {
-    const visualEl = document.getElementById("plateVisual");
-    const textEl = document.getElementById("plateResult");
-    if(!visualEl || !textEl) return;
-
-    // 1. Update Text
-    textEl.textContent = weight ? calculatePlates(weight) : "";
-
-    // 2. Draw Visuals
-    const plates = getPlateArray(weight || 0);
-    
-    // Create HTML for plates
-    const htmlPlates = plates.map(p => {
-      const cls = "p-" + String(p).replace(".","-");
-      return `<div class="plate ${cls}">${p}</div>`;
-    }).join("");
-
-    // Draw Collar + Plates (No background bar sticking out)
-    visualEl.innerHTML = `
-      <div class="plate-stack">
-        <div class="bar-collar"></div>
-        ${htmlPlates}
-      </div>
-    `;
-  };
-
+  // Plate Calc Input
   document.getElementById("plateTarget")?.addEventListener("input", (e) => {
     renderPlateVisuals(parseFloat(e.target.value));
   });
-  
-  // Trigger once on load to show default state
-  document.getElementById("plateTarget")?.dispatchEvent(new Event('input'));
 
   if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
   await loadAllPrograms();

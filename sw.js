@@ -1,5 +1,5 @@
 /* BOLT Workout Tracker - Service Worker */
-const CACHE_NAME = "bolt-cache-v20-modular";
+const CACHE_NAME = "bolt-cache-v21-safe";
 
 const CORE_ASSETS = [
   "./",
@@ -13,9 +13,8 @@ const CORE_ASSETS = [
   "js/utils.js",
   "js/store.js",
   "js/ui.js",
-  "js/main.js",
-  "https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/index-min.js",
-  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+  "js/main.js"
+  // REMOVED CDN LINKS FROM HERE TO PREVENT INSTALL FAILURES
 ];
 
 self.addEventListener("install", (event) => {

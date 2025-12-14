@@ -335,10 +335,26 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("setCustom")?.addEventListener("click", () => { const val = parseInt(document.getElementById("customSeconds").value, 10); if(val) setTimer(val); });
   document.getElementById("preset")?.addEventListener("change", (e) => { setTimer(parseInt(e.target.value, 10)); });
   
-  document.getElementById("emergencyResetBtn")?.addEventListener("click", () => {
-    if(!confirm("Reset app?")) return;
-    if('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(r => { for(let reg of r) reg.unregister(); window.location.reload(true); });
-    else window.location.reload(true);
+// --- NUCLEAR RESET (Fixes Mobile Caching) ---
+  document.getElementById("emergencyResetBtn")?.addEventListener("click", async () => {
+    if(!confirm("⚠️ Force Update? This will reload the latest version. Your logs are safe.")) return;
+    
+    document.getElementById("emergencyResetBtn").textContent = "Updating...";
+
+    // 1. Unregister Service Worker
+    if('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for(let reg of regs) await reg.unregister();
+    }
+
+    // 2. Delete ALL File Caches (This is what fixes the mobile issue)
+    if('caches' in window) {
+      const keys = await caches.keys();
+      for(let key of keys) await caches.delete(key);
+    }
+
+    // 3. Force Reload
+    window.location.reload(true);
   });
 
   // BUTTON LISTENERS (Restored)

@@ -1,5 +1,5 @@
 /* BOLT Workout Tracker - Service Worker */
-const CACHE_NAME = "bolt-cache-v27-plate-visuals";
+const CACHE_NAME = "bolt-cache-v28-mobile-fix";
 // ... rest of file is same ...
 
 const CORE_ASSETS = [

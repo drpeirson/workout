@@ -28,7 +28,7 @@ export function cleanWorkoutTitle(title, programName){
     const progRe = new RegExp("\\s*-\\s*" + String(programName).replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b.*$", "i");
     if (progRe.test(t)) t = t.replace(progRe, "").trim();
   }
-  // Remove suffix noise like " - SS - Week 1"
+  // Match " - Week X", " - Session Y", " - SS - Week Z", etc.
   t = t.replace(/\s*[-–]\s*(Week|Session|SS|Hypertrophy).*$/i, "").trim();
   return t;
 }

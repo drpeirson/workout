@@ -1,6 +1,5 @@
 /* BOLT Workout Tracker - Service Worker */
-const CACHE_NAME = "bolt-cache-v28-mobile-fix";
-// ... rest of file is same ...
+const CACHE_NAME = "bolt-cache-v29-complete"; // BUMPED
 
 const CORE_ASSETS = [
   "./",
@@ -11,7 +10,7 @@ const CORE_ASSETS = [
   "fun_facts.json",
   "css/style.css",
   "js/config.js",
-  "js/utils.js",
+  "js/utils.js", // Ensure this gets re-fetched
   "js/store.js",
   "js/ui.js",
   "js/main.js"

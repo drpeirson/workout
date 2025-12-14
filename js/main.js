@@ -14,7 +14,7 @@ import {
   getAllWorkoutsForSession,
   sessionKey,
   getAutoSelectedSessionId,
-  checkAuthConnection // <--- ADD THIS
+  checkAuthConnection
 } from './store.js';
 
 import { 
@@ -36,7 +36,8 @@ import {
   resolveReps,
   normalizeName,
   calculate1RM,
-  calculatePlates
+  calculatePlates,
+  getPlateArray
 } from './utils.js';
 
 // --- VISIBILITY FIX & WAKE UP SYNC ---
@@ -47,7 +48,7 @@ document.addEventListener("visibilitychange", () => {
   } else if (document.visibilityState === "visible") {
     // 2. Resume timers
     tickTimer();
-    // 3. Force reconnect and cloud sync (Fixes "refresh to sync" bug)
+    // 3. Force reconnect and cloud sync
     checkAuthConnection();
   }
 });
@@ -265,7 +266,6 @@ const renderPlateVisuals = (weight) => {
 window.showPlateCalc = () => {
   document.getElementById("plateModal").classList.add("open");
   document.getElementById("plateModal").setAttribute("aria-hidden", "false");
-  // Trigger once on open
   const el = document.getElementById("plateTarget");
   if(el) el.dispatchEvent(new Event('input'));
 };
@@ -376,7 +376,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.location.reload(true);
   });
 
-  // BUTTON LISTENERS
+  // BUTTON LISTENERS (Footer)
   document.getElementById("reloadBtn")?.addEventListener("click", async () => {
     if(!confirm("Reload program data?")) return;
     await loadAllPrograms();
@@ -396,6 +396,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("importLogs")?.addEventListener("click", () => document.getElementById("importFile").click());
   document.getElementById("importFile")?.addEventListener("change", handleImportJSON);
   
+  // Plan Stats Button
   document.getElementById("openPlanStats")?.addEventListener("click", () => {
     document.getElementById("planStatsModal").classList.add("open");
     const saved = state.programStartDates[state.activeProgramId];

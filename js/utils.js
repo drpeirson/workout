@@ -28,10 +28,11 @@ export function cleanWorkoutTitle(title, programName){
     const progRe = new RegExp("\\s*-\\s*" + String(programName).replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b.*$", "i");
     if (progRe.test(t)) t = t.replace(progRe, "").trim();
   }
-  // Match " - Week X", " - Session Y", " - SS - Week Z", etc.
   t = t.replace(/\s*[-–]\s*(Week|Session|SS|Hypertrophy).*$/i, "").trim();
   return t;
 }
+
+// --- NEW EXPORTS (REQUIRED FOR MAIN.JS) ---
 
 export function normalizeName(str) {
   return String(str).toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -71,6 +72,23 @@ export function calculatePlates(targetKg) {
     .join(" + ");
 
   return `Per Side: [ ${text} ]`;
+}
+
+export function getPlateArray(targetKg) {
+  const bar = 20;
+  if (targetKg <= bar) return []; 
+  
+  let remainder = (targetKg - bar) / 2; 
+  const plates = [25, 20, 15, 10, 5, 2.5, 1.25];
+  const needed = [];
+
+  for (const p of plates) {
+    while (remainder >= p) {
+      needed.push(p);
+      remainder -= p;
+    }
+  }
+  return needed;
 }
 
 export function toIntMaybe(v){
@@ -167,22 +185,4 @@ export function pauseTimer() {
 
 export function resetTimer() {
   setTimer(timerState.total);
-}
-
-// Add this to your exports in utils.js
-export function getPlateArray(targetKg) {
-  const bar = 20;
-  if (targetKg <= bar) return []; // Just bar
-  
-  let remainder = (targetKg - bar) / 2; 
-  const plates = [25, 20, 15, 10, 5, 2.5, 1.25];
-  const needed = [];
-
-  for (const p of plates) {
-    while (remainder >= p) {
-      needed.push(p);
-      remainder -= p;
-    }
-  }
-  return needed;
 }

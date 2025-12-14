@@ -40,7 +40,7 @@
           <input id="search" type="text" placeholder="Search sessions/workouts…" />
         </div>
 
-        <button class="btn primary" id="openPlanStats" type="button" style="width:100%; justify-content:center; padding:12px;">📊 View Plan Stats</button>
+        <button class="btn primary" id="openPlanStats" type="button" style="width:100%; justify-content:center; padding:12px; font-size:14px;">📊 View Plan Stats</button>
 
         <div class="timer-box">
           <div class="timer">
@@ -161,25 +161,24 @@
   </div>
 
   <div class="drawer" id="plateModal" aria-hidden="true">
-      <div class="sheet">
-        <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;">
-          <div style="font-weight:900;">Plate Math</div>
-          <button class="btn small" id="closePlate" type="button">Close</button>
+    <div class="sheet">
+      <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;">
+        <div style="font-weight:900;">Plate Math</div>
+        <button class="btn small" id="closePlate" type="button">Close</button>
+      </div>
+      <div class="divider"></div>
+      <div style="padding:10px 0;">
+        <div class="grid" style="grid-template-columns: 1fr 100px;">
+          <label style="align-self:center;">Target Weight (kg)</label>
+          <input type="number" id="plateTarget" value="60" style="font-size:18px; font-weight:bold;">
         </div>
-        <div class="divider"></div>
-        <div style="padding:10px 0;">
-          <div class="grid" style="grid-template-columns: 1fr 100px;">
-            <label style="align-self:center;">Target Weight (kg)</label>
-            <input type="number" id="plateTarget" value="60" style="font-size:18px; font-weight:bold;">
-          </div>
-          
-          <div id="plateVisual" class="plate-visual">
-             </div>
-           
-          <div id="plateResult" style="text-align:center; font-family:var(--mono); font-size:16px; white-space:pre-wrap; line-height:1.6;"></div>
-        </div>
+        
+        <div id="plateVisual" class="plate-visual"></div>
+        
+        <div id="plateResult" style="text-align:center; font-family:var(--mono); font-size:16px; white-space:pre-wrap; line-height:1.6;"></div>
       </div>
     </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/index-min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

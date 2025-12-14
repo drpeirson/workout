@@ -25,8 +25,6 @@
       </header>
 
       <div class="stack">
-        <button class="btn danger small" id="emergencyResetBtn" style="align-self:flex-start;">⚠️ Reset App</button>
-
         <div class="two-col">
           <div>
             <label class="muted" for="programSelect">Program</label>
@@ -37,6 +35,7 @@
             <select id="sessionSelect"></select>
           </div>
         </div>
+        
         <div class="row">
           <input id="search" type="text" placeholder="Search sessions/workouts…" />
         </div>
@@ -64,23 +63,28 @@
           <button class="btn small" id="setCustom">Set</button>
         </div>
 
-        <div class="small-note" id="planHint">
-          Put your combined program JSON files in <span class="mono">/data</span>.
-        </div>
-
         <div class="row" id="mobileBrowseRow">
           <button class="btn primary" id="openSessions" type="button">Browse sessions</button>
         </div>
 
         <div class="divider"></div>
+        
         <div class="sessions" id="sessions"></div>
 
-        <div class="footer-actions">
-          <button class="btn" id="exportLogs">Export logs (JSON)</button>
-          <button class="btn" id="importLogs">Import logs</button>
-          <button class="btn" id="exportCSV">Export logs (CSV)</button>
+        <div class="divider"></div>
+
+        <div class="footer-actions" style="margin-top:auto;">
+          <button class="btn small" id="exportLogs">Export JSON</button>
+          <button class="btn small" id="importLogs">Import JSON</button>
+          <button class="btn small" id="exportCSV">Export CSV</button>
         </div>
         <input id="importFile" type="file" accept=".json,application/json" style="display:none" />
+
+        <div class="small-note" id="planHint" style="margin-top:10px;">
+          Put your combined program JSON files in <span class="mono">/data</span>.
+        </div>
+        
+        <button class="btn small danger" id="emergencyResetBtn" style="margin-top:10px; width:100%;">⚠️ Reset App / Debug</button>
       </div>
     </div>
 
@@ -130,6 +134,7 @@
         </div>
         <div class="small-note" style="margin-top:6px;">Sets "Week 1 Day 1". Example: Set to Nov 24 to make Dec 15 start Week 4.</div>
       </div>
+
       <div class="stats-grid" style="margin-top:10px;">
         <div class="stat"><div class="muted">Total volume</div><div class="statv"><span id="planTotalVolume">0</span> <span class="muted">kg•reps</span></div></div>
         <div class="stat"><div class="muted">Logged sessions</div><div class="statv" id="planLoggedSessions">0</div></div>
@@ -176,7 +181,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/index-min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

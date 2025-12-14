@@ -1,5 +1,5 @@
 /* BOLT Workout Tracker - Service Worker */
-const CACHE_NAME = "bolt-cache-v21-safe";
+const CACHE_NAME = "bolt-cache-v25-layout-fix"; // BUMPED VERSION
 
 const CORE_ASSETS = [
   "./",
@@ -14,7 +14,6 @@ const CORE_ASSETS = [
   "js/store.js",
   "js/ui.js",
   "js/main.js"
-  // REMOVED CDN LINKS FROM HERE TO PREVENT INSTALL FAILURES
 ];
 
 self.addEventListener("install", (event) => {
@@ -51,7 +50,6 @@ self.addEventListener("fetch", (event) => {
   if (req.method !== "GET") return;
   const url = req.url;
 
-  // Navigate fallback
   if (req.mode === "navigate") {
     event.respondWith(
       fetch(req).then((res) => {
@@ -63,7 +61,6 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Program JSON (stale-while-revalidate)
   if (isProgramJson(url)) {
     event.respondWith(
       caches.match(req).then((cached) => {
@@ -78,7 +75,6 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Core Assets (cache-first + update)
   if (isSameOrigin(url) || CORE_ASSETS.includes(url)) {
     event.respondWith(
       caches.match(req).then((cached) => {

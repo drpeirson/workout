@@ -94,3 +94,58 @@ textarea{min-height:70px; resize:vertical}
 .topitem{display:flex;justify-content:space-between;gap:10px;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:8px 10px;background:rgba(255,255,255,.02);}
 .topitem b{font-weight:900;}
 @media (max-width: 980px){ .stats-grid{grid-template-columns: 1fr;} #planSessionChart{height:220px;} }
+
+/* --- PLATE CALCULATOR VISUALS --- */
+.plate-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center the bar */
+  height: 140px;
+  margin: 15px 0;
+  position: relative;
+  background: rgba(0,0,0,0.1); /* Subtle background for contrast */
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* The Barbell Sleeve */
+.bar-sleeve {
+  height: 18px;
+  width: 90%;
+  background: linear-gradient(180deg, #999, #eee, #999); /* Silver metallic look */
+  position: absolute;
+  z-index: 0;
+  border-radius: 4px;
+}
+
+/* Container for the plates (sits on top of the bar) */
+.plate-stack {
+  display: flex;
+  align-items: center;
+  gap: 2px; /* Tiny gap between plates */
+  z-index: 1;
+}
+
+/* Base Plate Style */
+.plate {
+  width: 22px; /* Thickness of plate */
+  border-radius: 4px;
+  border: 1px solid rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: rgba(0,0,0,0.7);
+  font-weight: 900;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+}
+
+/* Colors & Sizes (Height relative to 450mm standard plate) */
+.p-25   { height: 120px; background: #ff4d4d; border-color: #cc0000; } /* Red */
+.p-20   { height: 120px; background: #4d79ff; border-color: #0000cc; } /* Blue */
+.p-15   { height: 105px; background: #ffdf00; border-color: #b39b00; } /* Yellow (Standard) */
+.p-10   { height: 90px;  background: #4caf50; border-color: #006600; } /* Green */
+.p-5    { height: 75px;  background: #333;    border-color: #000; color: #fff; } /* Black */
+.p-2-5  { height: 60px;  background: #eee;    border-color: #bbb; } /* White */
+.p-1-25 { height: 50px;  background: #ccc;    border-color: #888; } /* Silver/Metal */

@@ -168,3 +168,21 @@ export function pauseTimer() {
 export function resetTimer() {
   setTimer(timerState.total);
 }
+
+// Add this to your exports in utils.js
+export function getPlateArray(targetKg) {
+  const bar = 20;
+  if (targetKg <= bar) return []; // Just bar
+  
+  let remainder = (targetKg - bar) / 2; 
+  const plates = [25, 20, 15, 10, 5, 2.5, 1.25];
+  const needed = [];
+
+  for (const p of plates) {
+    while (remainder >= p) {
+      needed.push(p);
+      remainder -= p;
+    }
+  }
+  return needed;
+}

@@ -35,8 +35,10 @@ import {
   resolveReps,
   normalizeName,
   calculate1RM,
-  calculatePlates
+  calculatePlates,
+  getPlateArray
 } from './utils.js';
+
 
 // --- VISIBILITY FIX ---
 document.addEventListener("visibilitychange", () => {
@@ -379,11 +381,38 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("closeHistory").addEventListener("click", () => document.getElementById("historyModal").classList.remove("open"));
   document.getElementById("closePlate").addEventListener("click", () => document.getElementById("plateModal").classList.remove("open"));
   
-  // Plate Calc Input
+// Plate Calc Input & Visuals
+  const renderPlateVisuals = (weight) => {
+    const visualEl = document.getElementById("plateVisual");
+    const textEl = document.getElementById("plateResult");
+    if(!visualEl || !textEl) return;
+
+    // 1. Update Text
+    textEl.textContent = weight ? calculatePlates(weight) : "";
+
+    // 2. Draw Visuals
+    const plates = getPlateArray(weight || 0);
+    
+    // Convert numbers to CSS classes (e.g. 2.5 -> "p-2-5")
+    const htmlPlates = plates.map(p => {
+      const cls = "p-" + String(p).replace(".","-");
+      return `<div class="plate ${cls}">${p}</div>`;
+    }).join("");
+
+    visualEl.innerHTML = `
+      <div class="bar-sleeve"></div>
+      <div class="plate-stack">
+        ${htmlPlates}
+      </div>
+    `;
+  };
+
   document.getElementById("plateTarget")?.addEventListener("input", (e) => {
-    const val = parseFloat(e.target.value);
-    document.getElementById("plateResult").textContent = val ? calculatePlates(val) : "";
+    renderPlateVisuals(parseFloat(e.target.value));
   });
+  
+  // Trigger once on load to show default state
+  document.getElementById("plateTarget")?.dispatchEvent(new Event('input'));
 
   if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
   await loadAllPrograms();

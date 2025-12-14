@@ -123,22 +123,31 @@ export function renderActiveSession() {
     const wlog = ensureWorkoutLog(session, w, idx);
     const logged = countWorkoutLogged(session.programName, session.title, w, idx);
     const badge = logged ? '<span class="pill" style="margin-left:8px;border-color:rgba(53,208,127,.35);background:rgba(53,208,127,.10);color:#c8ffe2">logged</span>' : '';
+    const cleanTitle = cleanWorkoutTitle(w.title, session.programName);
     const requiredLabel = `Required: Sets ${escapeHtml(w.setsStr||String(w.setCount))} • Reps ${escapeHtml(w.repsStr||w.targetReps||"")}`;
     
     const deleteBtn = w._isCustom 
       ? `<button class="btn danger small" onclick="window.removeCustomWorkout(${w._customIndex}); event.stopPropagation();" style="margin-right:8px;">Remove</button>`
       : '';
 
+    // NEW ICONS: History & Calculator
+    // We pass the raw 'cleanTitle' to the history lookup so it matches across weeks
+    const icons = `
+      <button class="btn small" onclick="window.showHistory('${escapeHtml(cleanTitle)}'); event.stopPropagation();" title="History">📜</button>
+      <button class="btn small" onclick="window.showPlateCalc(); event.stopPropagation();" title="Plate Calculator">🧮</button>
+    `;
+
     return `
       <div class="workout" data-wi="${idx}">
         <div class="workout-head" onclick="window.toggleWorkout(this)">
           <div>
-            <div class="workout-title" id="title_${idx}">${escapeHtml(cleanWorkoutTitle(w.title, session.programName))} ${badge}</div>
+            <div class="workout-title" id="title_${idx}">${escapeHtml(cleanTitle)} ${badge}</div>
             <div class="workout-sub">${requiredLabel}</div>
           </div>
-          <div style="display:flex;align-items:center;">
+          <div style="display:flex;align-items:center;gap:6px;">
             ${deleteBtn}
-            <button class="btn small">Toggle</button>
+            ${icons}
+            <button class="btn small">▼</button>
           </div>
         </div>
         <div class="workout-body">
@@ -148,9 +157,9 @@ export function renderActiveSession() {
           <div class="footer-actions">
             <button class="btn small" onclick="window.modSet(${idx}, 1)">+ Set</button>
             <button class="btn small danger" onclick="window.modSet(${idx}, -1)">− Set</button>
-            <button class="btn small" onclick="window.startRest(120)">Start 120s rest</button>
-            <button class="btn small" onclick="window.startRest(90)">Start 90s rest</button>
-            <button class="btn small" onclick="window.startRest(60)">Start 60s rest</button>
+            <button class="btn small" onclick="window.startRest(120)">120s</button>
+            <button class="btn small" onclick="window.startRest(90)">90s</button>
+            <button class="btn small" onclick="window.startRest(60)">60s</button>
           </div>
           <div class="divider"></div>
           <label class="muted">Workout notes</label>
@@ -164,7 +173,7 @@ export function renderActiveSession() {
     <div class="workout">
       <div class="workout-head" onclick="window.toggleWorkout(this)">
         <div><div class="workout-title">Add exercise</div><div class="workout-sub">Custom exercise</div></div>
-        <button class="btn small">Toggle</button>
+        <button class="btn small">▼</button>
       </div>
       <div class="workout-body">
         <div class="grid" style="grid-template-columns: 1fr 90px 120px;">

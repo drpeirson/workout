@@ -24,14 +24,63 @@ export function escapeHtml(s){
 export function cleanWorkoutTitle(title, programName){
   let t = String(title || "").trim();
   if (!t) return t;
+  
+  // 1. Remove Program Name if present
   if (programName){
     const progRe = new RegExp("\\s*-\\s*" + String(programName).replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b.*$", "i");
     if (progRe.test(t)) t = t.replace(progRe, "").trim();
   }
-  t = t.replace(/\s*-\s*WEEK\s*\d+\b.*$/i, "").trim();
-  t = t.replace(/\s*-\s*Week\s*\d+\b.*$/i, "").trim();
-  t = t.replace(/\s*-\s*SESSION\s*\d+\b.*$/i, "").trim();
+
+  // 2. Remove "Week X", "Session Y", "SS", "Hypertrophy" suffix noise
+  // This matches " - Week 1", " - SS - Week 2", " - Session 4", etc.
+  t = t.replace(/\s*[-–]\s*(Week|Session|SS|Hypertrophy).*$/i, "").trim();
+  
   return t;
+}
+
+export function normalizeName(str) {
+  // Aggressive normalization for history matching
+  // "Push Press - SS - Week 1" -> "pushpress"
+  return str.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+export function calculate1RM(weight, reps) {
+  const w = parseFloat(weight);
+  const r = parseFloat(reps);
+  if (!w || !r || r === 0) return 0;
+  if (r === 1) return w;
+  // Epley Formula
+  return w * (1 + r / 30);
+}
+
+export function calculatePlates(targetKg) {
+  const bar = 20;
+  if (targetKg <= bar) return "Just the bar (20kg)";
+  
+  let remainder = (targetKg - bar) / 2; // Per side
+  const plates = [25, 20, 15, 10, 5, 2.5, 1.25];
+  const needed = [];
+
+  for (const p of plates) {
+    while (remainder >= p) {
+      needed.push(p);
+      remainder -= p;
+    }
+  }
+  
+  // Format Output
+  if (needed.length === 0) return "Just the bar (20kg)";
+  
+  // Group counts: "20, 20" -> "2x20"
+  const counts = {};
+  needed.forEach(x => { counts[x] = (counts[x] || 0) + 1; });
+  
+  const text = Object.entries(counts)
+    .sort((a,b) => parseFloat(b[0]) - parseFloat(a[0]))
+    .map(([w, count]) => `${count > 1 ? count + 'x' : ''}${w}`)
+    .join(" + ");
+
+  return `Per Side: [ ${text} ]`;
 }
 
 export function toIntMaybe(v){

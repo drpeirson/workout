@@ -14,7 +14,7 @@ import {
   getAllWorkoutsForSession,
   sessionKey,
   getAutoSelectedSessionId,
-  checkAuthConnection
+  wakeUpSync
 } from './store.js';
 
 import { 
@@ -40,7 +40,16 @@ import {
   getPlateArray
 } from './utils.js';
 
-// --- VISIBILITY FIX & WAKE UP SYNC ---
+// --- VISIBILITY & CONNECTION SYNC ---
+
+const performSync = async () => {
+  const synced = await wakeUpSync();
+  if (synced) {
+    // If we successfully synced with cloud, re-render to show updates
+    renderAll(); 
+  }
+};
+
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "hidden") {
     // 1. Save local immediately on hide/lock
@@ -48,9 +57,14 @@ document.addEventListener("visibilitychange", () => {
   } else if (document.visibilityState === "visible") {
     // 2. Resume timers
     tickTimer();
-    // 3. Force reconnect and cloud sync
-    checkAuthConnection();
+    // 3. Force reconnect, sync, and render
+    performSync();
   }
+});
+
+window.addEventListener("online", () => {
+  console.log("Back online. Syncing...");
+  performSync();
 });
 
 // --- BRIDGE ---
@@ -59,7 +73,8 @@ function handleAppUpdate(user) {
     renderAll();
 }
 
-// --- STATS/EXPORT ---
+// ... existing renderPlanStats, renderSimpleChart, renderTopExercises, downloadFile, etc. ...
+// (Retain all code from renderPlanStats down to end of file)
 
 function renderPlanStats() {
   let totalVol = 0; let totalSets = 0;

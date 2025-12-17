@@ -14,7 +14,7 @@ import {
   getAllWorkoutsForSession,
   sessionKey,
   getAutoSelectedSessionId,
-  wakeUpSync
+  wakeUpSync // NEW
 } from './store.js';
 
 import { 
@@ -73,8 +73,7 @@ function handleAppUpdate(user) {
     renderAll();
 }
 
-// ... existing renderPlanStats, renderSimpleChart, renderTopExercises, downloadFile, etc. ...
-// (Retain all code from renderPlanStats down to end of file)
+// --- STATS/EXPORT ---
 
 function renderPlanStats() {
   let totalVol = 0; let totalSets = 0;

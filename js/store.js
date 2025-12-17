@@ -1,8 +1,7 @@
-// ... existing imports ...
 import { PROGRAM_SOURCES, SUPABASE_URL, SUPABASE_ANON_KEY, LS_KEY, PREFS_KEY, CLOUD_SAVE_DEBOUNCE_MS } from './config.js';
 import { uid, toIntMaybe, cleanWorkoutTitle, resolveReps, debounce } from './utils.js';
 
-// ... existing setup ...
+// Setup Supabase
 const supabase = (typeof window.supabase !== 'undefined' && SUPABASE_ANON_KEY.length > 20) 
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) 
   : null;
@@ -34,7 +33,7 @@ export async function saveLogs(force = false) {
     // Cloud Save
     if(force) {
         if(cloudSaveTimer) clearTimeout(cloudSaveTimer);
-        // CHANGE: await this so we can guarantee sync order
+        // CHANGE: await this to ensure it finishes before backgrounding
         await cloudSaveNow(); 
     } else {
         scheduleCloudSave();
@@ -64,14 +63,13 @@ export async function cloudLoad() {
   if(error){ console.warn("cloudLoad error", error); return; }
   const cloudLogs = data?.logs||{};
   if(typeof cloudLogs!=="object" || cloudLogs===null) return;
-  // Merge strategy: Cloud overwrites local for same keys. 
-  // By pushing first in wakeUpSync, we ensure we don't lose local work.
+  
+  // Merge cloud logs into local state
   state.logs = {...state.logs, ...cloudLogs};
-  await saveLogs(true); // Persist merged logs locally
+  
+  // Persist the merged result
+  await saveLogs(true); 
 }
-
-// ... existing savePrefs, loadFunFacts, loadLogsAsync, loadAllPrograms, logic functions ...
-// (Retain all functions from savePrefs down to handleSignOut)
 
 export function savePrefs() {
   try {
@@ -83,6 +81,8 @@ export function savePrefs() {
     localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
   } catch (e) { console.warn("Failed to save prefs", e); }
 }
+
+// --- INIT DATA ---
 
 export async function loadFunFacts() {
   try {
@@ -153,17 +153,22 @@ export async function loadAllPrograms() {
   let prefs = {};
   try{ prefs = JSON.parse(localStorage.getItem(PREFS_KEY)||"{}"); }catch{}
   
+  // Load Start Dates
   state.programStartDates = prefs.startDates || {};
 
+  // Set Active Program
   if(prefs.programId && state.programById.has(prefs.programId)) state.activeProgramId = prefs.programId;
   else state.activeProgramId = state.programs[0]?.id || null;
   
+  // Set Active Session
   const actProg = state.programById.get(state.activeProgramId);
   if(actProg){
      const sessExists = actProg.sessions.some(s=>s.id===prefs.sessionId);
      state.activeSessionId = sessExists ? prefs.sessionId : actProg.sessions[0]?.id;
   }
 }
+
+// --- LOGIC ---
 
 export function sessionKey(session){ return `${session.programName}|||${session.title}`; }
 
@@ -252,6 +257,8 @@ export function countLoggedInSession(session){
   return done;
 }
 
+// --- AUTH ---
+
 export async function initAuth(onAuthChange) {
   if(!supabase){ 
       if(onAuthChange) onAuthChange(null);
@@ -290,7 +297,7 @@ export async function handleSignOut() {
   return true; 
 }
 
-// --- WAKE UP SYNC ---
+// --- WAKE UP SYNC (NEW) ---
 
 export async function wakeUpSync() {
   if(!supabase) return false;
@@ -313,6 +320,8 @@ export async function wakeUpSync() {
   }
   return false;
 }
+
+// --- AUTO DATE LOGIC ---
 
 export function getAutoSelectedSessionId() {
   if (!state.activeProgramId) return null;

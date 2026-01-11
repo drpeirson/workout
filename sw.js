@@ -13,8 +13,7 @@ const CORE_ASSETS = [
   "js/utils.js", // Ensure this gets re-fetched
   "js/store.js",
   "js/ui.js",
-  "js/main.js",
-  "data/2026-refactor.json"
+  "js/main.js"
 ];
 
 self.addEventListener("install", (event) => {

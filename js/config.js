@@ -3,7 +3,7 @@ export const PROGRAM_SOURCES = [
   { name: "Hypertrophy", url: "data/hypertrophy.json" },
   { name: "Starting Strongman", url: "data/starting_strongman.json" },
   { name: "Static Monster", url: "data/static_monster.json" },
-  { name: "2026 REFACTOR", url: "data/2026-refactor.json" }, // Add this line
+  { name: "2026 REFACTOR", url: "data/2026-refactor.json" }
 ];
 
 export const SUPABASE_URL = "https://redxigdkdjyxaofmutlv.supabase.co";

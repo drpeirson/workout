@@ -350,6 +350,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("signInGoogle")?.addEventListener("click", handleSignIn);
   document.getElementById("signOut")?.addEventListener("click", async () => { await handleSignOut(); handleAppUpdate(null); alert("Signed out."); });
   
+  // js/main.js
+document.getElementById("resetStartDate")?.addEventListener("click", () => {
+  if(!confirm("Clear start date for this program? Auto-jump will stop working for this plan.")) return;
+  
+  // Remove the date for the current program
+  delete state.programStartDates[state.activeProgramId]; 
+  savePrefs();
+  
+  // Clear the input and notify
+  document.getElementById("programStartDate").value = "";
+  alert("Start date cleared.");
+});
+
   document.getElementById("programSelect").addEventListener("change", (e)=>{
     state.activeProgramId = e.target.value;
     const p = state.programById.get(state.activeProgramId);
@@ -411,12 +424,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("importFile")?.addEventListener("change", handleImportJSON);
   
   // Plan Stats Button
+// Update this listener in js/main.js
   document.getElementById("openPlanStats")?.addEventListener("click", () => {
-    document.getElementById("planStatsModal").classList.add("open");
-    const saved = state.programStartDates[state.activeProgramId];
-    document.getElementById("programStartDate").value = saved || "2025-11-24";
-    renderPlanStats();
-  });
+  document.getElementById("planStatsModal").classList.add("open");
+  const saved = state.programStartDates[state.activeProgramId];
+  // Changed from || "2025-11-24" to empty string
+  document.getElementById("programStartDate").value = saved || ""; 
+  renderPlanStats();
+});
   document.getElementById("closePlanStats")?.addEventListener("click", () => document.getElementById("planStatsModal").classList.remove("open"));
   document.getElementById("applyStartDate")?.addEventListener("click", () => {
     const val = document.getElementById("programStartDate").value;
@@ -441,7 +456,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   await loadLogsAsync();
   loadFunFacts();
   
-  if (!state.programStartDates[state.activeProgramId]) state.programStartDates[state.activeProgramId] = "2025-11-24";
   const autoId = getAutoSelectedSessionId();
   if (autoId) state.activeSessionId = autoId;
 

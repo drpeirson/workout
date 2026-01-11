@@ -1,0 +1,290 @@
+{
+  "program": "2026 Strength & Fat Loss (Retatrutide Phase)",
+  "sessions": [
+    {
+      "session": "WEEK 1 - SESSION 1 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Push Press", "sets": "4", "reps": "5", "notes": ["4 sets of 5 @RPE6", "2mins rest"] },
+        { "title": "Strict Press", "sets": "3", "reps": "10", "notes": ["3 sets of 10 @RPE6", "2mins rest"] },
+        { "title": "Back Squat (ROM Focus)", "sets": "3", "reps": "12", "notes": ["KNEE REHAB: Full ROM. NEVER exceed 140kg.", "3 sets of 12 @RPE6.5", "2mins rest"] },
+        { "title": "Single Arm Cable Lat Raise", "sets": "2", "reps": "15", "notes": ["Sets reduced for recovery", "Pulse at bottom", "90s rest"] },
+        { "title": "DB Rear Delt/Tricep Rope Extension", "sets": "2", "reps": "15", "notes": ["Superset", "Sets reduced for recovery"] },
+        { "title": "Knee Extension/Squat W/ Reach", "sets": "2", "reps": "20", "notes": ["Light and pump focused"] }
+      ]
+    },
+    {
+      "session": "WEEK 1 - SESSION 2 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Deadlift", "sets": "6", "reps": "4", "notes": ["STRENGTH ANCHOR: Focus on core rigidity.", "6 sets of 4 @RPE6", "2mins rest"] },
+        { "title": "Snatch Grip Back Extension", "sets": "3", "reps": "20", "notes": ["Work with bar only this week"] },
+        { "title": "Behind The Back Hold", "sets": "3", "reps": "1", "notes": ["75s hold. Super light"] },
+        { "title": "Bent Over Row", "sets": "3", "reps": "12", "notes": ["3 sets of 12", "2mins rest"] },
+        { "title": "Supinated Close Grip Pulldown", "sets": "2", "reps": "15-20", "notes": ["Sets reduced for recovery"] },
+        { "title": "EZ Bar Curl", "sets": "2", "reps": "15-20", "notes": ["Sets reduced for recovery"] },
+        { "title": "Strongman Engine", "sets": "1", "reps": "2k Row", "notes": ["Find a baseline"] }
+      ]
+    },
+    {
+      "session": "WEEK 1 - SESSION 3 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Bench Press (1s Pause)", "sets": "5", "reps": "5", "notes": ["BENCH MAINTENANCE: 1s pause on chest. Keep 100kg floor.", "5 sets of 5 @RPE6.5", "2mins rest"] },
+        { "title": "Back Squat (ROM Focus)", "sets": "3", "reps": "12", "notes": ["KNEE REHAB: Full ROM. NEVER exceed 140kg.", "3 sets of 12 @RPE6.5", "2mins rest"] },
+        { "title": "Incline Bench Press", "sets": "2", "reps": "12", "notes": ["1 top set of 5, 1 drop set of 12"] },
+        { "title": "Leg Press", "sets": "1", "reps": "6", "notes": ["1 top set of 6, 2 drop sets of 15"] },
+        { "title": "Straight Bar Pushdown/EZ Bar Skullcrusher", "sets": "2", "reps": "20", "notes": ["Sets reduced for recovery"] },
+        { "title": "KB Tib Raise/Machine Calf Raise", "sets": "1", "reps": "20", "notes": ["Light weight"] }
+      ]
+    },
+    {
+      "session": "WEEK 1 - SESSION 4 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Activation & Potentiation", "sets": "3", "reps": "15", "notes": ["King Deadlift and Bodyweight Circuit"] },
+        { "title": "Romanian Deadlift", "sets": "2", "reps": "20", "notes": ["Keep it super light"] },
+        { "title": "Hybrid Engine (Friend's Gym Day)", "sets": "1", "reps": "30mins", "notes": ["Swap for Yoke/Farmers/Stones if at friend's gym."] },
+        { "title": "Neutral Grip Chin-Ups", "sets": "1", "reps": "10min EDT", "notes": ["Max reps in 10 mins"] },
+        { "title": "Cable Curl/Incline DB Curl", "sets": "2", "reps": "15-20", "notes": ["Sets reduced for recovery"] }
+      ]
+    },
+    {
+      "session": "WEEK 2 - SESSION 1 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Push Press", "sets": "4", "reps": "5", "notes": ["4 sets of 5 @RPE7.5"] },
+        { "title": "Strict Press", "sets": "3", "reps": "10", "notes": ["3 sets of 10 @RPE7.5"] },
+        { "title": "Back Squat (ROM Focus)", "sets": "3", "reps": "12", "notes": ["NEVER exceed 140kg.", "3 sets of 12 @RPE8.5"] },
+        { "title": "Cable Lat Raise", "sets": "2", "reps": "15", "notes": ["8-12 reps plus pulses"] }
+      ]
+    },
+    {
+      "session": "WEEK 2 - SESSION 2 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Deadlift", "sets": "6", "reps": "4", "notes": ["6 sets of 4 @RPE7.5"] },
+        { "title": "Snatch Grip Back Extension", "sets": "3", "reps": "20", "notes": ["Add a little load"] },
+        { "title": "Bent Over Row", "sets": "3", "reps": "12", "notes": ["Load heavier than last week"] }
+      ]
+    },
+    {
+      "session": "WEEK 2 - SESSION 3 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Bench Press (1s Pause)", "sets": "5", "reps": "5", "notes": ["5 sets of 5 @RPE8"] },
+        { "title": "Back Squat (ROM Focus)", "sets": "3", "reps": "12", "notes": ["NEVER exceed 140kg.", "3 sets of 12 @RPE8.5"] }
+      ]
+    },
+    {
+      "session": "WEEK 2 - SESSION 4 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Romanian Deadlift", "sets": "2", "reps": "20", "notes": ["1st set @RPE9, 2nd set drop weight"] },
+        { "title": "Yoke/Sandbag", "sets": "4", "reps": "1", "notes": ["Hybrid day"] }
+      ]
+    },
+    {
+      "session": "WEEK 3 - SESSION 1 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Push Press", "sets": "3", "reps": "5", "notes": ["Ascending sets"] },
+        { "title": "Strict Press", "sets": "3", "reps": "10", "notes": ["3 sets of 10 @RPE8.5"] },
+        { "title": "Back Squat (ROM Focus)", "sets": "3", "reps": "9", "notes": ["NEVER exceed 140kg.", "3 sets of 9 @ Last week's 12 rep weight"] }
+      ]
+    },
+    {
+      "session": "WEEK 3 - SESSION 2 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Deadlift", "sets": "6", "reps": "4", "notes": ["6 sets of 4 @RPE8.5"] },
+        { "title": "Bent Over Row", "sets": "3", "reps": "12", "notes": ["Load heavier"] }
+      ]
+    },
+    {
+      "session": "WEEK 3 - SESSION 3 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Bench Press (1s Pause)", "sets": "3", "reps": "5", "notes": ["3 sets of 5 ascending"] },
+        { "title": "Back Squat (ROM Focus)", "sets": "3", "reps": "9", "notes": ["NEVER exceed 140kg.", "3 sets of 9 @ Heavier"] }
+      ]
+    },
+    {
+      "session": "WEEK 3 - SESSION 4 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Romanian Deadlift", "sets": "2", "reps": "15", "notes": ["Last week's top weight"] },
+        { "title": "Farmers/Stones", "sets": "4", "reps": "1", "notes": ["Hybrid day"] }
+      ]
+    },
+    {
+      "session": "WEEK 4 - SESSION 1 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Push Press", "sets": "2", "reps": "5", "notes": ["Ascend load further"] },
+        { "title": "Strict Press", "sets": "1", "reps": "10", "notes": ["Work to 10RM"] }
+      ]
+    },
+    {
+      "session": "WEEK 4 - SESSION 2 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Deadlift", "sets": "4", "reps": "4", "notes": ["Work to a heavy 4 sets"] }
+      ]
+    },
+    {
+      "session": "WEEK 4 - SESSION 3 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Bench Press (1s Pause)", "sets": "1", "reps": "5", "notes": ["Work to 5RM"] }
+      ]
+    },
+    {
+      "session": "WEEK 4 - SESSION 4 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Romanian Deadlift", "sets": "2", "reps": "15", "notes": ["5-10kg heavier"] }
+      ]
+    },
+    {
+      "session": "WEEK 5 - SESSION 1 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Push Press", "sets": "3", "reps": "4", "notes": ["Last week's top weight"] },
+        { "title": "Strict Press", "sets": "3", "reps": "8", "notes": ["Use last week's 10RM weight"] }
+      ]
+    },
+    {
+      "session": "WEEK 5 - SESSION 2 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Deadlift", "sets": "1", "reps": "4", "notes": ["Work to a 4RM"] }
+      ]
+    },
+    {
+      "session": "WEEK 5 - SESSION 3 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Bench Press (1s Pause)", "sets": "3", "reps": "3", "notes": ["3 sets of 3 @ last week's 5RM"] },
+        { "title": "Back Squat (ROM Focus)", "sets": "1", "reps": "9", "notes": ["Work to 9RM"] }
+      ]
+    },
+    {
+      "session": "WEEK 5 - SESSION 4 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Romanian Deadlift", "sets": "2", "reps": "12-15", "notes": ["Heavier again"] }
+      ]
+    },
+    {
+      "session": "WEEK 6 - SESSION 1 - DELOAD (RECOVERY)",
+      "workouts": [
+        { "title": "All Main Lifts", "sets": "2", "reps": "8-10", "notes": ["50% Load. CNS Reset week. No failure."] }
+      ]
+    },
+    {
+      "session": "WEEK 6 - SESSION 2 - DELOAD (RECOVERY)",
+      "workouts": [
+        { "title": "All Main Lifts", "sets": "2", "reps": "8-10", "notes": ["50% Load. Focus on ROM and blood flow."] }
+      ]
+    },
+    {
+      "session": "WEEK 6 - SESSION 3 - DELOAD (RECOVERY)",
+      "workouts": [
+        { "title": "All Main Lifts", "sets": "2", "reps": "8-10", "notes": ["50% Load. Mandatory deload on Retatrutide cut."] }
+      ]
+    },
+    {
+      "session": "WEEK 6 - SESSION 4 - DELOAD (RECOVERY)",
+      "workouts": [
+        { "title": "Steady State Cardio", "sets": "1", "reps": "30mins", "notes": ["RPE 4-5. Very light."] }
+      ]
+    },
+    {
+      "session": "WEEK 7 - SESSION 1 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Push Press", "sets": "1", "reps": "4", "notes": ["Work to a 4RM"] },
+        { "title": "Strict Press", "sets": "2", "reps": "8", "notes": ["Push for an 8RM today"] }
+      ]
+    },
+    {
+      "session": "WEEK 7 - SESSION 2 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Deadlift", "sets": "2", "reps": "3", "notes": ["Use last week's 4RM weight"] }
+      ]
+    },
+    {
+      "session": "WEEK 7 - SESSION 3 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Bench Press (1s Pause)", "sets": "3", "reps": "3", "notes": ["Work to a 3RM"] }
+      ]
+    },
+    {
+      "session": "WEEK 7 - SESSION 4 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Romanian Deadlift", "sets": "2", "reps": "12", "notes": ["Heavier again"] }
+      ]
+    },
+    {
+      "session": "WEEK 8 - SESSION 1 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Push Press", "sets": "3", "reps": "3", "notes": ["Drop 15% off 4RM"] },
+        { "title": "Strict Press", "sets": "3", "reps": "5", "notes": ["Use last week's 8RM weight"] }
+      ]
+    },
+    {
+      "session": "WEEK 8 - SESSION 2 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Deadlift", "sets": "3", "reps": "3", "notes": ["Ascending sets of 3"] }
+      ]
+    },
+    {
+      "session": "WEEK 8 - SESSION 3 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Bench Press (1s Pause)", "sets": "5", "reps": "2", "notes": ["Drop 20% off 3RM, fast and aggressive"] }
+      ]
+    },
+    {
+      "session": "WEEK 8 - SESSION 4 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Romanian Deadlift", "sets": "2", "reps": "10", "notes": ["Work to a 10RM"] }
+      ]
+    },
+    {
+      "session": "WEEK 9 - SESSION 1 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Push Press", "sets": "1", "reps": "3", "notes": ["Close to 3RM weight"] },
+        { "title": "Strict Press", "sets": "3", "reps": "5", "notes": ["3 sets of 5 heavier"] }
+      ]
+    },
+    {
+      "session": "WEEK 9 - SESSION 2 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Deadlift", "sets": "4", "reps": "2", "notes": ["Speed work. Drop 25% off triple"] }
+      ]
+    },
+    {
+      "session": "WEEK 9 - SESSION 3 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Bench Press (1s Pause)", "sets": "3", "reps": "2", "notes": ["3 sets of 2 @ 3RM weight"] }
+      ]
+    },
+    {
+      "session": "WEEK 9 - SESSION 4 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Romanian Deadlift", "sets": "3", "reps": "7", "notes": ["Use 10RM weight"] }
+      ]
+    },
+    {
+      "session": "WEEK 10 - SESSION 1 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Push Press", "sets": "1", "reps": "3", "notes": ["Full send for 3RM"] },
+        { "title": "Strict Press", "sets": "1", "reps": "5", "notes": ["Send a 5RM"] }
+      ]
+    },
+    {
+      "session": "WEEK 10 - SESSION 2 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Deadlift", "sets": "1", "reps": "3", "notes": ["Work to a 3RM"] }
+      ]
+    },
+    {
+      "session": "WEEK 10 - SESSION 3 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Bench Press (1s Pause)", "sets": "1", "reps": "2", "notes": ["Send a 2RM"] }
+      ]
+    },
+    {
+      "session": "WEEK 10 - SESSION 4 - RECOVERY & STRENGTH",
+      "workouts": [
+        { "title": "Romanian Deadlift", "sets": "3", "reps": "7", "notes": ["Heavy top set of 7"] }
+      ]
+    },
+    {
+      "session": "WEEK 11 - FINAL PEAK WEEK",
+      "workouts": [
+        { "title": "Testing All Maxes", "sets": "1", "reps": "1", "notes": ["Final Max Test. Aim to maintain 100kg+ Bench and 250kg+ DL."] }
+      ]
+    }
+  ]
+}
